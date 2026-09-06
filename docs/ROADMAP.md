@@ -12,9 +12,13 @@ This is the intended benefit, not a demonstrated health or productivity outcome.
 
 The target audience is established. Manual topic tracking, pauses, corrections, a timeline,
 and analytics are proposed in the [concept discussion](brainstorming/context-switching-app-concept.md).
-The first product scope, delivery form (web, PWA, Electron, or Tauri), offline/online model,
-accounts, storage, scoring, and commercial model remain undecided.
-See [open questions](OPEN_QUESTIONS.md) for decision timing.
+
+The first deliverable is a validation prototype: an offline-only Tauri desktop application on
+Linux with local, per-device event data and no accounts. Delivery form, initial target,
+offline behavior, and data architecture are decided and recorded in
+[Phase 0](phases/phase-0-repo-setup.md#decisions-and-evidence). The prototype's feature scope,
+scoring, synchronization mechanism, and commercial model remain undecided. See
+[open questions](OPEN_QUESTIONS.md) for decision timing.
 
 Prepare the repository foundation first. Add product delivery phases once their scope can be
 stated without treating brainstorming recommendations as commitments. No product trial,
@@ -28,10 +32,11 @@ Their checkboxes track individual work items only.
 
 | Phase | Focus | Delivers | Depends on | Status |
 | --- | --- | --- | --- | --- |
-| **0** | [Repository setup](phases/phase-0-repo-setup.md) | Consistent working rules, documentation, and a decision-backed setup plan | None | Not started |
+| **0** | [Repository setup](phases/phase-0-repo-setup.md) | Consistent working rules, documentation, and the local-first Tauri foundation with a verified event round-trip | None | In progress |
 
 There are no parallel phases defined yet. Previous/next links provide reading order;
 explicit dependencies determine execution order.
 
-A phase becomes `Done` only when its acceptance criteria are verified. Preparing these
-initial documents does not complete Phase 0's remaining setup decisions.
+A phase becomes `Done` only when its acceptance criteria are verified. Phase 0's discovery is
+resolved and its documentation work is complete; the scaffolding and its checks are not, so the
+phase remains `In progress`.
