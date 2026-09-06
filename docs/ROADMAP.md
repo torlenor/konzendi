@@ -20,9 +20,10 @@ offline behavior, and data architecture are decided and recorded in
 scoring, synchronization mechanism, and commercial model remain undecided. See
 [open questions](OPEN_QUESTIONS.md) for decision timing.
 
-Prepare the repository foundation first. Add product delivery phases once their scope can be
-stated without treating brainstorming recommendations as commitments. No product trial,
-licensing integration, or release is scheduled by this roadmap.
+Prepare the repository foundation first, then design the tracking interaction before
+implementing it. Later phases are outlined so the intended path is visible, and each is filled
+in only when its scope can be stated without treating brainstorming recommendations as
+commitments. No product trial, licensing integration, or release is scheduled by this roadmap.
 
 ## Delivery phases
 
@@ -32,11 +33,26 @@ Their checkboxes track individual work items only.
 
 | Phase | Focus | Delivers | Depends on | Status |
 | --- | --- | --- | --- | --- |
-| **0** | [Repository setup](phases/phase-0-repo-setup.md) | Consistent working rules, documentation, and the local-first Tauri foundation with a verified event round-trip | None | In progress |
+| **0** | [Repository setup](phases/phase-0-repo-setup.md) | Consistent working rules, documentation, and the local-first Tauri foundation with a verified event round-trip | None | Done |
+| **1** | [Tracking experience design](phases/phase-1-tracking-design.md) | A specification of the tracking interaction: model, event vocabulary, undo and correction rules, screen design | 0 | Not started |
+| **2** | [Topic tracking implementation](phases/phase-2-tracking-implementation.md) | The tracking loop: topics, switching, pauses, undo, and correction, persisted as events | 0, 1 | Not started |
+| **3** | [Quick access](phases/phase-3-quick-access.md) | Global shortcut and tray entry points for logging without leaving the current application | 2 | Not started |
+| **4** | [Timeline and first analytics](phases/phase-4-timeline-analytics.md) | A timeline of topics and pauses, plus the smallest useful analytics | 2 | Not started |
+| **5** | [Validation trial](phases/phase-5-validation-trial.md) | A recorded answer to whether switches get logged and whether the result is useful | 3, 4 | Not started |
 
-There are no parallel phases defined yet. Previous/next links provide reading order;
-explicit dependencies determine execution order.
+Phase 1 designs the tracking interaction and writes no application code. Phases 2 to 5 are
+placeholders: they record the intended slice, its dependencies, and what must be investigated,
+and their scope, work packages, and estimates are written when the phase before them has
+delivered. Every one of them is `Discovery required` and none may be implemented as it stands.
 
-A phase becomes `Done` only when its acceptance criteria are verified. Phase 0's discovery is
-resolved and its documentation work is complete; the scaffolding and its checks are not, so the
-phase remains `In progress`.
+Phases 3 and 4 depend only on Phase 2 and may run in parallel. Previous/next links provide
+reading order; explicit dependencies determine execution order.
+
+Scoring ([Q07](OPEN_QUESTIONS.md)), synchronization ([Q11](OPEN_QUESTIONS.md)), and the
+commercial questions ([Q09, Q10](OPEN_QUESTIONS.md)) have no phase. They are planned only if
+Phase 5 shows the tracking habit holds.
+
+A phase becomes `Done` only when its acceptance criteria are verified. Phase 0's foundation,
+checks, desktop event round-trip, restart persistence, and standalone offline behavior have
+passed; see its [verification evidence](phases/phase-0-repo-setup.md#acceptance-and-verification).
+This establishes the repository foundation, not a working tracking product.

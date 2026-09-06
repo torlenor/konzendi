@@ -1,6 +1,6 @@
 # Phase 0 — Repository setup
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: none · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: none · next: [Phase 1](phase-1-tracking-design.md)
 
 **Depends on:** None  
 **Effort:** M  
@@ -131,8 +131,8 @@ recorded for the later phase that implements the shortcut, and is not a Phase 0 
 
 ### Workspace facts
 
-- The workspace contains planning documentation and no application source or build
-  configuration.
+- At discovery, the workspace contained planning documentation and no application source or
+  build configuration. The foundation now lives at the repository root; see the README.
 - The concept document preserves recommendations; it does not select an implementation stack.
 
 ## Work packages
@@ -142,7 +142,7 @@ recorded for the later phase that implements the shortcut, and is not a Phase 0 
 - [x] Resolve the investigation gate and record the selected setup and its rationale.
       Complete: decisions and rationale above; Q01–Q04 updated in the open questions.
 
-- [ ] **Scaffold the application at the repository root.** Generate a Tauri v2 project with the
+- [x] **Scaffold the application at the repository root.** Generate a Tauri v2 project with the
   React + TypeScript template into an empty temporary directory, then move the generated files
   into the repository root. `create-tauri-app` refuses a non-empty target, and the existing
   `README.md`, `CLAUDE.md`, `AGENTS.md`, and `docs/` must not be overwritten.
@@ -166,7 +166,7 @@ recorded for the later phase that implements the shortcut, and is not a Phase 0 
   Complete when `npm run tauri dev` opens a window and the existing documentation files are
   unchanged.
 
-- [ ] **Implement the event store in Rust** (`src-tauri/src/storage.rs`). On first run, generate
+- [x] **Implement the event store in Rust** (`src-tauri/src/storage.rs`). On first run, generate
   a device id and persist it as `device.json` in the application data directory. Events are
   appended as one JSON object per line to `events/<device-id>.jsonl` in the same directory,
   using an append-mode file handle flushed after each write. Each record:
@@ -181,22 +181,22 @@ recorded for the later phase that implements the shortcut, and is not a Phase 0 
   placeholder used here belong to the later tracking phase. Complete when both commands are
   registered and `cargo clippy` passes with no warnings.
 
-- [ ] **Add the TypeScript domain core** (`src/core/`). Define the event record type mirroring
+- [x] **Add the TypeScript domain core** (`src/core/`). Define the event record type mirroring
   the Rust record, a function merging records from several devices into one ordered sequence
   (deduplicating by event id), and its Vitest tests. The module must import neither React nor
   Tauri. Complete when `npm test` passes and no file in `src/core/` imports either.
 
-- [ ] **Wire the round-trip.** On a button press the interface calls `append_event` with a
+- [x] **Wire the round-trip.** On a button press the interface calls `append_event` with a
   placeholder kind, then calls `read_events`, passes the result through the domain core, and
   displays the returned records. Complete when a fresh run writes a line to the JSONL file and
   displays it after a restart of the application.
 
-- [ ] **Add the check commands** to `package.json`: `typecheck` (`tsc --noEmit`), `lint`
+- [x] **Add the check commands** to `package.json`: `typecheck` (`tsc --noEmit`), `lint`
   (`biome check .`), `format` (`biome format --write .`), `test` (`vitest run`). Rust checks
   run through `cargo fmt --check` and `cargo clippy -- -D warnings` in `src-tauri/`. Complete
   when every command runs from a clean checkout after `npm install`.
 
-- [ ] **Update the documentation** with the actual layout and verified commands: the repository
+- [x] **Update the documentation** with the actual layout and verified commands: the repository
   layout sections in `AGENTS.md` and `CLAUDE.md`, and the README's statement that no
   application exists. Complete when a fresh checkout can be set up by following the README
   alone.
@@ -213,10 +213,58 @@ recorded for the later phase that implements the shortcut, and is not a Phase 0 
 - Pressing the round-trip button appends exactly one line to `events/<device-id>.jsonl`, and
   that record is displayed again after restarting the application.
 - No file under `src/core/` imports React or Tauri.
-- The application performs no network request during any of the above.
+- The application requires no external network request. Development uses the local Vite
+  HTTP/WebSocket server; verify the executable with embedded assets separately for offline use.
 
-Record each command and its actual result here as it is executed. No verification is claimed
-by this plan; the environment table above records only what was inspected during discovery.
+### Implementation details
+
+- Scaffolded with `create-tauri-app` 4.7.4 in `/tmp`, then copied only new files into the
+  repository. Existing documentation and the `CLAUDE.md` symlink were preserved during
+  scaffolding. README and AGENTS updates were made deliberately in the documentation package.
+- Removed the template opener plugin and demo assets. Only the two storage commands are
+  registered; the UI writes `foundation.check` with an empty payload.
+- Storage uses an OS file lock across processes, atomic identity publication, and flush plus
+  `sync_all` for appends. A truncated tail is preserved and separated before the next append.
+  Malformed records (including invalid UTF-8) are reported to stderr with path and line number.
+  Corrupt device identity and I/O errors are not silently replaced or treated as empty logs.
+- The core keeps the first copy of an event id, orders by timestamp including sub-millisecond
+  precision, and breaks timestamp ties by id without mutating the inputs.
+- Content security policy restricts connections to Tauri IPC; the development policy also
+  permits the local Vite server. No external service or network plugin was added.
+
+### Verification results — 6 September 2026
+
+| Check | Actual result |
+| --- | --- |
+| `npm install` | Passed at the root and in an empty temporary directory containing only the manifests and lockfile; 59 packages installed, audit reported zero vulnerabilities. |
+| `npm run typecheck` | Passed. |
+| `npm run lint` | Passed, no diagnostics. |
+| `npm test` | Passed: five domain tests covering empty input, ordering across devices, deduplication, timestamp ties, and sub-millisecond precision. |
+| `npm run build` | Passed; Vite emitted the frontend assets. |
+| `cargo fmt --check` in `src-tauri/` | Passed. |
+| `cargo clippy -- -D warnings` in `src-tauri/` | Passed with no warnings. |
+| `cargo test` in `src-tauri/` | Passed: five storage tests covering restart persistence and one-line append, malformed/truncated records, multi-device reads, corrupt identity, and concurrent stores. |
+| Documentation and core boundary checks | Local links and anchors, phase metadata, roadmap dependencies, and previous/next chain passed; no React or Tauri imports in `src/core/`. |
+
+Dependency downloads required network-enabled execution because the workspace sandbox could
+not resolve package registries. No system packages were installed.
+
+| Desktop check | Actual result |
+| --- | --- |
+| `npm run tauri dev` under `xvfb-run -a` | Passed: real 800×600 Tauri/WebKit window on an isolated X11 display. Activating the button once wrote exactly one JSONL line and displayed that event. |
+| Close and restart `npm run tauri dev` with the same temporary `XDG_DATA_HOME` | Passed: the event appeared without another activation; the JSONL file still had one line. Before-close and after-restart screenshots were identical. |
+| `npm run tauri build -- --debug --no-bundle` | Passed: local executable built with embedded frontend assets. CLI warns that the provisional identifier ends in `.app`, relevant before macOS distribution; the accepted identifier is retained. |
+| Standalone executable, button activation, and restart under Xvfb | Passed with separate temporary data and no Vite server; one event was written and displayed again after restart. |
+| `strace -f -e trace=network` on the standalone executable | No IPv4/IPv6 socket, connect, or sendto calls during startup and button round-trip. Local Unix IPC and netlink inspection were present. Source and CSP checks also found no external network feature. |
+
+Smoke-test screenshots and temporary placeholder logs were inspected under
+`/tmp/konzendi-phase0-check` and `/tmp/konzendi-phase0-offline`; they are not repository data.
+The first offline test accidentally copied a development executable while the restart test
+was rebuilding the same output path; it attempted localhost and failed. Rebuilding after the
+development test stopped and copying the standalone executable resolved the test setup error.
+Xvfb emitted DRI3 acceleration warnings but rendered the application successfully. This
+verification covers the local Linux/X11 foundation, not physical-display acceleration,
+tracking usefulness, packaging, or other platforms.
 
 ## Rollout and rollback
 

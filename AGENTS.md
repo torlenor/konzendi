@@ -5,8 +5,9 @@ before making changes. Keep work within the requested scope and preserve unrelat
 
 ## Repository layout
 
-This workspace currently contains planning documentation only. No application stack, build,
-test command, or deployment workflow has been selected.
+The repository contains a Tauri v2 desktop foundation with React, TypeScript, and Vite.
+Linux (X11) is the initial target. Rust owns local event persistence; `src/core/` is pure
+TypeScript and must import neither React nor Tauri. No deployment workflow exists.
 
 - `README.md` — project introduction and documentation entry point.
 - `AGENTS.md` — working rules; `CLAUDE.md` links to this file.
@@ -14,8 +15,14 @@ test command, or deployment workflow has been selected.
 - `docs/OPEN_QUESTIONS.md` — questions, decision status, outcomes, timing, and related phases.
 - `docs/phases/` — implementation plans and a reusable phase template.
 - `docs/brainstorming/` — discussion history and proposals, not approved specifications.
+- `src/` — React interface; `src/core/` contains event types, merging, and Vitest tests.
+- `src-tauri/` — Rust event store, IPC commands, and desktop configuration.
+- `package.json`, `package-lock.json`, `biome.json`, `tsconfig.json`, `vite.config.ts` — frontend tooling.
 
-Update this layout and add verified development commands when application scaffolding exists.
+Run `npm install` at the root, then `npm run tauri dev` for the desktop application.
+Root checks: `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build`.
+Formatting: `npm run format`. In `src-tauri/`, run `cargo fmt --check`,
+`cargo clippy -- -D warnings`, and `cargo test`. See README prerequisites before setup.
 Do not invent commands or describe planned components as implemented.
 
 ## Documentation authority
