@@ -45,7 +45,9 @@ Not written yet; they follow from Phase 1's event vocabulary and screen design.
 
 ## Acceptance and verification
 
-Phase 1 writes the observable acceptance checks for this phase. In addition, the Phase 0 checks
+Phase 1 has written the observable acceptance checks for this phase; see
+[Acceptance checks for the implementation phase](phase-1-tracking-design.md#acceptance-checks-for-the-implementation-phase).
+In addition, the Phase 0 checks
 (`npm run typecheck`, `npm run lint`, `npm test`, `cargo fmt --check`,
 `cargo clippy -- -D warnings`) must pass, and no file under `src/core/` may import React or
 Tauri.
