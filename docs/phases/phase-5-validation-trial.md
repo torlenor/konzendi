@@ -49,6 +49,7 @@ not be reported as one.
 
 ## Rollout and rollback
 
-Distribution to participants is undecided and may require packaging that no phase currently
-plans. Rollback is stopping the trial; participants keep their own log files, which remain
+Distribution to participants is undecided. If the trial needs packaged builds, coordinate with
+[Phase 7](phase-7-releases-ci-cd.md) and record that dependency before the trial runs.
+Rollback is stopping the trial; participants keep their own log files, which remain
 readable without the application.

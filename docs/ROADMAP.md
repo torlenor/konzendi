@@ -8,26 +8,6 @@ A simple, robust tool for people working on a computer, especially developers an
 to understand context switching and develop more fulfilling, sustainable working habits.
 This is the intended benefit, not a demonstrated health or productivity outcome.
 
-## Planning boundary
-
-The target audience is established. Manual topic tracking, pauses, and corrections are
-specified in [Phase 1](phases/phase-1-tracking-design.md#decisions-and-evidence) and implemented
-in [Phase 2](phases/phase-2-tracking-implementation.md). The timeline and analytics remain
-proposals in the [concept discussion](brainstorming/context-switching-app-concept.md).
-
-The first deliverable is a validation prototype: an offline-only Tauri desktop application on
-Linux with local, per-device event data and no accounts. Delivery form, initial target,
-offline behavior, and data architecture are decided and recorded in
-[Phase 0](phases/phase-0-repo-setup.md#decisions-and-evidence), and the tracking interaction is
-decided and recorded in [Phase 1](phases/phase-1-tracking-design.md#decisions-and-evidence).
-The analytics scope, scoring, synchronization mechanism, and commercial model remain undecided.
-See [open questions](OPEN_QUESTIONS.md) for decision timing.
-
-Prepare the repository foundation first, then design the tracking interaction before
-implementing it. Later phases are outlined so the intended path is visible, and each is filled
-in only when its scope can be stated without treating brainstorming recommendations as
-commitments. No product trial, licensing integration, or release is scheduled by this roadmap.
-
 ## Delivery phases
 
 This table is the single phase index and sole source of phase status. Phase documents own the
@@ -43,35 +23,6 @@ Their checkboxes track individual work items only.
 | **4** | [Timeline and first analytics](phases/phase-4-timeline-analytics.md) | A timeline of topics and pauses, plus the smallest useful analytics | 2 | Not started |
 | **5** | [Validation trial](phases/phase-5-validation-trial.md) | A recorded answer to whether switches get logged and whether the result is useful | 3, 4 | Not started |
 | **6** | [Application theme](phases/phase-6-application-theme.md) | A deliberate visual theme for the application, expressed as a documented token set | 2 | Done |
+| **7** | [Releases and CI/CD](phases/phase-7-releases-ci-cd.md) | Local version/changelog helpers and tag-triggered private Linux release builds, with checksums, manual draft publication, and recovery | 2 | Not started |
 
-Phase 1 designed the tracking interaction and added no application code; Phase 2 resolved its own
-investigation gate and implemented that design against the acceptance checks Phase 1 wrote.
-Phases 3 to 5 remain placeholder documents: they record the intended slice, its dependencies, and
-what must be investigated, and their scope, work packages, and estimates are written when the
-phase before them has delivered. All three are `Discovery required` and none may be implemented
-as it stands. Phase 6 closed its own investigation gate, recorded the accepted visual direction,
-and delivered it.
-
-Phases 3, 4, and 6 depend only on Phase 2 and may run in parallel. Previous/next links provide
-reading order; explicit dependencies determine execution order.
-
-The visual direction ([Q12](OPEN_QUESTIONS.md)) was decided inside
-[Phase 6](phases/phase-6-application-theme.md). Scoring ([Q07](OPEN_QUESTIONS.md)),
-synchronization ([Q11](OPEN_QUESTIONS.md)), and the
-commercial questions ([Q09, Q10](OPEN_QUESTIONS.md)) have no phase. They are planned only if
-Phase 5 shows the tracking habit holds.
-
-A phase becomes `Done` only when its acceptance criteria are verified. Phase 0's foundation,
-checks, desktop event round-trip, restart persistence, and standalone offline behavior have
-passed; see its [verification evidence](phases/phase-0-repo-setup.md#acceptance-and-verification).
-Phase 1's deliverable is a document, and its checks are recorded in its
-[verification section](phases/phase-1-tracking-design.md#acceptance-and-verification). Phase 2's
-sixteen acceptance checks passed, with the automated results and the desktop walkthrough recorded
-in its [verification evidence](phases/phase-2-tracking-implementation.md#acceptance-and-verification).
-Phase 6's checks passed, including contrast measured on rendered output in both modes and an
-offline run of the standalone build, recorded in its
-[verification evidence](phases/phase-6-application-theme.md#acceptance-and-verification).
-Together these establish a foundation, a recorded design, a tracking loop that works on the
-development machine, and a theme the later phases inherit. Whether it is used, and whether the
-result is useful, is [Phase 5](phases/phase-5-validation-trial.md)'s question and is not
-established here.
+A phase becomes `Done` only when its acceptance criteria are verified.

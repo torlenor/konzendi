@@ -1,6 +1,6 @@
 # Phase 6 — Application theme
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 5](phase-5-validation-trial.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 5](phase-5-validation-trial.md) · next: [Phase 7](phase-7-releases-ci-cd.md)
 
 **Depends on:** [Phase 2](phase-2-tracking-implementation.md)  
 **Effort:** M  
