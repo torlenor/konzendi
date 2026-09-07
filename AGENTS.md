@@ -5,9 +5,11 @@ before making changes. Keep work within the requested scope and preserve unrelat
 
 ## Repository layout
 
-The repository contains a Tauri v2 desktop foundation with React, TypeScript, and Vite.
-Linux (X11) is the initial target. Rust owns local event persistence; `src/core/` is pure
-TypeScript and must import neither React nor Tauri. No deployment workflow exists.
+The repository contains a Tauri v2 desktop application with React, TypeScript, and Vite that
+tracks topics against an append-only event log. Linux (X11) is the initial target. Rust owns
+local event persistence and keeps event kinds opaque; `src/core/` owns the event vocabulary and
+the fold from log to state, and must import neither React nor Tauri. No deployment workflow
+exists.
 
 - `README.md` — project introduction and documentation entry point.
 - `AGENTS.md` — working rules; `CLAUDE.md` links to this file.
@@ -15,7 +17,9 @@ TypeScript and must import neither React nor Tauri. No deployment workflow exist
 - `docs/OPEN_QUESTIONS.md` — questions, decision status, outcomes, timing, and related phases.
 - `docs/phases/` — implementation plans and a reusable phase template.
 - `docs/brainstorming/` — discussion history and proposals, not approved specifications.
-- `src/` — React interface; `src/core/` contains event types, merging, and Vitest tests.
+- `src/` — React interface: the tracking window, the entry list, and topic maintenance.
+- `src/core/` — pure domain core: event types, merging, the event vocabulary, the fold, and their
+  Vitest tests.
 - `src-tauri/` — Rust event store, IPC commands, and desktop configuration.
 - `package.json`, `package-lock.json`, `biome.json`, `tsconfig.json`, `vite.config.ts` — frontend tooling.
 

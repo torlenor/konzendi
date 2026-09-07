@@ -1,0 +1,68 @@
+import type { Subject, Topic } from "./core/fold";
+import {
+  entryRetimed,
+  entryRevoked,
+  focusPaused,
+  focusStarted,
+  topicArchived,
+  topicCreated,
+  topicRenamed,
+  topicRestored,
+} from "./core/tracking";
+import { nowIso } from "./time";
+import type { Tracking } from "./useTracking";
+
+/**
+ * Every user action, as the events it appends. Nothing here changes state directly:
+ * the screens re-render from a fold of the log.
+ */
+export function trackingActions(record: Tracking["record"]) {
+  return {
+    switchTo: (topicId: string) => record(focusStarted(topicId, nowIso())),
+    pause: () => record(focusPaused(nowIso())),
+    /** One user action, two events: the topic is named at the moment of tracking. */
+    createAndTrack: (name: string) => {
+      const topicId = crypto.randomUUID();
+      return record(
+        topicCreated(topicId, name),
+        focusStarted(topicId, nowIso()),
+      );
+    },
+    undo: (eventId: string) => record(entryRevoked(eventId)),
+    /** Revoking the revocations is how an entry comes back. */
+    restore: (revokedBy: readonly string[]) =>
+      record(...revokedBy.map(entryRevoked)),
+    retime: (eventId: string, effectiveAt: string) =>
+      record(entryRetimed(eventId, effectiveAt)),
+    addMissed: (subject: Subject, effectiveAt: string) =>
+      record(
+        subject.type === "pause"
+          ? focusPaused(effectiveAt)
+          : focusStarted(subject.topicId, effectiveAt),
+      ),
+    rename: (topicId: string, name: string) =>
+      record(topicRenamed(topicId, name)),
+    archive: (topicId: string) => record(topicArchived(topicId)),
+    unarchive: (topicId: string) => record(topicRestored(topicId)),
+  };
+}
+
+export type Actions = ReturnType<typeof trackingActions>;
+
+/** A tracking event can name a topic whose creation has not been merged yet. */
+export function nameOf(topics: readonly Topic[], topicId: string): string {
+  return (
+    topics.find((topic) => topic.id === topicId)?.name ??
+    `Unknown topic ${topicId.slice(0, 8)}`
+  );
+}
+
+export function subjectLabel(
+  topics: readonly Topic[],
+  subject: Subject,
+): string {
+  return subject.type === "pause" ? "Paused" : nameOf(topics, subject.topicId);
+}
+
+export const subjectMark = (subject: Subject) =>
+  subject.type === "pause" ? "❙❙" : "▶";

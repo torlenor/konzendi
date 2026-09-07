@@ -257,6 +257,10 @@ not resolve package registries. No system packages were installed.
 | Standalone executable, button activation, and restart under Xvfb | Passed with separate temporary data and no Vite server; one event was written and displayed again after restart. |
 | `strace -f -e trace=network` on the standalone executable | No IPv4/IPv6 socket, connect, or sendto calls during startup and button round-trip. Local Unix IPC and netlink inspection were present. Source and CSP checks also found no external network feature. |
 
+The round-trip button this phase verified was replaced by the tracking window in
+[Phase 2](phase-2-tracking-implementation.md), whose first acceptance check exercises the same
+append-and-read path. The results above record what was checked at the time.
+
 Smoke-test screenshots and temporary placeholder logs were inspected under
 `/tmp/konzendi-phase0-check` and `/tmp/konzendi-phase0-offline`; they are not repository data.
 The first offline test accidentally copied a development executable while the restart test

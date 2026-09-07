@@ -3,10 +3,11 @@
 A project exploring a simple, robust tool for people working on a computer, especially
 developers and engineers, to understand context switching and reflect on their working habits.
 
-The current application is a repository foundation: a Linux desktop window that writes a
-placeholder event to a local JSONL log and reads it back, including after a restart. Tracking
-interactions, analytics, scoring, synchronization, and the commercial model remain undecided.
-There are no accounts or backend services.
+The current application tracks topics on Linux: name what you are working on, switch with one
+click or one key, pause, undo an entry, and correct a time. Every action is appended to a local
+JSONL event log, and the screen is a fold of that log. Analytics, scoring, synchronization, the
+global shortcut and tray, and the commercial model remain undecided. There are no accounts or
+backend services.
 
 ## Local setup
 
@@ -34,9 +35,15 @@ local Vite server on port 1420 and its hot-reload connection. The application ha
 network features. `npm run dev` alone opens only the frontend server; persistence requires
 the Tauri desktop shell.
 
-Press **Write test event** once. One `foundation.check` record appears under **Stored events**.
-Close and reopen the application: the same record should appear without pressing the button.
-The screen is a storage check, not a tracking interface.
+On first run the window asks what you are working on. Name a topic and start: the elapsed time
+becomes the largest thing on screen. Switching to another topic ends the running interval and
+starts the next in one action, **Pause** is a state of its own, **Undo** takes back the last
+entry, and **adjust** back-dates one. **Entries** lists everything recorded, including revoked
+entries and a way to insert a switch that was missed; **Topics** renames and archives.
+
+Nothing is ever edited or deleted: an undo and a correction are new events that reference an
+earlier one. Close and reopen the application and the same state comes back, because it is read
+from the log.
 
 ## Checks
 

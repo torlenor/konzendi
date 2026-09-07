@@ -12,6 +12,16 @@ function submillis(timestamp: string): number {
   return Number(fraction.padEnd(9, "0").slice(3, 9));
 }
 
+/** Order two RFC 3339 timestamps, keeping the digits Date.parse drops. */
+export function compareTimestamps(a: string, b: string): number {
+  return Date.parse(a) - Date.parse(b) || submillis(a) - submillis(b);
+}
+
+/** Break a timestamp tie the same way on every device. */
+export function compareIds(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 /** Union immutable device logs; first occurrence wins for duplicate event ids. */
 export function mergeEvents(
   ...logs: readonly (readonly EventRecord[])[]
@@ -24,8 +34,6 @@ export function mergeEvents(
   }
   return [...unique.values()].sort(
     (a, b) =>
-      Date.parse(a.recordedAt) - Date.parse(b.recordedAt) ||
-      submillis(a.recordedAt) - submillis(b.recordedAt) ||
-      (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+      compareTimestamps(a.recordedAt, b.recordedAt) || compareIds(a.id, b.id),
   );
 }
