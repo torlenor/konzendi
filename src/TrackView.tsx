@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { AdjustPanel } from "./AdjustPanel";
 import { type Actions, nameOf, subjectLabel, subjectMark } from "./actions";
-import { formatElapsed, formatStamp } from "./time";
+import { formatElapsedParts, formatStamp } from "./time";
 import { type Tracking, useNow } from "./useTracking";
 
 function NewTopic({
@@ -101,13 +101,19 @@ export function TrackView({
           <NewTopic disabled={busy} onCreate={actions.createAndTrack} />
         </section>
       ) : (
-        <section className="card">
+        // Remounting on a new interval replays the status bar, confirming the record.
+        <section className="card" key={current.eventId}>
           <p className="active">
             <span className="mark">{subjectMark(current.subject)}</span>
             <span className="subject">
               {subjectLabel(state.topics, current.subject)}
             </span>
-            <span className="elapsed">{formatElapsed(current.start, now)}</span>
+            <span className="elapsed">
+              {formatElapsedParts(current.start, now).hm}
+              <span className="secs">
+                :{formatElapsedParts(current.start, now).ss}
+              </span>
+            </span>
           </p>
           <p className="since">
             {paused ? "since" : "started"} {formatStamp(current.start, now)}

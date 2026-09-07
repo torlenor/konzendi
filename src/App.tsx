@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { trackingActions } from "./actions";
 import { EntriesView } from "./EntriesView";
 import { TopicsView } from "./TopicsView";
 import { TrackView } from "./TrackView";
+import { type Appearance, useAppearance } from "./theme";
 import { useTracking } from "./useTracking";
 import "./App.css";
 
@@ -15,9 +16,20 @@ function App() {
     [tracking.record],
   );
   const [view, setView] = useState<View>("track");
+  const { appearance, setAppearance } = useAppearance();
+  const appearanceId = useId();
+
+  // The running state colours the readout, so it is resolved once for the whole window.
+  const current = tracking.state.current;
+  const trackingState =
+    current === null
+      ? "idle"
+      : current.subject.type === "pause"
+        ? "paused"
+        : "running";
 
   return (
-    <main>
+    <main data-state={trackingState}>
       <header>
         {view === "track" ? (
           <h1>Konzendi</h1>
@@ -45,6 +57,22 @@ function App() {
           >
             Topics
           </button>
+          <label className="hidden" htmlFor={appearanceId}>
+            Appearance
+          </label>
+          <span className="appearance">
+            <select
+              id={appearanceId}
+              value={appearance}
+              onChange={(event) =>
+                setAppearance(event.target.value as Appearance)
+              }
+            >
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </span>
         </nav>
       </header>
 

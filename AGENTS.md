@@ -17,6 +17,7 @@ exists.
 - `docs/OPEN_QUESTIONS.md` — questions, decision status, outcomes, timing, and related phases.
 - `docs/phases/` — implementation plans and a reusable phase template.
 - `docs/brainstorming/` — discussion history and proposals, not approved specifications.
+- `.claude/skills/` — repeatable working procedures, such as driving the desktop window headlessly.
 - `src/` — React interface: the tracking window, the entry list, and topic maintenance.
 - `src/core/` — pure domain core: event types, merging, the event vocabulary, the fold, and their
   Vitest tests.

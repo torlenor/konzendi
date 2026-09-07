@@ -22,9 +22,16 @@ export function formatStamp(iso: string, now: number): string {
     : `${time.toLocaleDateString(undefined, { day: "numeric", month: "short" })} ${formatClock(iso)}`;
 }
 
-export function formatElapsed(iso: string, now: number): string {
+/** Hours and minutes read at a glance; seconds are shown smaller, so they are separate. */
+export function formatElapsedParts(
+  iso: string,
+  now: number,
+): { hm: string; ss: string } {
   const seconds = Math.max(0, Math.floor((now - Date.parse(iso)) / 1000));
-  return `${Math.floor(seconds / 3600)}:${pad(Math.floor(seconds / 60) % 60)}:${pad(seconds % 60)}`;
+  return {
+    hm: `${Math.floor(seconds / 3600)}:${pad(Math.floor(seconds / 60) % 60)}`,
+    ss: pad(seconds % 60),
+  };
 }
 
 export function shiftMinutes(iso: string, minutes: number): string {

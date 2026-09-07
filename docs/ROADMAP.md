@@ -42,20 +42,20 @@ Their checkboxes track individual work items only.
 | **3** | [Quick access](phases/phase-3-quick-access.md) | Global shortcut and tray entry points for logging without leaving the current application | 2 | Not started |
 | **4** | [Timeline and first analytics](phases/phase-4-timeline-analytics.md) | A timeline of topics and pauses, plus the smallest useful analytics | 2 | Not started |
 | **5** | [Validation trial](phases/phase-5-validation-trial.md) | A recorded answer to whether switches get logged and whether the result is useful | 3, 4 | Not started |
-| **6** | [Application theme](phases/phase-6-application-theme.md) | A deliberate visual theme for the application, expressed as a documented token set | 2 | Not started |
+| **6** | [Application theme](phases/phase-6-application-theme.md) | A deliberate visual theme for the application, expressed as a documented token set | 2 | Done |
 
 Phase 1 designed the tracking interaction and added no application code; Phase 2 resolved its own
 investigation gate and implemented that design against the acceptance checks Phase 1 wrote.
 Phases 3 to 5 remain placeholder documents: they record the intended slice, its dependencies, and
 what must be investigated, and their scope, work packages, and estimates are written when the
-phase before them has delivered. Phase 6 states its work packages, because the shape of a
-theming change does not depend on which direction is chosen, but the direction itself is
-undecided. All four are `Discovery required` and none may be implemented as it stands.
+phase before them has delivered. All three are `Discovery required` and none may be implemented
+as it stands. Phase 6 closed its own investigation gate, recorded the accepted visual direction,
+and delivered it.
 
 Phases 3, 4, and 6 depend only on Phase 2 and may run in parallel. Previous/next links provide
 reading order; explicit dependencies determine execution order.
 
-The visual direction ([Q12](OPEN_QUESTIONS.md)) is decided inside
+The visual direction ([Q12](OPEN_QUESTIONS.md)) was decided inside
 [Phase 6](phases/phase-6-application-theme.md). Scoring ([Q07](OPEN_QUESTIONS.md)),
 synchronization ([Q11](OPEN_QUESTIONS.md)), and the
 commercial questions ([Q09, Q10](OPEN_QUESTIONS.md)) have no phase. They are planned only if
@@ -68,6 +68,10 @@ Phase 1's deliverable is a document, and its checks are recorded in its
 [verification section](phases/phase-1-tracking-design.md#acceptance-and-verification). Phase 2's
 sixteen acceptance checks passed, with the automated results and the desktop walkthrough recorded
 in its [verification evidence](phases/phase-2-tracking-implementation.md#acceptance-and-verification).
-Together these establish a foundation, a recorded design, and a tracking loop that works on the
-development machine. Whether it is used, and whether the result is useful, is
-[Phase 5](phases/phase-5-validation-trial.md)'s question and is not established here.
+Phase 6's checks passed, including contrast measured on rendered output in both modes and an
+offline run of the standalone build, recorded in its
+[verification evidence](phases/phase-6-application-theme.md#acceptance-and-verification).
+Together these establish a foundation, a recorded design, a tracking loop that works on the
+development machine, and a theme the later phases inherit. Whether it is used, and whether the
+result is useful, is [Phase 5](phases/phase-5-validation-trial.md)'s question and is not
+established here.

@@ -1,82 +1,206 @@
+/*
+ * Konzendi theme — "Readout".
+ *
+ * The window is an instrument panel: horizontal bands in the order Phase 1 fixed, an
+ * elapsed reading that dominates the fold, and switch targets carrying the number key
+ * that actually triggers them. Colour is state, not decoration — live for a running
+ * interval, rest for a pause, alarm for a failure — so a glance from across the desk
+ * answers "am I still on this?" without reading a word.
+ *
+ * Every colour is a token. No literal colour appears below this block.
+ * Roles: ground, band, ink, ink-soft, ink-faint, edge, rule, live, rest, alarm,
+ * on-accent, focus, and state (the resolved colour of the current tracking state).
+ */
+
 :root {
-  font-family: system-ui, sans-serif;
-  color: #20332c;
-  background: #f4f6f2;
-  font-synthesis: none;
-  line-height: 1.5;
+  --ground: #dae1e3;
+  --band: #f1f4f5;
+  --ink: #12222a;
+  --ink-soft: #4a5c66;
+  --ink-faint: #51636d;
+  --edge: #6e7d84;
+  --rule: #a5b3b9;
+  --live: #0f4c81;
+  --rest: #7a5410;
+  --alarm: #9a2318;
+  --on-accent: #ffffff;
+  --focus: var(--ink);
+  color-scheme: light;
 }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0d151a;
+    --band: #152229;
+    --ink: #dbe5ea;
+    --ink-soft: #93a8b2;
+    --ink-faint: #7d939e;
+    --edge: #657883;
+    --rule: #2c3c45;
+    --live: #6fb2e8;
+    --rest: #d9a64e;
+    --alarm: #f0897c;
+    --on-accent: #08131c;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground: #0d151a;
+  --band: #152229;
+  --ink: #dbe5ea;
+  --ink-soft: #93a8b2;
+  --ink-faint: #7d939e;
+  --edge: #657883;
+  --rule: #2c3c45;
+  --live: #6fb2e8;
+  --rest: #d9a64e;
+  --alarm: #f0897c;
+  --on-accent: #08131c;
+  color-scheme: dark;
+}
+
+/* Type. Fira is vendored; the stack degrades to the desktop's own face. */
+:root {
+  --sans: "Fira Sans", system-ui, sans-serif;
+  --mono: "Fira Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+
+  font-family: var(--sans);
+  font-size: 100%;
+  font-synthesis: none;
+  color: var(--ink);
+  background: var(--ground);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
 body {
   margin: 0;
+  background: var(--ground);
+  font-size: 0.9375rem;
 }
+
+/* The tracking state resolves to one colour, read by the mark and the state bar. */
 main {
-  max-width: 720px;
+  --state: var(--rule);
+  max-width: 44rem;
   margin: 0 auto;
-  padding: 24px 28px 40px;
+  padding: 1.25rem 1.75rem 2.5rem;
 }
+main[data-state="running"] {
+  --state: var(--live);
+}
+main[data-state="paused"] {
+  --state: var(--rest);
+}
+
+/* ---- Header band ---- */
+
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 1.5rem;
 }
 h1 {
   margin: 0;
-  font-size: 1.4rem;
-  letter-spacing: 0.02em;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 h2 {
-  margin: 0 0 12px;
-  font-size: 1.1rem;
+  margin: 0 0 0.75rem;
+  font-size: 1.1875rem;
+  font-weight: 500;
 }
 nav {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 0.375rem;
 }
+
+/* ---- Controls. Radius means pressable; nothing else is rounded. ---- */
+
 button {
-  background: #245d48;
-  color: white;
-  border: 0;
-  border-radius: 6px;
-  padding: 10px 18px;
+  background: var(--live);
+  color: var(--on-accent);
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
   font: inherit;
+  font-weight: 500;
   cursor: pointer;
 }
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 3px solid #9d6429;
-  outline-offset: 2px;
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
 }
 button.quiet {
   background: transparent;
-  color: #3c5c50;
-  border: 1px solid #ccd8d0;
-  padding: 6px 12px;
+  color: var(--ink-soft);
+  border-color: var(--edge);
+  padding: 0.3125rem 0.75rem;
+  font-weight: 400;
+}
+button.quiet:hover:enabled {
+  color: var(--ink);
+  border-color: var(--ink);
 }
 button.link {
   background: transparent;
-  color: #3c5c50;
+  color: var(--ink-soft);
   border: 0;
-  padding: 0 0 0 10px;
+  border-radius: 0;
+  padding: 0 0 0 0.75rem;
+  font-weight: 400;
   text-decoration: underline;
+}
+button.link:hover:enabled {
+  color: var(--ink);
 }
 input,
 select {
   font: inherit;
-  padding: 9px 10px;
-  border: 1px solid #ccd8d0;
-  border-radius: 6px;
-  background: white;
-  color: inherit;
+  padding: 0.5rem 0.5625rem;
+  border: 1px solid var(--edge);
+  border-radius: 5px;
+  background: var(--band);
+  color: var(--ink);
   min-width: 0;
 }
 input {
   flex: 1;
+}
+/* The desktop draws its own select chrome, which does not match the quiet buttons. */
+.appearance {
+  position: relative;
+  display: inline-flex;
+}
+.appearance select {
+  appearance: none;
+  padding: 0.3125rem 1.5rem 0.3125rem 0.5rem;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+.appearance::after {
+  content: "\25be";
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+  pointer-events: none;
 }
 label.hidden {
   position: absolute;
@@ -86,93 +210,157 @@ label.hidden {
   clip-path: inset(50%);
 }
 
+/* ---- Readout band: the elapsed reading is the largest thing on screen ---- */
+
 .card {
-  background: white;
-  border: 1px solid #d5ded6;
-  border-radius: 10px;
-  padding: 20px 22px;
-  margin-bottom: 18px;
+  position: relative;
+  background: var(--band);
+  padding: 1.125rem 1.25rem 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+/* The status bar. Colour and a mark both carry state, so colour never carries it alone. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--state);
+  transform-origin: top;
 }
 .lead {
-  margin: 0;
-  color: #5d7168;
+  margin: 0 0 0.25rem;
+  color: var(--ink-soft);
 }
 .active {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 12px;
+  gap: 0 0.625rem;
   margin: 0;
 }
+.active .elapsed {
+  order: -1;
+  flex-basis: 100%;
+  font-size: clamp(2.5rem, 8.5vw, 3.75rem);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+/* Seconds are churn: readable, but never competing with the minute reading. */
+.active .secs {
+  font-size: 0.42em;
+  font-weight: 400;
+  color: var(--ink-soft);
+  letter-spacing: 0;
+}
 .active .subject {
-  font-size: 1.35rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 400;
   overflow-wrap: anywhere;
 }
-.active .elapsed {
-  margin-left: auto;
-  font-size: 2.6rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
 .mark {
-  color: #7d9084;
+  color: var(--ink-soft);
+}
+.active .mark {
+  color: var(--state);
 }
 .since {
-  margin: 4px 0 0;
-  color: #5d7168;
-  font-size: 0.9rem;
+  margin: 0.125rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
 }
 
+/* ---- Switch band: every row is the number key that fires it ---- */
+
+.picks {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+  margin-bottom: 1.25rem;
+}
 .picks ol {
   list-style: none;
-  margin: 0 0 12px;
+  margin: 0 0 0.75rem;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 button.pick {
   width: 100%;
   text-align: left;
-  background: white;
-  color: inherit;
-  border: 1px solid #d5ded6;
+  background: transparent;
+  color: var(--ink);
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5rem 0.25rem;
+  font-weight: 400;
   display: flex;
-  gap: 14px;
-}
-button.pick:hover:enabled {
-  border-color: #245d48;
+  align-items: center;
+  gap: 0.75rem;
 }
 .key {
-  display: inline-block;
-  min-width: 1.2em;
-  color: #7d9084;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
 }
+.picks .key:empty {
+  border-color: transparent;
+}
 
+button.pick:hover:enabled {
+  background: var(--band);
+}
+button.pick:hover:enabled .key {
+  color: var(--live);
+  border-color: var(--live);
+}
+
+/* ---- Footer bands ---- */
+
+.footer button:not(.quiet) {
+  background: transparent;
+  color: var(--state);
+  border-color: var(--state);
+}
+.footer button:not(.quiet):disabled {
+  color: var(--ink-soft);
+  border-color: var(--edge);
+}
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0;
-  border-top: 1px solid #dde5df;
-  color: #3c5c50;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: 0.875rem;
 }
+
+/* ---- Entry and topic lists ---- */
 
 .entries {
   list-style: none;
-  margin: 0 0 14px;
+  margin: 0 0 1rem;
   padding: 0;
 }
 .entry {
-  border-bottom: 1px solid #dde5df;
-  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.375rem 0;
 }
 .stamp {
+  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
   min-width: 6.5em;
-  color: #5d7168;
+  color: var(--ink-soft);
 }
 .entry .subject {
   flex: 1;
@@ -182,37 +370,62 @@ button.pick:hover:enabled {
 .revoked .subject,
 .revoked .mark {
   text-decoration: line-through;
-  color: #93a49a;
+  color: var(--ink-faint);
 }
 .faded .subject {
-  color: #93a49a;
+  color: var(--ink-faint);
 }
 .note {
-  color: #7d9084;
-  font-size: 0.85rem;
+  color: var(--ink-faint);
+  font-size: 0.8125rem;
 }
+/* In a log the entries are the content, so row actions stay quiet until they are wanted. */
+.entry .quiet {
+  border-color: transparent;
+  padding: 0.25rem 0.5rem;
+}
+.entry .quiet:hover:enabled,
+.entry .quiet:focus-visible {
+  border-color: var(--edge);
+}
+
+/* ---- Panels and messages ---- */
 
 .row {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
   align-items: center;
   flex-wrap: wrap;
 }
 .panel {
-  background: #eef2ec;
-  border: 1px solid #dde5df;
-  border-radius: 8px;
-  padding: 12px;
-  margin: 8px 0;
+  background: var(--band);
+  border: 1px solid var(--rule);
+  padding: 0.75rem;
+  margin: 0.5rem 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 [role="alert"] {
-  color: #9c2626;
-  background: #fdf1f1;
-  border: 1px solid #f0d5d5;
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin: 0 0 16px;
+  color: var(--alarm);
+  background: var(--band);
+  border-left: 3px solid var(--alarm);
+  padding: 0.625rem 0.75rem;
+  margin: 0 0 1rem;
+}
+
+/* ---- The one moment of motion: a new interval draws its own status bar ---- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .card::before {
+    animation: interval-opened 380ms ease-out;
+  }
+}
+@keyframes interval-opened {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
 }
