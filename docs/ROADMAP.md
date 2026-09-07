@@ -42,18 +42,22 @@ Their checkboxes track individual work items only.
 | **3** | [Quick access](phases/phase-3-quick-access.md) | Global shortcut and tray entry points for logging without leaving the current application | 2 | Not started |
 | **4** | [Timeline and first analytics](phases/phase-4-timeline-analytics.md) | A timeline of topics and pauses, plus the smallest useful analytics | 2 | Not started |
 | **5** | [Validation trial](phases/phase-5-validation-trial.md) | A recorded answer to whether switches get logged and whether the result is useful | 3, 4 | Not started |
+| **6** | [Application theme](phases/phase-6-application-theme.md) | A deliberate visual theme for the application, expressed as a documented token set | 2 | Not started |
 
 Phase 1 designed the tracking interaction and added no application code; Phase 2 resolved its own
 investigation gate and implemented that design against the acceptance checks Phase 1 wrote.
 Phases 3 to 5 remain placeholder documents: they record the intended slice, its dependencies, and
 what must be investigated, and their scope, work packages, and estimates are written when the
-phase before them has delivered. Every one of them is `Discovery required` and none may be
-implemented as it stands.
+phase before them has delivered. Phase 6 states its work packages, because the shape of a
+theming change does not depend on which direction is chosen, but the direction itself is
+undecided. All four are `Discovery required` and none may be implemented as it stands.
 
-Phases 3 and 4 depend only on Phase 2 and may run in parallel. Previous/next links provide
+Phases 3, 4, and 6 depend only on Phase 2 and may run in parallel. Previous/next links provide
 reading order; explicit dependencies determine execution order.
 
-Scoring ([Q07](OPEN_QUESTIONS.md)), synchronization ([Q11](OPEN_QUESTIONS.md)), and the
+The visual direction ([Q12](OPEN_QUESTIONS.md)) is decided inside
+[Phase 6](phases/phase-6-application-theme.md). Scoring ([Q07](OPEN_QUESTIONS.md)),
+synchronization ([Q11](OPEN_QUESTIONS.md)), and the
 commercial questions ([Q09, Q10](OPEN_QUESTIONS.md)) have no phase. They are planned only if
 Phase 5 shows the tracking habit holds.
 

@@ -1,6 +1,6 @@
 # Phase 5 — Validation trial
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 4](phase-4-timeline-analytics.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 4](phase-4-timeline-analytics.md) · next: [Phase 6](phase-6-application-theme.md)
 
 **Depends on:** [Phase 3](phase-3-quick-access.md), [Phase 4](phase-4-timeline-analytics.md)  
 **Effort:** M  

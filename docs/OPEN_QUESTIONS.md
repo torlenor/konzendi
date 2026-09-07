@@ -24,6 +24,7 @@ none has been assigned, and link to existing phase documents when applicable.
 | Q09 | Should the product be commercial, and what are the free/paid boundary, price, and update entitlement? | Before commercial implementation | One-time Pro purchase is a proposal. | Open | — | — |
 | Q10 | Which distribution and payment channels, device limits, and offline entitlement rules should apply? | Before release or licensing implementation | Direct licensing and an app store are alternatives, dependent on platform and Q09. | Open | — | — |
 | Q11 | Which synchronization mechanism should carry tracking data between devices: a user-owned folder replicated by external tooling, or hosted sync with accounts? | Before a multi-device synchronization phase is planned | Deliberately left open by Q04; the per-device append-only log supports either. The user works on separate private and work computers, so this is expected rather than hypothetical. | Open | — | — |
+| Q12 | What visual direction should the application theme take, which modes must it support, and what accessibility floor applies? | Before the theme is applied | The current styling is an undocumented default palette with literal values, no tokens, and no light/dark handling. | Open | — | [Phase 6](phases/phase-6-application-theme.md) |
 
 Only decisions needed by the next work should block it. Commercial decisions need not delay
 an initial tracking experiment unless the chosen scope depends on them.
