@@ -1,6 +1,6 @@
 # Phase 7 — Releases and CI/CD
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 6](phase-6-application-theme.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 6](phase-6-application-theme.md) · next: [Phase 8](phase-8-window-frame.md)
 
 **Depends on:** [Phase 2](phase-2-tracking-implementation.md)  
 **Effort:** M  
