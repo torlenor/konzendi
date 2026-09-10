@@ -64,5 +64,9 @@ export function subjectLabel(
   return subject.type === "pause" ? "Paused" : nameOf(topics, subject.topicId);
 }
 
+/** The two marks the interface uses for a subject, and the rule that picks one. */
+export const TOPIC_MARK = "▶";
+export const PAUSE_MARK = "❙❙";
+
 export const subjectMark = (subject: Subject) =>
-  subject.type === "pause" ? "❙❙" : "▶";
+  subject.type === "pause" ? PAUSE_MARK : TOPIC_MARK;

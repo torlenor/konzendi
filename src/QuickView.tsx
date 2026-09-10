@@ -1,0 +1,226 @@
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  type Actions,
+  PAUSE_MARK,
+  subjectLabel,
+  subjectMark,
+  TOPIC_MARK,
+  trackingActions,
+} from "./actions";
+import {
+  fitQuick,
+  hideQuick,
+  isQuickFocused,
+  onQuickFocusChanged,
+} from "./desktop";
+import { formatElapsedParts } from "./time";
+import { type Tracking, useNow, useTracking } from "./useTracking";
+import "./App.css";
+
+/**
+ * The quick switcher: the surface Phase 1 drew, one keystroke per row and no text entry.
+ * It offers switching, pause, and undo of the last entry, which is the whole of the
+ * quick-access side of Phase 1's surface boundary. It is a second window folding the
+ * same log, so it shows what the tracking window shows.
+ */
+
+const PAUSE_KEY = "p";
+const UNDO_KEY = "u";
+
+function Row({
+  hint,
+  label,
+  mark,
+  trailing,
+  disabled,
+  onPick,
+}: {
+  hint: string;
+  label: string;
+  mark?: string;
+  trailing?: string;
+  disabled: boolean;
+  onPick: () => void;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        className="pick"
+        disabled={disabled}
+        onClick={onPick}
+      >
+        <span className="key">{hint}</span>
+        <span className="label">{label}</span>
+        <span className="mark">{mark ?? ""}</span>
+        <span className="trailing">{trailing ?? ""}</span>
+      </button>
+    </li>
+  );
+}
+
+export function QuickView() {
+  const tracking = useTracking();
+  const actions = useMemo(
+    () => trackingActions(tracking.record),
+    [tracking.record],
+  );
+  return <QuickSurface tracking={tracking} actions={actions} />;
+}
+
+function QuickSurface({
+  tracking,
+  actions,
+}: {
+  tracking: Tracking;
+  actions: Actions;
+}) {
+  const { state, busy, error } = tracking;
+  const now = useNow();
+  const surface = useRef<HTMLDivElement>(null);
+  const current = state.current;
+  const pausing =
+    current !== null && current.subject.type === "pause" ? current : null;
+  const activeTopicId =
+    current !== null && current.subject.type === "topic"
+      ? current.subject.topicId
+      : null;
+
+  /**
+   * Every topic keeps its number, the active one included: the number is muscle memory
+   * and must not move because a topic happens to be running. Selecting the active topic
+   * is coalesced by the fold, so that row is harmless as well as stable.
+   */
+  const choices = useMemo(
+    () => state.topics.filter((topic) => !topic.archived).slice(0, 9),
+    [state.topics],
+  );
+
+  // Nothing counts as recorded until the store confirms it, so the surface closes on the
+  // confirmation and stays open, with the reason, when the append failed.
+  const run = useCallback(async (appending: Promise<boolean>) => {
+    if (await appending) await hideQuick();
+  }, []);
+
+  const pause = useCallback(() => {
+    if (!busy && current !== null && pausing === null)
+      void run(actions.pause());
+  }, [busy, current, pausing, run, actions]);
+
+  const undo = useCallback(() => {
+    if (!busy && current !== null) void run(actions.undo(current.eventId));
+  }, [busy, current, run, actions]);
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      if (event.key === "Escape") {
+        void hideQuick();
+        return;
+      }
+      const index = Number(event.key) - 1;
+      if (Number.isInteger(index) && index >= 0 && index < choices.length) {
+        event.preventDefault();
+        void run(actions.switchTo(choices[index].id));
+        return;
+      }
+      if (event.key === PAUSE_KEY) {
+        event.preventDefault();
+        pause();
+        return;
+      }
+      if (event.key === UNDO_KEY) {
+        event.preventDefault();
+        undo();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [choices, actions, run, pause, undo]);
+
+  // Losing focus dismisses the surface, so the working window keeps it no longer than
+  // the interaction takes however the interaction ends. The shortcut's own key grab
+  // reports a moment of lost focus as it fires, so focus is read again before acting:
+  // a real dismissal is still unfocused a moment later, a grab is not.
+  useEffect(() => {
+    const subscription = onQuickFocusChanged(async (focused) => {
+      if (focused) return;
+      await new Promise((resume) => setTimeout(resume, 200));
+      if (!(await isQuickFocused())) await hideQuick();
+    });
+    return () => {
+      void subscription.then((unlisten) => unlisten());
+    };
+  }, []);
+
+  // The surface is exactly as tall as its rows, so it is measured after every render
+  // and resized only when the measurement moved: the window must not chase its own
+  // resize, and the elapsed reading re-renders it every second.
+  const applied = useRef(0);
+  useEffect(() => {
+    const height = surface.current?.offsetHeight ?? 0;
+    if (height > 0 && height !== applied.current) {
+      applied.current = height;
+      void fitQuick(height);
+    }
+  });
+
+  const elapsed =
+    current === null ? null : formatElapsedParts(current.start, now).hm;
+
+  return (
+    <div className="quick" ref={surface}>
+      <ol>
+        {choices.map((topic, index) => (
+          <Row
+            key={topic.id}
+            hint={String(index + 1)}
+            label={topic.name}
+            disabled={busy}
+            mark={topic.id === activeTopicId ? TOPIC_MARK : ""}
+            trailing={
+              topic.id === activeTopicId && elapsed !== null ? elapsed : ""
+            }
+            onPick={() => void run(actions.switchTo(topic.id))}
+          />
+        ))}
+        {choices.length === 0 && (
+          <li className="empty">No topics yet. The window creates them.</li>
+        )}
+      </ol>
+
+      <ol className="commands">
+        {pausing !== null ? (
+          <li className="state">
+            <span className="gap" />
+            <span className="label">
+              {subjectMark(pausing.subject)}{" "}
+              {subjectLabel(state.topics, pausing.subject)}
+            </span>
+            <span className="mark" />
+            <span className="trailing">{elapsed}</span>
+          </li>
+        ) : (
+          <Row
+            hint={PAUSE_KEY}
+            label={`${PAUSE_MARK} Pause`}
+            disabled={busy || current === null}
+            onPick={pause}
+          />
+        )}
+        <Row
+          hint={UNDO_KEY}
+          label={
+            current === null
+              ? "Nothing to undo yet"
+              : `Undo last entry (${subjectLabel(state.topics, current.subject)})`
+          }
+          disabled={busy || current === null}
+          onPick={undo}
+        />
+      </ol>
+
+      {error !== null && <p role="alert">{error}</p>}
+    </div>
+  );
+}

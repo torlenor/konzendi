@@ -4,10 +4,10 @@ A project exploring a simple, robust tool for people working on a computer, espe
 developers and engineers, to understand context switching and reflect on their working habits.
 
 The current application tracks topics on Linux: name what you are working on, switch with one
-click or one key, pause, undo an entry, and correct a time. Every action is appended to a local
-JSONL event log, and the screen is a fold of that log. Analytics, scoring, synchronization, the
-global shortcut and tray, and the commercial model remain undecided. There are no accounts or
-backend services.
+click or one key, pause, undo an entry, and correct a time. A global shortcut and a tray icon do
+the same without leaving the application you are working in. Every action is appended to a local
+JSONL event log, and the screen is a fold of that log. Analytics, scoring, synchronization, and
+the commercial model remain undecided. There are no accounts or backend services.
 
 ## Local setup
 
@@ -44,6 +44,19 @@ entries and a way to insert a switch that was missed; **Topics** renames and arc
 Nothing is ever edited or deleted: an undo and a correction are new events that reference an
 earlier one. Close and reopen the application and the same state comes back, because it is read
 from the log.
+
+### Quick access
+
+Press **Ctrl+Alt+K** anywhere to open a small switcher over whatever you are working in: press a
+topic's number to switch, `p` to pause, `u` to undo the last entry, or Escape to close it. The
+window that had the keyboard gets it back. The combination is shown at the bottom of the
+tracking window, where **change** records a new one; if another application already holds it, or
+the session is not X11, the same line says so instead of pretending the shortcut works. The key
+grab is X11-only.
+
+The tray icon offers the same three actions with the pointer, plus reopening the window and
+quitting. Closing the tracking window leaves Konzendi running in the tray, because a global
+shortcut only exists while the application does; **Quit Konzendi** in the tray menu ends it.
 
 ## Checks
 
@@ -92,8 +105,9 @@ logs in this repository.
 
 ## Repository and planning
 
-- `src/` — React interface; `src/core/` — framework-independent event merging and tests.
-- `src-tauri/src/` — Rust storage and Tauri commands.
+- `src/` — React interface, both the tracking window and the quick switcher; `src/core/` —
+  framework-independent event merging and tests.
+- `src-tauri/src/` — Rust storage, Tauri commands, and the X11 requests quick access needs.
 - `docs/` — roadmap, decisions, phase plans, and discussion history.
 
 Start with the [roadmap](docs/ROADMAP.md), then the [open questions](docs/OPEN_QUESTIONS.md).

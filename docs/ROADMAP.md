@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last updated:** 7 September 2026
+**Last updated:** 10 September 2026
 
 ## Vision
 
@@ -19,7 +19,7 @@ Their checkboxes track individual work items only.
 | **0** | [Repository setup](phases/phase-0-repo-setup.md) | Consistent working rules, documentation, and the local-first Tauri foundation with a verified event round-trip | None | Done |
 | **1** | [Tracking experience design](phases/phase-1-tracking-design.md) | A specification of the tracking interaction: model, event vocabulary, undo and correction rules, screen design | 0 | Done |
 | **2** | [Topic tracking implementation](phases/phase-2-tracking-implementation.md) | The tracking loop: topics, switching, pauses, undo, and correction, persisted as events | 0, 1 | Done |
-| **3** | [Quick access](phases/phase-3-quick-access.md) | Global shortcut and tray entry points for logging without leaving the current application | 2 | Not started |
+| **3** | [Quick access](phases/phase-3-quick-access.md) | Global shortcut and tray entry points for logging without leaving the current application | 2 | Done |
 | **4** | [Timeline and first analytics](phases/phase-4-timeline-analytics.md) | A timeline of topics and pauses, plus the smallest useful analytics | 2 | Not started |
 | **5** | [Validation trial](phases/phase-5-validation-trial.md) | A recorded answer to whether switches get logged and whether the result is useful | 3, 4 | Not started |
 | **6** | [Application theme](phases/phase-6-application-theme.md) | A deliberate visual theme for the application, expressed as a documented token set | 2 | Done |

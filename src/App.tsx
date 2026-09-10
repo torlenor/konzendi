@@ -1,10 +1,13 @@
 import { useId, useMemo, useState } from "react";
 import { trackingActions } from "./actions";
 import { EntriesView } from "./EntriesView";
+import { QuickAccessBand } from "./QuickAccessBand";
 import { TopicsView } from "./TopicsView";
 import { TrackView } from "./TrackView";
 import { type Appearance, useAppearance } from "./theme";
+import { useQuickAccess } from "./useQuickAccess";
 import { useTracking } from "./useTracking";
+import { useTray } from "./useTray";
 import "./App.css";
 
 type View = "track" | "entries" | "topics";
@@ -16,6 +19,9 @@ function App() {
     [tracking.record],
   );
   const [view, setView] = useState<View>("track");
+  // Quick access belongs to this window because its webview outlives every other one.
+  const quick = useQuickAccess();
+  useTray(tracking, actions);
   const { appearance, setAppearance } = useAppearance();
   const appearanceId = useId();
 
@@ -96,7 +102,10 @@ function App() {
       ) : view === "topics" ? (
         <TopicsView tracking={tracking} actions={actions} />
       ) : (
-        <TrackView tracking={tracking} actions={actions} />
+        <>
+          <TrackView tracking={tracking} actions={actions} />
+          <QuickAccessBand quick={quick} />
+        </>
       )}
     </main>
   );

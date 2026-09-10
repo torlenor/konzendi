@@ -18,7 +18,8 @@ exists.
 - `docs/phases/` — implementation plans and a reusable phase template.
 - `docs/brainstorming/` — discussion history and proposals, not approved specifications.
 - `.claude/skills/` — repeatable working procedures, such as driving the desktop window headlessly.
-- `src/` — React interface: the tracking window, the entry list, and topic maintenance.
+- `src/` — React interface: the tracking window, the entry list, topic maintenance, and the
+  quick switcher opened by the global shortcut.
 - `src/core/` — pure domain core: event types, merging, the event vocabulary, the fold, and their
   Vitest tests.
 - `src-tauri/` — Rust event store, IPC commands, and desktop configuration.

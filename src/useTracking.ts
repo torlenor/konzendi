@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { EventRecord } from "./core/events";
+import { type EventRecord, mergeEvents } from "./core/events";
 import { foldLog, type TrackingState } from "./core/fold";
 import type { EventDraft, EventKind } from "./core/tracking";
-import { appendEvent, readLog } from "./store";
+import { appendEvent, onEventAppended, readLog } from "./store";
 
 const naming: Record<EventKind, string> = {
   "topic.created": "the new topic",
@@ -30,6 +30,10 @@ export interface Tracking {
  * action appends. The store returns the record it wrote, so an append advances the log
  * in memory; it is read from disk at startup and again after a failure, because a
  * failed call may still have been written.
+ *
+ * Each window holds its own copy, so the store's broadcast advances the copy belonging
+ * to the window that did not write. Merging deduplicates by event id, which makes the
+ * writer's own broadcast harmless.
  */
 export function useTracking(): Tracking {
   const [log, setLog] = useState<EventRecord[]>([]);
@@ -40,11 +44,20 @@ export function useTracking(): Tracking {
 
   useEffect(() => {
     readLog()
-      .then(setLog)
+      .then((records) => setLog((current) => mergeEvents(current, records)))
       .catch((failure: unknown) =>
         setError(`Could not read the stored log: ${String(failure)}.`),
       )
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const subscription = onEventAppended((event) =>
+      setLog((current) => mergeEvents(current, [event])),
+    );
+    return () => {
+      void subscription.then((unlisten) => unlisten());
+    };
   }, []);
 
   const record = useCallback(async (...drafts: EventDraft[]) => {
@@ -52,7 +65,7 @@ export function useTracking(): Tracking {
     const written: EventRecord[] = [];
     try {
       for (const draft of drafts) written.push(await appendEvent(draft));
-      setLog((current) => [...current, ...written]);
+      setLog((current) => mergeEvents(current, written));
       // A recorded action clears a message about an earlier one that was not.
       setError(null);
       return true;
