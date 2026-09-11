@@ -1,6 +1,6 @@
 # Phase 8 — Application window frame
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 7](phase-7-releases-ci-cd.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 7](phase-7-releases-ci-cd.md) · next: [Phase 9](phase-9-quick-access-open-window.md)
 
 **Depends on:** [Phase 3](phase-3-quick-access.md), [Phase 6](phase-6-application-theme.md)  
 **Effort:** M  

@@ -58,6 +58,8 @@ relying on them for implementation.
 Keep dependency declarations consistent between the table and phase header. Item checkboxes
 may track work inside a phase, but must not duplicate its overall status.
 
+There is no need to always define a question a phase must answer.
+
 ## Phase readiness
 
 Every phase declares exactly one readiness value:
