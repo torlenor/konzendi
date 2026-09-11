@@ -1,6 +1,6 @@
 # Phase 9 — Quick access: open window
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 8](phase-8-window-frame.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 8](phase-8-window-frame.md) · next: [Phase 10](phase-10-encrypted-sync.md)
 
 **Depends on:** [Phase 3](phase-3-quick-access.md)  
 **Effort:** L  
