@@ -1,6 +1,6 @@
 # Phase 10 — Server-supported encrypted sync
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 9](phase-9-quick-access-open-window.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 9](phase-9-quick-access-open-window.md) · next: [Phase 11](phase-11-windows-macos.md)
 
 **Depends on:** [Phase 2](phase-2-tracking-implementation.md)  
 **Effort:** H  

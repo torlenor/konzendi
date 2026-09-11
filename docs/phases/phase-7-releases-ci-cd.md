@@ -16,6 +16,10 @@ scripts, followed by a pushed Git tag triggering checks, packaging, and draft cr
 supersedes the earlier workflow-driven version updates and tagging. These decisions resolve
 [Q13–Q15](../OPEN_QUESTIONS.md); technical contracts and verification limits are below.
 
+On 11 September 2026, the owner decided that Windows and macOS trial support should be
+investigated only after this release pipeline is implemented. That work is deferred to
+[Phase 11](phase-11-windows-macos.md) and does not expand this phase's Linux release contract.
+
 The hosted workflow run and full package acceptance remain implementation checks. Discovery
 does not require publishing workflows merely to verify hosting. The local build probe informs
 the plan but does not establish hosted CI or supported-platform acceptance.
@@ -29,9 +33,10 @@ CD builds and delivers desktop packages according to the publication policy deci
 Includes dependency/toolchain pinning, workflow permissions, version consistency, a changelog,
 packaging, artifact integrity, release verification, and maintainer documentation.
 
-Out of scope: Windows/macOS support, app stores, payments or entitlement, backend deployment,
-automatic in-app updates, synchronization, and new tracking features. The application remains
-offline-only. This phase does not require the trial to finish and does not claim validation.
+Out of scope: Windows/macOS support (deferred to [Phase 11](phase-11-windows-macos.md)), app
+stores, payments or entitlement, backend deployment, automatic in-app updates, synchronization,
+and new tracking features. The application remains offline-only. This phase does not require the
+trial to finish and does not claim validation.
 
 ## Decisions and evidence
 

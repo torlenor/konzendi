@@ -27,5 +27,10 @@ Their checkboxes track individual work items only.
 | **8** | [Application window frame](phases/phase-8-window-frame.md) | The application's own title bar and window edge, absorbing the header and carrying the window commands, with a fallback to the desktop's decorations | 3, 6 | Not started |
 | **9** | [Quick access: open window](phases/phase-9-quick-access-open-window.md) | A `K` command in the quick switcher that opens the Konzendi tracking window | 3 | Not started |
 | **10** | [Server-supported encrypted sync](phases/phase-10-encrypted-sync.md) | Opt-in, local-first multi-device sync in which the service stores opaque client-encrypted tracking data | 2 | Not started |
+| **11** | [Windows and macOS trial support](phases/phase-11-windows-macos.md) | Verified private trial builds for the selected Windows and macOS targets, without weakening Linux support | 7 | Not started |
 
 A phase becomes `Done` only when its acceptance criteria are verified.
+
+Phase 11 follows the release-pipeline work in Phase 7 but does not depend on Phases 8–10. It may
+proceed independently of them; its position in the table is navigation order, not an additional
+dependency.
