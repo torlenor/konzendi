@@ -31,10 +31,3 @@ Their checkboxes track individual work items only.
 | **12** | [Logo design](phases/phase-12-logo-design.md) | A documented, accessible Konzendi logo system with a tray-sized mark and a README-ready version | 6 | Not started |
 
 A phase becomes `Done` only when its acceptance criteria are verified.
-
-Phase 11 follows the release-pipeline work in Phase 7 but does not depend on Phases 8–10. It may
-proceed independently of them; its position in the table is navigation order, not an additional
-dependency.
-
-Phase 12 follows the established application theme in Phase 6, but may proceed independently of
-Phases 7–11. Its position after Phase 11 is navigation order, not an additional dependency.

@@ -1,7 +1,6 @@
 # Working in Konzendi
 
-Use concise, clean, understandable language. Read this file and the relevant documentation
-before making changes. Keep work within the requested scope and preserve unrelated edits.
+Use concise, clean, understandable language. Use ASD-STE100. Read this file and the relevant documentation before making changes. Keep work within the requested scope and preserve unrelated edits.
 
 ## Repository layout
 
