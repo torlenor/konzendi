@@ -1,0 +1,122 @@
+# Builds a pushed vMAJOR.MINOR.PATCH tag into a private draft release. It never commits,
+# tags, pushes, or publishes: the maintainer reviews the draft and clicks Publish.
+# See docs/RELEASING.md.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+concurrency:
+  # One run per tag at a time, and a release in progress is never cancelled.
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "24.16.0"
+  OWNER: torlenor
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
+      commit: ${{ steps.validate.outputs.commit }}
+    steps:
+      - name: Refuse untrusted actors and deleted tags
+        env:
+          ACTOR: ${{ github.actor }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          DELETED: ${{ github.event.deleted }}
+        run: |
+          if [ "$ACTOR" != "$OWNER" ] || [ "$TRIGGERING_ACTOR" != "$OWNER" ]; then
+            echo "::error::Only $OWNER may release (pushed by $ACTOR, started by $TRIGGERING_ACTOR)."
+            exit 1
+          fi
+          if [ "$DELETED" = "true" ]; then
+            echo "::error::The tag was deleted; nothing to release."
+            exit 1
+          fi
+
+      - name: Check out the tagged commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate tag, commit, and earlier releases
+        id: validate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/release-ci.mjs validate
+
+      - name: Versions and changelog match the tag
+        env:
+          VERSION: ${{ steps.validate.outputs.version }}
+        run: node scripts/release.mjs check "$VERSION"
+
+  checks:
+    name: checks
+    needs: validate
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.validate.outputs.commit }}
+      tag: v${{ needs.validate.outputs.version }}
+      artifact-name: release-assets
+      retention-days: 30
+
+  draft:
+    name: draft release
+    needs: [validate, checks]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Refuse untrusted actors
+        env:
+          ACTOR: ${{ github.actor }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+        run: |
+          if [ "$ACTOR" != "$OWNER" ] || [ "$TRIGGERING_ACTOR" != "$OWNER" ]; then
+            echo "::error::Only $OWNER may release (pushed by $ACTOR, started by $TRIGGERING_ACTOR)."
+            exit 1
+          fi
+
+      - name: Check out the tagged commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.validate.outputs.commit }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download the checked package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-assets
+          path: release-assets
+
+      - name: Create or complete the draft release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TAG: v${{ needs.validate.outputs.version }}
+          COMMIT: ${{ needs.validate.outputs.commit }}
+          RELEASE_FAULT: ${{ vars.RELEASE_FAULT }}
+        run: node scripts/release-ci.mjs publish --dir release-assets --tag "$TAG" --commit "$COMMIT"

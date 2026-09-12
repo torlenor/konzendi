@@ -1,0 +1,293 @@
+# Quality checks for pull requests and main. The release workflow calls the same jobs for
+# the tagged commit. See docs/RELEASING.md.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+    inputs:
+      ref:
+        description: Exact commit to check out and check.
+        type: string
+        required: true
+      tag:
+        description: Release tag being checked, recorded in the release manifest.
+        type: string
+        required: true
+      artifact-name:
+        description: Name of the uploaded package artifact.
+        type: string
+        default: package
+      retention-days:
+        description: Days to keep the uploaded package artifact.
+        type: number
+        default: 7
+
+permissions:
+  contents: read
+
+concurrency:
+  # Superseded pull request runs are cancelled; runs for main and releases never are.
+  group: ci-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('{0}-{1}', github.ref, github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: "24.16.0"
+  NPM_VERSION: "11.13.0"
+  RUST_VERSION: "1.98.0"
+  CARGO_ABOUT_VERSION: "0.9.2"
+  CARGO_ABOUT_SHA256: "9099a59e820c38a68b9d65f300662a567d56562f9a10f6aa4c7e86c17c2566af"
+  # Native build prerequisites from README.md; their versions go into the release manifest.
+  NATIVE_PACKAGES: >-
+    build-essential pkg-config libwebkit2gtk-4.1-dev libssl-dev librsvg2-dev
+    libayatana-appindicator3-dev patchelf
+  # Only trusted pushes to main write caches; pull requests and releases only restore.
+  SAVE_CACHE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+  CARGO_TERM_COLOR: always
+
+jobs:
+  frontend:
+    name: frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Pin npm
+        run: |
+          if [ "$(npm --version)" != "$NPM_VERSION" ]; then npm install --global "npm@$NPM_VERSION"; fi
+          node --version
+          npm --version
+
+      - name: Restore npm cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ env.NPM_VERSION }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Version files agree
+        run: node scripts/release.mjs versions
+
+      - name: Release script tests
+        run: npm run test:scripts
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Save npm cache
+        if: env.SAVE_CACHE == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ env.NPM_VERSION }}-${{ hashFiles('package-lock.json') }}
+
+  rust:
+    name: rust
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          # shellcheck disable=SC2086 # the package list is split into words on purpose
+          sudo apt-get install --yes --no-install-recommends $NATIVE_PACKAGES
+
+      - name: Set up Rust
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal --component rustfmt,clippy
+          rustup default "$RUST_VERSION"
+          rustc --version
+          cargo --version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Pin npm
+        run: if [ "$(npm --version)" != "$NPM_VERSION" ]; then npm install --global "npm@$NPM_VERSION"; fi
+
+      - name: Restore caches
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.npm
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            src-tauri/target
+          key: rust-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('src-tauri/Cargo.lock', 'package-lock.json') }}
+          restore-keys: rust-${{ runner.os }}-${{ env.RUST_VERSION }}-
+
+      # Tauri embeds the built frontend at compile time.
+      - name: Build frontend
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run build
+
+      - name: cargo fmt
+        working-directory: src-tauri
+        run: cargo fmt --check
+
+      - name: cargo clippy
+        working-directory: src-tauri
+        run: cargo clippy --locked -- -D warnings
+
+      - name: cargo test
+        working-directory: src-tauri
+        run: cargo test --locked
+
+      - name: Save caches
+        if: env.SAVE_CACHE == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.npm
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            src-tauri/target
+          key: rust-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('src-tauri/Cargo.lock', 'package-lock.json') }}
+
+  package-smoke:
+    name: package-smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          # shellcheck disable=SC2086 # the package list is split into words on purpose
+          sudo apt-get install --yes --no-install-recommends $NATIVE_PACKAGES
+
+      - name: Set up Rust
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal
+          rustup default "$RUST_VERSION"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Pin npm
+        run: if [ "$(npm --version)" != "$NPM_VERSION" ]; then npm install --global "npm@$NPM_VERSION"; fi
+
+      - name: Restore caches
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.npm
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            src-tauri/target
+          key: package-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('src-tauri/Cargo.lock', 'package-lock.json') }}
+          restore-keys: package-${{ runner.os }}-${{ env.RUST_VERSION }}-
+
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          cd src-tauri && cargo fetch --locked
+
+      - name: Install cargo-about
+        run: |
+          archive="cargo-about-$CARGO_ABOUT_VERSION-x86_64-unknown-linux-musl"
+          curl --fail --silent --show-error --location --output "$RUNNER_TEMP/$archive.tar.gz" \
+            "https://github.com/EmbarkStudios/cargo-about/releases/download/$CARGO_ABOUT_VERSION/$archive.tar.gz"
+          echo "$CARGO_ABOUT_SHA256  $RUNNER_TEMP/$archive.tar.gz" | sha256sum --check
+          tar --extract --gzip --file "$RUNNER_TEMP/$archive.tar.gz" --directory "$RUNNER_TEMP"
+          echo "CARGO_ABOUT=$RUNNER_TEMP/$archive/cargo-about" >> "$GITHUB_ENV"
+
+      - name: Third-party notices are current
+        run: npm run notices -- --check
+
+      - name: Injected build failure (release rehearsal only)
+        if: startsWith(github.ref, 'refs/tags/v') && vars.RELEASE_FAULT == 'build'
+        run: |
+          echo "::error::RELEASE_FAULT=build is set; failing the package build on purpose."
+          exit 1
+
+      - name: Build Debian package
+        run: npm run tauri build -- --ci --bundles deb -- --locked
+
+      - name: Collect package assets
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          version="$(node scripts/release.mjs versions)"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          node scripts/release-ci.mjs assets \
+            --deb "src-tauri/target/release/bundle/deb/Konzendi_${version}_amd64.deb" \
+            --version "$version" --commit "$(git rev-parse HEAD)" --tag "$TAG" --out release-assets
+          (cd release-assets && sha256sum --check SHA256SUMS)
+
+      - name: Install and exercise the package offline
+        run: EXPECTED_VERSION="$VERSION" scripts/package-smoke.sh "release-assets/konzendi_${VERSION}_amd64.deb" smoke-output
+
+      - name: Keep smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: smoke-evidence
+          path: smoke-output
+          retention-days: 7
+          if-no-files-found: ignore
+          overwrite: true
+
+      - name: Upload checked package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.artifact-name || 'package' }}
+          path: release-assets
+          retention-days: ${{ inputs.retention-days || 7 }}
+          if-no-files-found: error
+          # A re-run of all jobs rebuilds the same commit and replaces the handoff.
+          overwrite: true
+
+      - name: Save caches
+        if: env.SAVE_CACHE == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.npm
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            src-tauri/target
+          key: package-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('src-tauri/Cargo.lock', 'package-lock.json') }}
