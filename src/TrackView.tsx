@@ -1,6 +1,12 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { AdjustPanel } from "./AdjustPanel";
-import { type Actions, nameOf, subjectLabel, subjectMark } from "./actions";
+import {
+  type Actions,
+  nameOf,
+  subjectLabel,
+  subjectMark,
+  TOPIC_MARK,
+} from "./actions";
 import { formatElapsedParts, formatStamp } from "./time";
 import { type Tracking, useNow } from "./useTracking";
 
@@ -52,28 +58,29 @@ export function TrackView({
   const [adjusting, setAdjusting] = useState(false);
   const [naming, setNaming] = useState(false);
   const current = state.current;
-  const paused = current?.subject.type === "pause";
+  const stopped = current?.subject.type === "pause";
 
-  // The topic to resume is the last one tracked before the running pause.
+  // The topic to resume is the last one tracked before tracking was stopped.
   const resumeTopicId = useMemo(() => {
-    if (!paused) return null;
+    if (!stopped) return null;
     for (const interval of [...state.timeline].reverse()) {
       if (interval.subject.type === "topic") return interval.subject.topicId;
     }
     return null;
-  }, [paused, state.timeline]);
+  }, [stopped, state.timeline]);
 
   const activeTopicId =
     current?.subject.type === "topic" ? current.subject.topicId : null;
+  /**
+   * Every topic keeps its number, the running one and the one offered for resume
+   * included, exactly as the quick switcher lists them: the number is muscle memory and
+   * must not move because a topic happens to be running or because tracking stopped.
+   * The running row is marked and selecting it is coalesced by the fold, so it is
+   * harmless as well as stable.
+   */
   const choices = useMemo(
-    () =>
-      state.topics.filter(
-        (topic) =>
-          !topic.archived &&
-          topic.id !== activeTopicId &&
-          topic.id !== resumeTopicId,
-      ),
-    [state.topics, activeTopicId, resumeTopicId],
+    () => state.topics.filter((topic) => !topic.archived),
+    [state.topics],
   );
 
   // A switch is one key in the focused window; the same numbers Phase 3 will reuse.
@@ -116,7 +123,7 @@ export function TrackView({
             </span>
           </p>
           <p className="since">
-            {paused ? "since" : "started"} {formatStamp(current.start, now)}
+            {stopped ? "since" : "started"} {formatStamp(current.start, now)}
             <button
               type="button"
               className="link"
@@ -147,10 +154,19 @@ export function TrackView({
                 type="button"
                 className="pick"
                 disabled={busy}
+                aria-current={topic.id === activeTopicId || undefined}
                 onClick={() => void actions.switchTo(topic.id)}
               >
                 <span className="key">{index < 9 ? index + 1 : ""}</span>
-                {topic.name}
+                <span className="label">{topic.name}</span>
+                {/* The running row says so with the mark and the word, never by
+                    position alone, because it no longer leaves the list. */}
+                {topic.id === activeTopicId && (
+                  <span className="mark">
+                    {TOPIC_MARK}
+                    <span className="hidden"> running</span>
+                  </span>
+                )}
               </button>
             </li>
           ))}
@@ -193,7 +209,7 @@ export function TrackView({
       )}
 
       <section className="footer">
-        {paused && resumeTopicId !== null ? (
+        {stopped && resumeTopicId !== null ? (
           <button
             type="button"
             disabled={busy}
@@ -202,13 +218,13 @@ export function TrackView({
             ▶ Resume {nameOf(state.topics, resumeTopicId)}
           </button>
         ) : (
-          !paused && (
+          !stopped && (
             <button
               type="button"
               disabled={busy || current === null}
-              onClick={() => void actions.pause()}
+              onClick={() => void actions.stop()}
             >
-              ❙❙ Pause
+              ■ Stop
             </button>
           )
         )}

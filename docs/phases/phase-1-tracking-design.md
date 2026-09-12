@@ -88,6 +88,11 @@ it; see [Missed entries](#missed-entries).
 A pause spans whatever it spans, including overnight. Presenting long or overnight pauses is an
 analytics concern and belongs to [Phase 4](phase-4-timeline-analytics.md), not to this model.
 
+> **Naming, since [Phase 13](phase-13-stop-replaces-pause.md).** What this document calls a pause
+> is called Stop on every surface a user reads, because the decision above — that there is no
+> separate stop action — made the word Pause misleading. The model, the state, and the stored kind
+> `focus.paused` are unchanged, and stopped time is not measured by the analytics.
+
 The user actions are: select a topic, pause, create a topic, rename a topic, archive or restore
 a topic, undo an entry, and adjust an entry's time. Each maps to exactly one event kind.
 
@@ -292,6 +297,10 @@ topic row, or its number key.
 
 **Paused.** The last topic is offered as a single resume action, which is an ordinary
 `focus.started` and needs no new event kind.
+
+> **Since [Phase 15](phase-15-stable-topic-numbering.md).** The wireframes below leave the running
+> topic, and the topic offered for resume, out of the numbered list. Both now stay in it, so a
+> number never moves; the running row is marked instead of removed.
 
 ```
 +------------------------------------------+

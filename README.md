@@ -4,10 +4,11 @@ A project exploring a simple, robust tool for people working on a computer, espe
 developers and engineers, to understand context switching and reflect on their working habits.
 
 The current application tracks topics on Linux: name what you are working on, switch with one
-click or one key, pause, undo an entry, and correct a time. A global shortcut and a tray icon do
-the same without leaving the application you are working in. Every action is appended to a local
-JSONL event log, and the screen is a fold of that log. Analytics, scoring, synchronization, and
-the commercial model remain undecided. There are no accounts or backend services.
+click or one key, stop, undo an entry, and correct a time. A global shortcut and a tray icon do
+the same without leaving the application you are working in. A day view draws the result as a
+timeline with a few plain sums. Every action is appended to a local JSONL event log, and the
+screen is a fold of that log. Scoring, synchronization, and the commercial model remain
+undecided. There are no accounts or backend services.
 
 ## Local setup
 
@@ -37,9 +38,15 @@ the Tauri desktop shell.
 
 On first run the window asks what you are working on. Name a topic and start: the elapsed time
 becomes the largest thing on screen. Switching to another topic ends the running interval and
-starts the next in one action, **Pause** is a state of its own, **Undo** takes back the last
-entry, and **adjust** back-dates one. **Entries** lists everything recorded, including revoked
+starts the next in one action, **Stop** is the one way to have nothing tracked, **Undo** takes
+back the last entry, and **adjust** back-dates one. **Analytics** draws one day as a lane per
+topic, with the time recorded on each, the number of switches, and the longest uninterrupted
+stretch; a stretch that nothing ended is marked, not trimmed, and time when tracking was stopped
+is a gap rather than a measurement. **Entries** lists everything recorded, including revoked
 entries and a way to insert a switch that was missed; **Topics** renames and archives.
+
+The analytics view reads the log and writes nothing. Its sums say what was logged; they are not a
+measure of work.
 
 Nothing is ever edited or deleted: an undo and a correction are new events that reference an
 earlier one. Close and reopen the application and the same state comes back, because it is read
@@ -48,7 +55,7 @@ from the log.
 ### Quick access
 
 Press **Ctrl+Alt+K** anywhere to open a small switcher over whatever you are working in: press a
-topic's number to switch, `p` to pause, `u` to undo the last entry, or Escape to close it. The
+topic's number to switch, `s` to stop, `u` to undo the last entry, or Escape to close it. The
 window that had the keyboard gets it back. The combination is shown at the bottom of the
 tracking window, where **change** records a new one; if another application already holds it, or
 the session is not X11, the same line says so instead of pretending the shortcut works. The key

@@ -96,7 +96,8 @@ Three ideas carry the direction:
   a failure. Each block carries a 3px bar on its left edge in the state colour, and the same
   colour outlines the Pause or Resume action, so the window answers "am I still on this?" from
   across the desk. State is never carried by colour alone: the ▶ and ❙❙ marks and the wording
-  carry it too.
+  carry it too. ([Phase 13](phase-13-stop-replaces-pause.md) replaced `❙❙` with `■` when Pause
+  became Stop; the rule and every token are unchanged.)
 - **The switch targets show the key that fires them.** Each row carries its digit in a bordered
   cap, because a number key in the focused window is the actual interaction. The numbering is not
   ornament: it is the shortcut.

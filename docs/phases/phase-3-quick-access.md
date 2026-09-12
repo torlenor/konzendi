@@ -186,6 +186,11 @@ reports the failure, and re-reads the log — on whichever surface the action wa
   walkthrough in [Acceptance and verification](#acceptance-and-verification). Complete when each
   row has an actual result recorded.
 
+> **Since [Phase 13](phase-13-stop-replaces-pause.md).** The quick switcher and the tray offer
+> `■ Stop` where the evidence below reads `❙❙ Pause`, and the keystroke is `s`, not `p`. The
+> action and the event it appends are unchanged. The results below are left as the record of what
+> was verified in this phase.
+
 ## Acceptance and verification
 
 Phase 1 required that this phase's checks include one performed with another application

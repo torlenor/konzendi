@@ -5,7 +5,7 @@ import type { Subject } from "./core/fold";
 import { formatLocalInput, formatStamp, nowIso, parseLocalInput } from "./time";
 import { type Tracking, useNow } from "./useTracking";
 
-const PAUSE = "pause";
+const STOP = "stop";
 
 function MissedSwitch({
   tracking,
@@ -16,7 +16,7 @@ function MissedSwitch({
   actions: Actions;
   onClose: () => void;
 }) {
-  const [choice, setChoice] = useState(PAUSE);
+  const [choice, setChoice] = useState(STOP);
   const [text, setText] = useState(() => formatLocalInput(nowIso()));
   const [invalid, setInvalid] = useState(false);
   const subjectId = useId();
@@ -31,7 +31,7 @@ function MissedSwitch({
         setInvalid(effectiveAt === null);
         if (effectiveAt === null) return;
         const subject: Subject =
-          choice === PAUSE
+          choice === STOP
             ? { type: "pause" }
             : { type: "topic", topicId: choice };
         onClose();
@@ -45,7 +45,7 @@ function MissedSwitch({
           value={choice}
           onChange={(event) => setChoice(event.target.value)}
         >
-          <option value={PAUSE}>A pause</option>
+          <option value={STOP}>A stop</option>
           {tracking.state.topics
             .filter((topic) => !topic.archived)
             .map((topic) => (

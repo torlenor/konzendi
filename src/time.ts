@@ -60,3 +60,54 @@ export function parseLocalInput(text: string): string | null {
     time.getMinutes() !== minute;
   return Number.isNaN(time.getTime()) || rolledOver ? null : time.toISOString();
 }
+
+/** The instants the local day holding `iso` begins and ends. */
+export function localDay(iso: string): { start: string; end: string } {
+  const time = new Date(iso);
+  const start = new Date(time.getFullYear(), time.getMonth(), time.getDate());
+  // Built from calendar parts, so a day that gains or loses an hour keeps its own length.
+  const end = new Date(time.getFullYear(), time.getMonth(), time.getDate() + 1);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
+/** The same clock position, `days` local days away. */
+export function shiftLocalDays(iso: string, days: number): string {
+  const time = new Date(iso);
+  return new Date(
+    time.getFullYear(),
+    time.getMonth(),
+    time.getDate() + days,
+    time.getHours(),
+    time.getMinutes(),
+  ).toISOString();
+}
+
+export function isSameLocalDay(iso: string, other: number | string): boolean {
+  const a = new Date(iso);
+  const b = new Date(other);
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/** The day a heading names: today and yesterday by name, others by date. */
+export function formatDay(iso: string, now: number): string {
+  const date = new Date(iso).toLocaleDateString(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+  if (isSameLocalDay(iso, now)) return `Today · ${date}`;
+  const yesterday = shiftLocalDays(new Date(now).toISOString(), -1);
+  return isSameLocalDay(iso, yesterday) ? `Yesterday · ${date}` : date;
+}
+
+/** A length of time: seconds while it is under a minute, then hours and minutes. */
+export function formatDuration(ms: number): string {
+  const seconds = Math.max(0, Math.round(ms / 1000));
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.round(seconds / 60);
+  return `${Math.floor(minutes / 60)}:${pad(minutes % 60)}`;
+}

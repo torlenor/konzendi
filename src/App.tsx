@@ -1,4 +1,5 @@
 import { useId, useMemo, useState } from "react";
+import { AnalyticsView } from "./AnalyticsView";
 import { trackingActions } from "./actions";
 import { EntriesView } from "./EntriesView";
 import { QuickAccessBand } from "./QuickAccessBand";
@@ -10,7 +11,7 @@ import { useTracking } from "./useTracking";
 import { useTray } from "./useTray";
 import "./App.css";
 
-type View = "track" | "entries" | "topics";
+type View = "track" | "analytics" | "entries" | "topics";
 
 function App() {
   const tracking = useTracking();
@@ -31,7 +32,7 @@ function App() {
     current === null
       ? "idle"
       : current.subject.type === "pause"
-        ? "paused"
+        ? "stopped"
         : "running";
 
   return (
@@ -49,6 +50,13 @@ function App() {
           </button>
         )}
         <nav>
+          <button
+            type="button"
+            className="quiet"
+            onClick={() => setView("analytics")}
+          >
+            Analytics
+          </button>
           <button
             type="button"
             className="quiet"
@@ -97,6 +105,8 @@ function App() {
 
       {tracking.loading ? (
         <p>Reading the stored log…</p>
+      ) : view === "analytics" ? (
+        <AnalyticsView tracking={tracking} />
       ) : view === "entries" ? (
         <EntriesView tracking={tracking} actions={actions} />
       ) : view === "topics" ? (

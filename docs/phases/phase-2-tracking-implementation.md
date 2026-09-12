@@ -110,6 +110,10 @@ topic offered for resume, drops out of the list, which is what Phase 1's screen 
 Whether this is the right order once a user has many topics is a question for
 [Phase 5](phase-5-validation-trial.md).
 
+> **Since [Phase 15](phase-15-stable-topic-numbering.md).** The numbers no longer shift: the
+> window lists every topic that is not archived, marking the running one, exactly as the quick
+> switcher does. Whether creation order is right once a user has many topics remains open.
+
 ### State in the interface
 
 One hook owns the merged log and derives everything else:

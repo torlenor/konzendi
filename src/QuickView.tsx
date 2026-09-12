@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   type Actions,
-  PAUSE_MARK,
+  STOP_MARK,
   subjectLabel,
   subjectMark,
   TOPIC_MARK,
@@ -19,12 +19,12 @@ import "./App.css";
 
 /**
  * The quick switcher: the surface Phase 1 drew, one keystroke per row and no text entry.
- * It offers switching, pause, and undo of the last entry, which is the whole of the
+ * It offers switching, stopping, and undo of the last entry, which is the whole of the
  * quick-access side of Phase 1's surface boundary. It is a second window folding the
  * same log, so it shows what the tracking window shows.
  */
 
-const PAUSE_KEY = "p";
+const STOP_KEY = "s";
 const UNDO_KEY = "u";
 
 function Row({
@@ -79,7 +79,7 @@ function QuickSurface({
   const now = useNow();
   const surface = useRef<HTMLDivElement>(null);
   const current = state.current;
-  const pausing =
+  const stopped =
     current !== null && current.subject.type === "pause" ? current : null;
   const activeTopicId =
     current !== null && current.subject.type === "topic"
@@ -102,10 +102,9 @@ function QuickSurface({
     if (await appending) await hideQuick();
   }, []);
 
-  const pause = useCallback(() => {
-    if (!busy && current !== null && pausing === null)
-      void run(actions.pause());
-  }, [busy, current, pausing, run, actions]);
+  const stop = useCallback(() => {
+    if (!busy && current !== null && stopped === null) void run(actions.stop());
+  }, [busy, current, stopped, run, actions]);
 
   const undo = useCallback(() => {
     if (!busy && current !== null) void run(actions.undo(current.eventId));
@@ -124,9 +123,9 @@ function QuickSurface({
         void run(actions.switchTo(choices[index].id));
         return;
       }
-      if (event.key === PAUSE_KEY) {
+      if (event.key === STOP_KEY) {
         event.preventDefault();
-        pause();
+        stop();
         return;
       }
       if (event.key === UNDO_KEY) {
@@ -136,7 +135,7 @@ function QuickSurface({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [choices, actions, run, pause, undo]);
+  }, [choices, actions, run, stop, undo]);
 
   // Losing focus dismisses the surface, so the working window keeps it no longer than
   // the interaction takes however the interaction ends. The shortcut's own key grab
@@ -190,22 +189,22 @@ function QuickSurface({
       </ol>
 
       <ol className="commands">
-        {pausing !== null ? (
+        {stopped !== null ? (
           <li className="state">
             <span className="gap" />
             <span className="label">
-              {subjectMark(pausing.subject)}{" "}
-              {subjectLabel(state.topics, pausing.subject)}
+              {subjectMark(stopped.subject)}{" "}
+              {subjectLabel(state.topics, stopped.subject)}
             </span>
             <span className="mark" />
             <span className="trailing">{elapsed}</span>
           </li>
         ) : (
           <Row
-            hint={PAUSE_KEY}
-            label={`${PAUSE_MARK} Pause`}
+            hint={STOP_KEY}
+            label={`${STOP_MARK} Stop`}
             disabled={busy || current === null}
-            onPick={pause}
+            onPick={stop}
           />
         )}
         <Row

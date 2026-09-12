@@ -19,7 +19,7 @@ import type { Tracking } from "./useTracking";
 export function trackingActions(record: Tracking["record"]) {
   return {
     switchTo: (topicId: string) => record(focusStarted(topicId, nowIso())),
-    pause: () => record(focusPaused(nowIso())),
+    stop: () => record(focusPaused(nowIso())),
     /** One user action, two events: the topic is named at the moment of tracking. */
     createAndTrack: (name: string) => {
       const topicId = crypto.randomUUID();
@@ -61,12 +61,12 @@ export function subjectLabel(
   topics: readonly Topic[],
   subject: Subject,
 ): string {
-  return subject.type === "pause" ? "Paused" : nameOf(topics, subject.topicId);
+  return subject.type === "pause" ? "Stopped" : nameOf(topics, subject.topicId);
 }
 
 /** The two marks the interface uses for a subject, and the rule that picks one. */
 export const TOPIC_MARK = "▶";
-export const PAUSE_MARK = "❙❙";
+export const STOP_MARK = "■";
 
 export const subjectMark = (subject: Subject) =>
-  subject.type === "pause" ? PAUSE_MARK : TOPIC_MARK;
+  subject.type === "pause" ? STOP_MARK : TOPIC_MARK;

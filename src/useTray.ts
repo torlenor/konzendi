@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import {
   type Actions,
   nameOf,
-  PAUSE_MARK,
+  STOP_MARK,
   subjectLabel,
   subjectMark,
   TOPIC_MARK,
@@ -34,12 +34,12 @@ async function buildMenu(
   now: number,
 ): Promise<Menu> {
   const current = state.current;
-  const paused = current !== null && current.subject.type === "pause";
+  const stopped = current !== null && current.subject.type === "pause";
   const activeTopicId =
     current !== null && current.subject.type === "topic"
       ? current.subject.topicId
       : null;
-  const resumeTopicId = paused ? lastTopicId(state) : null;
+  const resumeTopicId = stopped ? lastTopicId(state) : null;
   const switchable = state.topics.filter(
     (topic) => !topic.archived && topic.id !== activeTopicId,
   );
@@ -51,7 +51,7 @@ async function buildMenu(
         text:
           current === null
             ? "Nothing tracked yet"
-            : `${subjectMark(current.subject)} ${subjectLabel(state.topics, current.subject)} · ${paused ? "since" : "started"} ${formatStamp(current.start, now)}`,
+            : `${subjectMark(current.subject)} ${subjectLabel(state.topics, current.subject)} · ${stopped ? "since" : "started"} ${formatStamp(current.start, now)}`,
         enabled: false,
       },
       { item: "Separator" },
@@ -68,10 +68,10 @@ async function buildMenu(
             action: () => void actions.switchTo(resumeTopicId),
           }
         : {
-            id: "pause",
-            text: `${PAUSE_MARK} Pause`,
-            enabled: current !== null && !paused,
-            action: () => void actions.pause(),
+            id: "stop",
+            text: `${STOP_MARK} Stop`,
+            enabled: current !== null && !stopped,
+            action: () => void actions.stop(),
           },
       {
         id: "undo",
@@ -92,7 +92,7 @@ async function buildMenu(
   });
 }
 
-/** The topic to resume is the last one tracked before the running pause. */
+/** The topic to resume is the last one tracked before tracking was stopped. */
 function lastTopicId(state: TrackingState): string | null {
   for (const interval of [...state.timeline].reverse()) {
     if (interval.subject.type === "topic") return interval.subject.topicId;

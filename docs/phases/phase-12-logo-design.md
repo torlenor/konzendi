@@ -1,6 +1,6 @@
 # Phase 12 — Logo design
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 11](phase-11-windows-macos.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 11](phase-11-windows-macos.md) · next: [Phase 13](phase-13-stop-replaces-pause.md)
 
 **Depends on:** [Phase 6](phase-6-application-theme.md)  
 **Effort:** M  

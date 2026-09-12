@@ -10,7 +10,7 @@ const naming: Record<EventKind, string> = {
   "topic.archived": "archiving the topic",
   "topic.restored": "restoring the topic",
   "focus.started": "the switch",
-  "focus.paused": "the pause",
+  "focus.paused": "the stop",
   "entry.revoked": "the undo",
   "entry.retimed": "the corrected time",
 };

@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last updated:** 11 September 2026
+**Last updated:** 12 September 2026
 
 ## Vision
 
@@ -20,7 +20,7 @@ Their checkboxes track individual work items only.
 | **1** | [Tracking experience design](phases/phase-1-tracking-design.md) | A specification of the tracking interaction: model, event vocabulary, undo and correction rules, screen design | 0 | Done |
 | **2** | [Topic tracking implementation](phases/phase-2-tracking-implementation.md) | The tracking loop: topics, switching, pauses, undo, and correction, persisted as events | 0, 1 | Done |
 | **3** | [Quick access](phases/phase-3-quick-access.md) | Global shortcut and tray entry points for logging without leaving the current application | 2 | Done |
-| **4** | [Timeline and first analytics](phases/phase-4-timeline-analytics.md) | A timeline of topics and pauses, plus the smallest useful analytics | 2 | Not started |
+| **4** | [Timeline and first analytics](phases/phase-4-timeline-analytics.md) | A day timeline of topics, plus the smallest useful readings | 2 | Done |
 | **5** | [Validation trial](phases/phase-5-validation-trial.md) | A recorded answer to whether switches get logged and whether the result is useful | 3, 4 | Not started |
 | **6** | [Application theme](phases/phase-6-application-theme.md) | A deliberate visual theme for the application, expressed as a documented token set | 2 | Done |
 | **7** | [Releases and CI/CD](phases/phase-7-releases-ci-cd.md) | Local version/changelog helpers and tag-triggered private Linux release builds, with checksums, manual draft publication, and recovery | 2 | Not started |
@@ -29,5 +29,8 @@ Their checkboxes track individual work items only.
 | **10** | [Server-supported encrypted sync](phases/phase-10-encrypted-sync.md) | Opt-in, local-first multi-device sync in which the service stores opaque client-encrypted tracking data | 2 | Not started |
 | **11** | [Windows and macOS trial support](phases/phase-11-windows-macos.md) | Verified private trial builds for the selected Windows and macOS targets, without weakening Linux support | 7 | Not started |
 | **12** | [Logo design](phases/phase-12-logo-design.md) | A documented, accessible Konzendi logo system with a tray-sized mark and a README-ready version | 6 | Not started |
+| **13** | [Stop replaces pause](phases/phase-13-stop-replaces-pause.md) | One state for not working, named Stop on every surface, and analytics that measure topics only | 2, 4 | Done |
+| **14** | [Further statistics](phases/phase-14-further-statistics.md) | The second set of readings, chosen against real logged data | 4, 5 | Not started |
+| **15** | [Stable topic numbering](phases/phase-15-stable-topic-numbering.md) | One numbering in both surfaces: the window lists every topic, marking the running one | 2, 3 | Done |
 
 A phase becomes `Done` only when its acceptance criteria are verified.
