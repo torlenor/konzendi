@@ -23,6 +23,11 @@ Evidence for each finding is in [Decisions and evidence](#decisions-and-evidence
 No open question is resolved by this phase. It opens [Q16](../OPEN_QUESTIONS.md), which asks how
 the surface's nine numbered slots are chosen once a user has more topics than slots.
 
+> Planned replacement: [Phase 16](phase-16-topic-quick-keys.md#decisions-and-evidence)
+> replaces position-based numbering with optional saved topic keys and adds access to
+> unassigned topics on both surfaces. It resolves Q16 without waiting for Phase 5.
+> The behavior and verification below describe this earlier phase.
+
 ## Outcome and scope
 
 Logging a switch without leaving the current application: a global shortcut opening a quick

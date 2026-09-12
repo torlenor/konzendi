@@ -60,6 +60,11 @@ are only the implementation choices this phase had to make.
 | Undo target | The undo row targets the event that opened the current interval. | 2 |
 | Pick-list order | Topics are listed in creation order, so their numbers stay stable. | 2 |
 
+> Planned replacement: [Phase 16](phase-16-topic-quick-keys.md#decisions-and-evidence)
+> replaces position-based numbering with optional saved topic keys and adds access to
+> unassigned topics on both surfaces. It resolves Q16 without waiting for Phase 5.
+> The behavior and verification below describe this earlier phase.
+
 ### Rationale
 
 **A kind-agnostic store.** Phase 0 decided that Rust owns durability and TypeScript owns
