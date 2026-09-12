@@ -1,6 +1,6 @@
 # Phase 11 — Windows and macOS trial support
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 10](phase-10-encrypted-sync.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 10](phase-10-encrypted-sync.md) · next: [Phase 12](phase-12-logo-design.md)
 
 **Depends on:** [Phase 7](phase-7-releases-ci-cd.md)  
 **Effort:** H  
