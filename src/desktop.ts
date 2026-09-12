@@ -9,6 +9,7 @@ import { getCurrentWindow, LogicalSize, Window } from "@tauri-apps/api/window";
 
 export const QUICK = "quick";
 const QUICK_WIDTH = 360;
+const QUICK_EDGE = 2;
 
 export const windowLabel: string = getCurrentWindow().label;
 
@@ -36,6 +37,33 @@ export async function showMain(): Promise<void> {
 /** End the application. Only the tray offers this; the close button hides the window. */
 export async function quit(): Promise<void> {
   await invoke("quit");
+}
+
+/** Window commands used by the application title bar. */
+export function minimizeWindow(): Promise<void> {
+  return getCurrentWindow().minimize();
+}
+
+export async function toggleWindowMaximized(): Promise<boolean> {
+  const window = getCurrentWindow();
+  await window.toggleMaximize();
+  return window.isMaximized();
+}
+
+export function isWindowMaximized(): Promise<boolean> {
+  return getCurrentWindow().isMaximized();
+}
+
+export function onWindowResized(
+  handler: () => void | Promise<void>,
+): Promise<UnlistenFn> {
+  return getCurrentWindow().onResized(() => {
+    void handler();
+  });
+}
+
+export function closeWindowToTray(): Promise<void> {
+  return getCurrentWindow().close();
 }
 
 /** Open the surface, or close it when it is already open: one key does both. */
@@ -74,9 +102,11 @@ export async function hideQuick(): Promise<void> {
  * The surface is as tall as its rows, so it sizes itself while hidden and centres
  * itself again afterwards. Showing it then needs no resize the user could watch.
  */
-export async function fitQuick(height: number): Promise<void> {
+export async function fitQuick(contentHeight: number): Promise<void> {
   const self = getCurrentWindow();
-  await self.setSize(new LogicalSize(QUICK_WIDTH, Math.round(height)));
+  await self.setSize(
+    new LogicalSize(QUICK_WIDTH, Math.round(contentHeight + QUICK_EDGE)),
+  );
   await self.center();
 }
 

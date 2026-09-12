@@ -157,7 +157,7 @@ function QuickSurface({
   // resize, and the elapsed reading re-renders it every second.
   const applied = useRef(0);
   useEffect(() => {
-    const height = surface.current?.offsetHeight ?? 0;
+    const height = surface.current?.scrollHeight ?? 0;
     if (height > 0 && height !== applied.current) {
       applied.current = height;
       void fitQuick(height);
