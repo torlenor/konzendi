@@ -1,6 +1,6 @@
 # Phase 16 — Stable topic quick keys
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 15](phase-15-stable-topic-numbering.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 15](phase-15-stable-topic-numbering.md) · next: [Phase 17](phase-17-storage-location-menu.md)
 
 **Depends on:** [Phase 2](phase-2-tracking-implementation.md), [Phase 3](phase-3-quick-access.md)  
 **Effort:** M  

@@ -33,6 +33,7 @@ Their checkboxes track individual work items only.
 | **14** | [Further statistics](phases/phase-14-further-statistics.md) | The second set of readings, chosen against real logged data | 4, 5 | Not started |
 | **15** | [Stable topic numbering](phases/phase-15-stable-topic-numbering.md) | One numbering in both surfaces: the window lists every topic, marking the running one | 2, 3 | Done |
 | **16** | [Stable topic quick keys](phases/phase-16-topic-quick-keys.md) | Optional topic keys 1–9 shared by both views, compact sparse assignments, and access to unassigned topics | 2, 3 | Not started |
+| **17** | [Storage location in an overflow menu](phases/phase-17-storage-location-menu.md) | A `…` menu in the bar that opens the data directory in the file manager, and holds the appearance override and About | 0, 6 | Not started |
 
 Phase 16 can proceed independently of Phases 5 and 14. Navigation order does not imply a dependency.
 
