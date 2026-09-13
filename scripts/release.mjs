@@ -181,7 +181,12 @@ export function agreedVersion(contents) {
   );
 }
 
-function setVersions(contents, version) {
+/**
+ * The version files with every application version set to `version`. The writers change one
+ * line per location and nothing else; unchanged when the files already declare `version`.
+ */
+export function setVersions(contents, version) {
+  if (agreedVersion(contents) === version) return { ...contents };
   const next = { ...contents };
   for (const location of locations) {
     next[location.file] = next[location.file].replace(

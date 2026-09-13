@@ -12,7 +12,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, describe, test } from "node:test";
-import { VERSION_FILES } from "./release.mjs";
+import { setVersions, VERSION_FILES } from "./release.mjs";
 import {
   assetNames,
   assets,
@@ -227,9 +227,16 @@ const published = (tag, id = 1) => ({
 function fixture(name = "build") {
   const root = join(scratch, `${name}-root`);
   const repository = resolve(import.meta.dirname, "..");
-  for (const file of VERSION_FILES) {
+  // The real files, at a fixed version, so the tests do not depend on the current release.
+  const real = Object.fromEntries(
+    VERSION_FILES.map((file) => [
+      file,
+      readFileSync(join(repository, file), "utf8"),
+    ]),
+  );
+  for (const [file, text] of Object.entries(setVersions(real, "0.1.0"))) {
     mkdirSync(join(root, file, ".."), { recursive: true });
-    writeFileSync(join(root, file), readFileSync(join(repository, file)));
+    writeFileSync(join(root, file), text);
   }
   writeFileSync(
     join(root, "CHANGELOG.md"),
