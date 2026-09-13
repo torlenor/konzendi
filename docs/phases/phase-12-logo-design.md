@@ -51,8 +51,15 @@ the verified target.
 The current Linux implementation of Tauri 2.11.5 writes the supplied tray image as one PNG and
 gives its path to AppIndicator. It does not expose the Status Notifier Item specification's
 multi-resolution pixmap list through the current JavaScript path. The implementation must supply
-one 32 by 32 px PNG and let the host scale it. The 16, 22, 24, and 32 px sizes are visual test
+one 16 by 16 px PNG and let the host scale it. The 16, 22, 24, and 32 px sizes are visual test
 sizes, not four runtime assets.
+
+On 13 September 2026, the owner decided that the tray does not get a special treatment. The tray
+uses the logo as it is, exported as a 16 px PNG. This replaces the earlier plan for a separate
+tray SVG with light and petrol keylines. Rationale: one logo source is simpler, and the tray mark
+must be the same as the logo that people see elsewhere. The real-host acceptance check below
+still applies. If the petrol lobes are not visible on the dark panel, record that result before
+you change the treatment.
 
 ## Outcome and scope
 
@@ -81,7 +88,7 @@ image. Phase 6 supplies the current visual language, including the *Readout* dir
 light/dark accessibility floor.
 
 The [selected source contract](phase-12-logo-design/README.md#selected-source-contract) fixes the
-two-colour and monochrome SVG sources, 64-unit geometry, clear space, 32 px tray export, 16–32 px
+two-colour and monochrome SVG sources, 64-unit geometry, clear space, 16 px tray export, 16–32 px
 test matrix, 80 px README treatment, and tray-only application scope. The owner selected an
 [asset-specific all-rights-reserved notice](phase-12-logo-design/RIGHTS.md). It applies to F1 and
 its derivatives, does not license other repository files, and does not imply trademark
@@ -95,14 +102,13 @@ registration.
   blue positions. README uses a `<picture>` element to choose these sources by colour scheme,
   renders the mark at 80 px, and keeps the existing `# Konzendi` heading as text and fallback.
   The image alternative text is `Konzendi Threaded Mind logo`.
-- Add `assets/logo/konzendi-mark-tray.svg`. Preserve the F1 geometry. Give petrol regions a cool
-  light keyline and blue regions a petrol keyline. Use a centred 4-unit stroke in the 64-unit
-  view box, which is one physical pixel at the 16 px test size. This one static treatment must
-  retain a visible full silhouette on both light and dark panels. Do not select a tray asset from
-  the application theme because the panel can use a different theme.
-- Export only `src/assets/konzendi-tray-32.png` for runtime use. Add a pinned development
-  dependency and `npm run logo:export` script that produces it deterministically from the tray
-  SVG. The script must fail if source dimensions or expected output dimensions differ, and
+- Do not add a tray-specific SVG, keyline, or other tray treatment. The tray uses
+  `assets/logo/konzendi-mark-on-light.svg` without changes. Do not select a tray asset from the
+  application theme because the panel can use a different theme.
+- Export only `src/assets/konzendi-tray-16.png` for runtime use. Add a pinned development
+  dependency and `npm run logo:export` script that produces it deterministically from
+  `konzendi-mark-on-light.svg`. The script must fail if source dimensions or expected output
+  dimensions differ, and
   `npm run notices` must refresh third-party notices after the lockfile changes.
 - In `useTray.ts`, load the PNG bytes and construct the Tauri image with `Image.fromBytes` before
   `TrayIcon.new`. The existing `image-png` Cargo feature supports this path. If asset loading or
@@ -139,8 +145,8 @@ failure fallback.
 - [x] **Explore and select a logo direction.** Create original, attributable candidate marks and
       show each in the selected tray and README contexts. Complete when the owner selects one
       direction and the rejected alternatives and rationale are recorded.
-- [ ] **Create the production sources and export.** Promote F1 to the three SVG sources under
-      `assets/logo/`, add the deterministic 32 px tray export script and its pinned dependency,
+- [ ] **Create the production sources and export.** Promote F1 to the two SVG sources under
+      `assets/logo/`, add the deterministic 16 px tray export script and its pinned dependency,
       refresh notices, and commit only the generated tray PNG. Complete when a clean checkout can
       regenerate a byte-identical PNG and the script rejects wrong dimensions.
 - [ ] **Integrate the tray mark.** Update only the tray-icon path required by the selected
@@ -160,7 +166,7 @@ failure fallback.
 Do not claim a completed logo until all of the following have recorded results:
 
 - The investigation gate is resolved and the Konzendi wordmark agrees with every new public asset.
-- `npm run logo:export` produces a byte-identical 32 by 32 px RGBA PNG from a clean checkout and
+- `npm run logo:export` produces a byte-identical 16 by 16 px RGBA PNG from a clean checkout and
   fails on an invalid source or output dimension.
 - The selected tray mark is visibly distinguishable in the 16, 22, 24, and 32 px review renders.
   Record the actual box used by Cinnamon in the running Linux/X11 application on both light and

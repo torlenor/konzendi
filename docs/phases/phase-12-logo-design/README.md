@@ -6,8 +6,8 @@ sizes. The generated boards show the ideas in a broader tray and README context,
 labels are illustrative and are not measurements. The review page uses the two-colour study on
 the light strip and converts it to one light colour on the dark strip. The first rendered check
 showed that fixed petrol and blue artwork loses its petrol shapes on the dark strip. The final
-production contract therefore uses separate README sources and a contrast-keyed static tray
-source.
+production contract therefore uses separate README sources. The owner decided that the tray uses
+the two-colour logo as it is, without a tray-specific treatment.
 
 ## Brief
 
@@ -51,17 +51,16 @@ idea by shortening the spine. Keep both refinements as decision history.
 - Each source uses a transparent 64 by 64 view box. When the mark is placed beside other content,
   keep external clear space equal to at least the 6-unit spine width. This is layout space beyond
   the SVG view box, not transparent padding inside it.
-- The minimum test size is 16 px. The tray has one 32 px runtime PNG. The 16, 22, 24, and 32 px
+- The minimum test size is 16 px. The tray has one 16 px runtime PNG. The 16, 22, 24, and 32 px
   renders are the visual test matrix; they are not separate runtime assets.
 - The README treatment uses the two-colour mark at 80 px before the existing `# Konzendi`
   heading. It uses petrol and blue on light backgrounds, and cool light and blue on dark
   backgrounds. The text heading remains the fallback if the image does not load.
-- The tray treatment uses the same F1 geometry. Petrol regions have a cool light keyline, and
-  blue regions have a petrol keyline. A centred 4-unit stroke in the 64-unit view box makes the
-  keyline one physical pixel at 16 px. This keeps one static icon visible on light and dark
-  panels without assuming that the application theme and panel theme agree.
+- The tray uses the two-colour logo as it is, exported as a 16 px PNG. It has no keyline or
+  other tray-specific treatment. The owner made this decision on 13 September 2026 so that the
+  tray and the logo stay the same.
 - Window, installer, package, favicon, and platform-specific icon sets remain unchanged. This
-  phase changes only the tray and README assets unless real integration evidence requires more.
+  phase changes only the tray and README assets. A wider change requires a roadmap update.
 
 The repository has no `LICENSE` file. The owner selected an asset-specific
 [all-rights-reserved notice](RIGHTS.md) for F1, its monochrome variants, and derived exports. The
@@ -185,6 +184,10 @@ Do not reopen the geometry unless a real tray-host result shows that it fails.
 
 The nine PNG context boards were generated with OpenAI's built-in image generation tool on 13
 September 2026 from project-specific prompts. The SVG studies were redrawn in this repository as
-small-size geometry probes. No third-party logo or font artwork was used as an input. The PNG
+small-size geometry probes. The F1, F2, and F3 SVG files, and the F1 monochrome variants, were
+redrawn again on 13 September 2026 to match their context boards. Each lobe is a set of circular
+arcs and straight edges. The arcs were fitted to the average of the four lobes in the board, and
+the lobes are mirror images. The SVG files therefore do not copy small asymmetries from the
+generated boards. No third-party logo or font artwork was used as an input. The PNG
 boards contain generated visual effects and typography; do not export production assets from
 them.
