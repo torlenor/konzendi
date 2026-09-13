@@ -39,13 +39,24 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["deb"],
+    "publisher": "torlenor",
+    "category": "Utility",
+    "shortDescription": "Track work topics and context switches in a local event log",
+    "longDescription": "Konzendi records which topic you are working on, when you switch, stop, undo, or correct an entry, in an append-only event log on this computer. It shows a day timeline with plain sums. It has no accounts and no network features.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "linux": {
+      "deb": {
+        "files": {
+          "/usr/share/doc/konzendi/THIRD_PARTY_NOTICES.md": "../THIRD_PARTY_NOTICES.md"
+        }
+      }
+    }
   }
 }

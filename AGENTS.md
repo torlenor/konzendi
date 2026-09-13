@@ -7,8 +7,8 @@ Use concise, clean, understandable language. Use ASD-STE100. Read this file and 
 The repository contains a Tauri v2 desktop application with React, TypeScript, and Vite that
 tracks topics against an append-only event log. Linux (X11) is the initial target. Rust owns
 local event persistence and keeps event kinds opaque; `src/core/` owns the event vocabulary and
-the fold from log to state, and must import neither React nor Tauri. No deployment workflow
-exists.
+the fold from log to state, and must import neither React nor Tauri. GitHub Actions runs CI
+and builds private draft releases from pushed version tags; nothing is deployed.
 
 - `README.md` — project introduction and documentation entry point.
 - `AGENTS.md` — working rules; `CLAUDE.md` links to this file.
@@ -22,10 +22,16 @@ exists.
 - `src/core/` — pure domain core: event types, merging, the event vocabulary, the fold, and their
   Vitest tests.
 - `src-tauri/` — Rust event store, IPC commands, and desktop configuration.
+- `scripts/` — release helpers, third-party notice generation, the package smoke test, and
+  their Node tests.
+- `.github/workflows/` — CI (`ci.yml`) and the tag-triggered draft release (`release.yml`).
+- `CHANGELOG.md` — user-visible changes per release; `docs/RELEASING.md` — release procedure.
+- `THIRD_PARTY_NOTICES.md` — generated; run `npm run notices` when a lockfile changes.
 - `package.json`, `package-lock.json`, `biome.json`, `tsconfig.json`, `vite.config.ts` — frontend tooling.
 
 Run `npm install` at the root, then `npm run tauri dev` for the desktop application.
-Root checks: `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build`.
+Root checks: `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:scripts`, and
+`npm run build`.
 Formatting: `npm run format`. In `src-tauri/`, run `cargo fmt --check`,
 `cargo clippy -- -D warnings`, and `cargo test`. See README prerequisites before setup.
 Do not invent commands or describe planned components as implemented.

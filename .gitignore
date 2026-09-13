@@ -25,3 +25,8 @@ dist-ssr
 
 src-tauri/target/
 *.tsbuildinfo
+
+# Release build and package smoke outputs
+release-assets/
+smoke-output/
+package-smoke-output/
