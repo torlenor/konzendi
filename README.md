@@ -94,7 +94,7 @@ Release tooling has its own checks:
 ```bash
 npm run test:scripts                        # release helper tests (Node's test runner)
 npm run tauri build -- --bundles deb        # Debian package in src-tauri/target/release/bundle/deb/
-scripts/package-smoke.sh src-tauri/target/release/bundle/deb/Konzendi_0.1.0_amd64.deb /tmp/konzendi-smoke
+scripts/package-smoke.sh src-tauri/target/release/bundle/deb/Konzendi_*_amd64.deb /tmp/konzendi-smoke
 ```
 
 The package smoke test needs Docker. It installs the package in a clean Ubuntu 24.04 container
@@ -113,21 +113,22 @@ publish the draft by hand. No workflow commits, tags, or publishes.
 
 1. Write the changes under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md), including
    `### Compatibility` and `### Known limitations`.
-2. Prepare the release on an up-to-date `main`. This writes the version to the five version
-   files and dates the changelog entry; it does not stage, commit, or tag:
+2. Prepare the release on an up-to-date `main`. The commands use `0.1.2` as the example
+   version. This writes the version to the five version files and dates the changelog entry;
+   it does not stage, commit, or tag:
 
    ```bash
    git switch main && git pull --ff-only
-   npm run release:prepare -- 0.1.1
+   npm run release:prepare -- 0.1.2
    ```
 
 3. Review, check, commit the listed files, and push `main`:
 
    ```bash
    git diff
-   npm run release:check -- 0.1.1
+   npm run release:check -- 0.1.2
    git add CHANGELOG.md package.json package-lock.json src-tauri/tauri.conf.json src-tauri/Cargo.toml src-tauri/Cargo.lock
-   git commit -m 'Release 0.1.1'
+   git commit -m 'Release 0.1.2'
    git push origin main
    ```
 
@@ -144,8 +145,8 @@ publish the draft by hand. No workflow commits, tags, or publishes.
    pushing it starts the release workflow:
 
    ```bash
-   git tag -a v0.1.1 -m 'Release 0.1.1'
-   git push origin v0.1.1
+   git tag -a v0.1.2 -m 'Release 0.1.2'
+   git push origin v0.1.2
    ```
 
 6. Wait for the release run, then open the draft from the run summary or the repository's
@@ -154,8 +155,8 @@ publish the draft by hand. No workflow commits, tags, or publishes.
 
    ```bash
    gh run watch "$(gh run list --workflow Release --limit 1 --json databaseId --jq '.[0].databaseId')" --exit-status
-   gh release download v0.1.1 --repo torlenor/konzendi --dir /tmp/konzendi-0.1.1
-   (cd /tmp/konzendi-0.1.1 && sha256sum --check SHA256SUMS)
+   gh release download v0.1.2 --repo torlenor/konzendi --dir /tmp/konzendi-0.1.2
+   (cd /tmp/konzendi-0.1.2 && sha256sum --check SHA256SUMS)
    ```
 
 [docs/RELEASING.md](docs/RELEASING.md) covers manual preparation, hotfixes, re-runs and

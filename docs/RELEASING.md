@@ -60,7 +60,7 @@ No personal access token, signing key, or repository secret is used.
 
 ## Normal release
 
-The example releases `0.1.1`. Use the real version.
+The example releases `0.1.2`. Use the real version.
 
 ### 1. Write the notes
 
@@ -75,7 +75,7 @@ through a normal pull request, or edit them during preparation.
 ```bash
 git switch main
 git pull --ff-only
-npm run release:prepare -- 0.1.1
+npm run release:prepare -- 0.1.2
 ```
 
 The helper refuses to run outside `main`, with uncommitted changes to a version file, with an
@@ -85,21 +85,21 @@ has a changelog entry. It checks everything before it writes. It then:
 - writes the version to `package.json`, the root entries of `package-lock.json`,
   `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and the `konzendi` entry of
   `src-tauri/Cargo.lock`, without changing any dependency;
-- moves the Unreleased notes into `## [0.1.1] - YYYY-MM-DD` (UTC date) and leaves an empty
+- moves the Unreleased notes into `## [0.1.2] - YYYY-MM-DD` (UTC date) and leaves an empty
   `## [Unreleased]` heading;
 - prints the changed files and the next commands.
 
 It never stages, commits, tags, pushes, or publishes. Other uncommitted work is left alone.
-When the version already equals the current unreleased version (the first release, `0.1.0`),
+When the version already equals the current unreleased version, as for a first release,
 only the changelog changes.
 
 ### 3. Review and commit
 
 ```bash
 git diff
-npm run release:check -- 0.1.1
+npm run release:check -- 0.1.2
 git add CHANGELOG.md package.json package-lock.json src-tauri/tauri.conf.json src-tauri/Cargo.toml src-tauri/Cargo.lock
-git commit -m 'Release 0.1.1'
+git commit -m 'Release 0.1.2'
 git push origin main
 ```
 
@@ -124,8 +124,8 @@ gh run list --workflow CI --commit "$(git rev-parse HEAD)" --json conclusion --j
 ### 5. Tag and push the tag
 
 ```bash
-git tag -a v0.1.1 -m 'Release 0.1.1'
-git push origin v0.1.1
+git tag -a v0.1.2 -m 'Release 0.1.2'
+git push origin v0.1.2
 ```
 
 A tag that exists only locally does nothing. Pushing it starts the release workflow. The
@@ -139,27 +139,28 @@ gh run watch <run-id> --exit-status
 ```
 
 The run summary of the `draft release` job links to the draft. The draft is also listed under
-**Releases** on GitHub. Its title is `Konzendi 0.1.1` when it is complete; a title that says
+**Releases** on GitHub. Its title is `Konzendi 0.1.2` when it is complete; a title that says
 *incomplete draft, do not publish* means the run did not finish.
 
 Before publishing, check the draft:
 
 ```bash
-gh api repos/torlenor/konzendi/releases --jq '.[] | select(.draft) | .name + " " + .tag_name'   # Konzendi 0.1.1 v0.1.1
-mkdir -p /tmp/konzendi-0.1.1 && cd /tmp/konzendi-0.1.1
-gh release download v0.1.1 --repo torlenor/konzendi
+gh api repos/torlenor/konzendi/releases --jq '.[] | select(.draft) | .name + " " + .tag_name'   # Konzendi 0.1.2 v0.1.2
+mkdir -p /tmp/konzendi-0.1.2 && cd /tmp/konzendi-0.1.2
+gh release download v0.1.2 --repo torlenor/konzendi
 sha256sum --check SHA256SUMS
 jq '{version, tag, source, workflow}' release-manifest.json   # tag and commit match
 ```
 
-The draft must name the tag `v0.1.1`, not `untagged-…`. GitHub detaches a draft from its tag
+The draft must name the tag `v0.1.2`, not `untagged-…`. (The draft's web address contains
+`untagged-…` for every draft; that is normal. Check the tag name, not the address.) GitHub detaches a draft from its tag
 when an API update leaves out `tag_name`; the workflow always sends it and refuses to report a
 detached draft as ready. If a draft shows `untagged-…`, re-run the `draft release` job, which
 finds the draft by a hidden marker in its notes and attaches it again. Do not publish a
 detached draft.
 
 Read the notes, then open the draft on GitHub, select **Edit**, check that the tag field shows
-`v0.1.1`, and select **Publish release**. The release stays a prerelease for `0.x` versions.
+`v0.1.2`, and select **Publish release**. The release stays a prerelease for `0.x` versions.
 
 ## Manual preparation
 
@@ -170,9 +171,9 @@ them before committing:
    `"version"` and `packages[""].version`), in `src-tauri/tauri.conf.json` (`"version"`), in
    `src-tauri/Cargo.toml` (`[package]` `version`), and in `src-tauri/Cargo.lock` (the
    `[[package]]` entry with `name = "konzendi"`). Change nothing else.
-2. In `CHANGELOG.md`, insert `## [0.1.1] - YYYY-MM-DD` below `## [Unreleased]`, move the notes
+2. In `CHANGELOG.md`, insert `## [0.1.2] - YYYY-MM-DD` below `## [Unreleased]`, move the notes
    under it, and keep the `## [Unreleased]` heading. Entries stay in descending version order.
-3. Run `npm run release:check -- 0.1.1`, then continue with [Review and commit](#3-review-and-commit).
+3. Run `npm run release:check -- 0.1.2`, then continue with [Review and commit](#3-review-and-commit).
 
 ## Hotfix
 
@@ -181,9 +182,9 @@ release the next patch version with the normal steps. Never move a tag or replac
 a published release. To warn about a broken release, edit its notes:
 
 ```bash
-gh release view v0.1.1 --repo torlenor/konzendi --json body --jq .body > notes.md
-# Add at the top: "> [!CAUTION]\n> Do not install 0.1.1: <reason>. Use 0.1.2."
-gh release edit v0.1.1 --repo torlenor/konzendi --notes-file notes.md
+gh release view v0.1.2 --repo torlenor/konzendi --json body --jq .body > notes.md
+# Add at the top: "> [!CAUTION]\n> Do not install 0.1.2: <reason>. Use 0.1.3."
+gh release edit v0.1.2 --repo torlenor/konzendi --notes-file notes.md
 ```
 
 Delete a published release only if its package must not be downloaded at all. Keep the tag, so

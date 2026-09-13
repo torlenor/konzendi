@@ -254,18 +254,28 @@ choices within the accepted contract:
 - **Vitest** is limited to `src/**/*.test.ts`, so the Node tests in `scripts/` run only under
   `npm run test:scripts`.
 
+### Rehearsal decisions — 13 September 2026
+
+- **The first release is 0.1.1.** The rehearsal found that GitHub detaches a draft from its tag
+  when an update omits `tag_name` (fixed in PR #3). The tagged `v0.1.0` commit contained the
+  defect, and a release run always uses its tagged commit's scripts. The owner chose to keep
+  the policy: `v0.1.0` stays an unused, unpublished tag, and the first release is `0.1.1`.
+- **Script test fixtures pin their version.** The CI run for the `0.1.1` release commit showed
+  that the script tests depended on the repository's version; they now set their copies to
+  `0.1.0` (PR #4).
+
 ## Work packages
 
-Execute in the order below. This discovery changes documentation only; the paths below are
-planned implementation files.
+Execute in the order below. Packaging stays open until the package is checked in both declared
+environments; see *Not verified* below.
 
-- [ ] **CI baseline:** add workflow configuration for pull requests and the default branch,
+- [x] **CI baseline:** add workflow configuration for pull requests and the default branch,
       using locked installs and recorded toolchains/native dependencies. Run root typecheck,
       lint, test, and build scripts plus Rust fmt, clippy, and tests. Document required checks
       and configure them where repository permissions allow. Complete when a clean hosted run
       passes and an intentional failing check blocks release preparation. Record the absence
       of server-enforced merge protection explicitly.
-- [ ] **Versioning and changelog:** add `CHANGELOG.md`, the accepted release conventions, and
+- [x] **Versioning and changelog:** add `CHANGELOG.md`, the accepted release conventions, and
       a consistency check covering manifests, application lockfile entries, and release tags.
       Document how unreleased changes become dated release notes, including compatibility and
       known limitations. Complete when both a valid candidate and a deliberate mismatch have
@@ -281,13 +291,13 @@ planned implementation files.
       `scripts/package-smoke.sh` using a private X server, explicit process cleanup, and an
       isolated XDG data directory. Follow the repository desktop-testing skill; never exercise
       the developer's real log. Persist synthetic log assertions and screenshots on failure.
-- [ ] **Release automation:** add the agreed release trigger and draft/staging-to-publication
+- [x] **Release automation:** add the agreed release trigger and draft/staging-to-publication
       path, consuming only artifacts verified for that exact commit. Require quality and
       version gates before publication. Restrict write permissions and secrets to trusted
       release jobs; untrusted contributions must not access them. Pin workflow dependencies,
       serialize releases for the same version, and fail clearly on partial uploads or existing
       conflicting artifacts. Complete when a staged release and failure/retry cases pass.
-- [ ] **Maintainer handoff:** add a release-process section directly to `README.md`, covering
+- [x] **Maintainer handoff:** add a release-process section directly to `README.md`, covering
       changelog preparation, version preparation/check helpers, review and commit, pushing
       `main`, waiting for checks, creating and pushing the version tag, finding the resulting
       draft, and manually publishing it. Include the actual implemented commands and explain
@@ -335,6 +345,122 @@ and results here during implementation. The discovery probe below is not hosted 
   a checked rebuild. Published releases remain untouched on rerun.
 - Test the denied actor/ref paths. Assert no workflow writes source commits or tags, and no
   workflow publishes automatically. Record the actual hosted tag and draft used for rehearsal.
+
+### Implementation evidence — 12–13 September 2026
+
+Pull requests [#1](https://github.com/torlenor/konzendi/pull/1) (implementation),
+[#3](https://github.com/torlenor/konzendi/pull/3) and [#4](https://github.com/torlenor/konzendi/pull/4)
+(defects found by the rehearsal), and [#2](https://github.com/torlenor/konzendi/pull/2) (helper
+hint). Release tag `v0.1.1` → `cb17aa3`; draft release `387831726`, left unpublished for the
+owner. The runner image was `ubuntu24` 20260907.300.1 throughout.
+
+**Local checks** (Linux Mint 22.3, Node 24.16.0, npm 11.13.0, Rust 1.98.0):
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` | Passed; 55 Vitest tests, Biome clean. |
+| `npm run test:scripts` | Passed, 53 tests (see *Versions and changelog* below). |
+| `cargo fmt --check`, `cargo clippy --locked -- -D warnings`, `cargo test --locked` | Passed, 5 storage tests. |
+| actionlint 1.7.12 on both workflows | No findings. |
+| `npm run tauri build -- --ci --bundles deb -- --locked` | Passed; package metadata as in the released package below. |
+| `scripts/package-smoke.sh` on the local build and on the downloaded `konzendi_0.1.1_amd64.deb` | PASS, about 30 s each. |
+
+**CI** — every run passed all three jobs unless stated:
+
+| Run | Commit | Notes |
+| --- | --- | --- |
+| [34716885696](https://github.com/torlenor/konzendi/actions/runs/34716885696), [34717498704](https://github.com/torlenor/konzendi/actions/runs/34717498704) | PR #1 | First hosted runs: `frontend` 27 s, `rust` 6 min, `package-smoke` 8–10 min. Notices current, smoke `PASS`. |
+| [34740748441](https://github.com/torlenor/konzendi/actions/runs/34740748441) | `43cd0f9` (merge of #1) | First `main` run; writes caches. |
+| [34740895381](https://github.com/torlenor/konzendi/actions/runs/34740895381) | `7b77a9b` Release 0.1.0 | Passed; tagged `v0.1.0`. |
+| [34745034457](https://github.com/torlenor/konzendi/actions/runs/34745034457) | `abf39dc` Release 0.1.1 | **Failed** in `frontend`: 14 script tests assumed the repository declares `0.1.0`. Following the README, no tag was pushed; fixed by #4. This is the hosted case of a failing check blocking release preparation. |
+| [34745553803](https://github.com/torlenor/konzendi/actions/runs/34745553803) | `cb17aa3` (merge of #4) | Passed; tagged `v0.1.1`. |
+| [34746168972](https://github.com/torlenor/konzendi/actions/runs/34746168972) | `6b8044b` (merge of #2) | Passed. |
+
+**Refused tags** — throwaway tags, each pushed alone; every run failed in `validate`, and
+`checks` and `draft release` were skipped:
+
+| Tag | Run | Refusal |
+| --- | --- | --- |
+| `v0.9.1` on `ff93f8d`, a commit outside `main` | [34740771410](https://github.com/torlenor/konzendi/actions/runs/34740771410) | `ff93f8d… is not on main` |
+| `v0.9.2` on `43cd0f9` | [34740774497](https://github.com/torlenor/konzendi/actions/runs/34740774497) | `the version files declare 0.1.0, not 0.9.2`, and no changelog entry |
+| `v0.9.3`, lightweight | [34740777052](https://github.com/torlenor/konzendi/actions/runs/34740777052) | `lightweight tag; create it with git tag -a v0.9.3 …` |
+| `v0.9`, malformed | [34740779775](https://github.com/torlenor/konzendi/actions/runs/34740779775) | `refs/tags/v0.9 is not a release tag` |
+| `v0.9.4` on `43cd0f9`, force-pushed to `ff93f8d` seconds later | [34740782644](https://github.com/torlenor/konzendi/actions/runs/34740782644) | `v0.9.4 now points to ff93f8d…, but this run started for 43cd0f9…` |
+| `v0.9.4` after the move | [34740783870](https://github.com/torlenor/konzendi/actions/runs/34740783870) | `not on main` |
+| `v0.9.2` with a published throwaway release, re-run as attempt 2 | 34740774497 | `v0.9.2 is already published … never changed`; release id, `updated_at`, and assets unchanged |
+
+The notes warning from the hotfix procedure in `docs/RELEASING.md` was applied to that
+published release with `gh release edit --notes-file`. The release and all five tags were then
+deleted; deleting tags started no run. The unreferenced commit `ff93f8d` was never on a branch.
+
+**`v0.1.0`, run [34741324349](https://github.com/torlenor/konzendi/actions/runs/34741324349)**:
+
+| Attempt | Action | Result |
+| --- | --- | --- |
+| 1 | Tag pushed with `RELEASE_FAULT=build` | `package-smoke` failed on purpose; `draft release` skipped; no release created. |
+| 2 | `RELEASE_FAULT=upload`, re-run failed jobs | Rebuilt and smoke-tested; draft created titled *incomplete draft, do not publish*; failed after uploading the package. |
+| 3 | Variable deleted, re-run failed jobs | Reused the attempt-2 artifact; kept the matching package, uploaded three assets, draft ready. |
+| 4 | `SHA256SUMS` in the draft replaced, draft job re-run | **Defect:** a second draft was created instead of a conflict. |
+
+Measured on draft `387808502`: a `PATCH` to a draft that omits `tag_name` sets it to
+`untagged-…`, even for a body-only or prerelease-only update, and a `PATCH` with `tag_name`
+restores it. The script's updates omitted it, so the ready draft of attempt 3 had lost its tag
+and was not found. PR #3 sends `tag_name` on every update, marks drafts with a hidden
+`<!-- konzendi-release-tag: vX.Y.Z -->` line, refuses to call a detached draft ready, and models
+the behavior in the fake API (four tests fail without the fix). Both `v0.1.0` drafts were
+deleted. Because a release run uses the scripts of its tagged commit, `v0.1.0` could not be
+repaired by a re-run; on 13 September 2026 the owner chose to follow the policy, keep the tag
+`v0.1.0` unused, and release `0.1.1`. The unpublished `[0.1.0]` notes returned to Unreleased.
+
+**`v0.1.1`, run [34745784031](https://github.com/torlenor/konzendi/actions/runs/34745784031)** —
+prepared with `npm run release:prepare -- 0.1.1`, which changed exactly one line in each of
+`package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`,
+two in `package-lock.json`, and the changelog:
+
+| Attempt | Action | Result |
+| --- | --- | --- |
+| 1 | Tag pushed, no fault | All jobs passed in 6 min; ready draft named `v0.1.1`. |
+| 2 | Draft job re-run on the ready draft | Same draft continued, all four assets kept, tag kept. |
+| 3 | `SHA256SUMS` in the draft replaced, draft job re-run | Failed: `SHA256SUMS differs from the checked build; nothing was overwritten`, with the delete-draft instructions. The draft was marked incomplete; the replaced asset id remained. |
+| 4 | `gh release delete v0.1.1 --yes` (tag kept), re-run failed jobs | New draft, four assets uploaded and verified. |
+| 5 | `release-assets` artifact deleted, draft job re-run | Failed: `Artifact not found for name: release-assets`; draft untouched. |
+| 6 | Draft deleted, re-run all jobs; PR #2 merged during the run | `main` moved to `6b8044b`; the rebuild stayed on `cb17aa3`; ready draft `387831726`. |
+
+README step 6 on the draft: `gh release download v0.1.1` and `sha256sum --check SHA256SUMS`
+passed for all three covered files. The manifest records tag `v0.1.1`, commit `cb17aa3`, run
+34745784031 attempt 6, Node 24.16.0, npm 11.13.0, Rust 1.98.0, and Tauri CLI 2.11.4. Package
+control: `konzendi` `0.1.1` `amd64`, maintainer `torlenor`, depends
+`libayatana-appindicator3-1, libwebkit2gtk-4.1-0, libgtk-3-0`. The notices asset matches the
+repository file. The notes are the changelog entry plus the installation and checksum section.
+
+| Asset | SHA-256 |
+| --- | --- |
+| `konzendi_0.1.1_amd64.deb` | `9ca1802198178045cf2dce5d22e4177e64678a72bdd106f5dc4254001dbe1879` |
+| `release-manifest.json` | `e5e5fab85e4c5418e31c76cb1d14276230994c22c798ae22ed9605bc12f9d799` |
+| `THIRD_PARTY_NOTICES.md` | `088ca83c14c62ab19fae9ee25968fd8ed43130bbaa8e8cf7829b6e2ff88e07b5` |
+
+**Versions and changelog.** `release:prepare` was used for `0.1.0` (equal to the unreleased
+version; changelog only) and `0.1.1` (all six files). The script tests cover shell-like and
+invalid versions, empty and incomplete notes, duplicate, lower, and published versions,
+another branch, dirty version files, preserved unrelated edits, unchanged `HEAD`, refs, and
+index, manual preparation, denied actors, moved and lightweight tags, partial uploads, repeated
+and detached drafts, conflicting assets, and artifacts from another commit.
+
+**Not verified:**
+
+- The owner's manual publication of draft `387831726`.
+- Installation on Linux Mint 22, and on Ubuntu 24.04 in a desktop session. The package was
+  installed only in a clean `ubuntu:24.04` container, not on the developer's machine, whose
+  real log must not be touched.
+- A release attempt by another account. The actor checks in both jobs are tested only against
+  the fake API; no second account was available.
+- A real 30-day artifact expiry; it was simulated by deleting the artifact.
+- Downgrade safety. No earlier packaged release with different behavior exists; the `0.1.0`
+  and `0.1.1` builds differ only in version.
+- Account Actions allowance and a stop-usage budget. The CLI token has no `user` scope; the
+  owner checks them in account settings.
+- Server-enforced merge protection. It is not available for this private repository on the
+  current plan, as documented in the README and `docs/RELEASING.md`.
 
 ### Discovery probe — 7 September 2026
 
