@@ -85,6 +85,8 @@ changing readiness alone does not change phase status.
   overwrite unrelated work, initialize version control, or commit or push without a request.
 - Keep changes small and relevant. Do not choose a stack, commercial service, or new product
   scope merely because it appears in the concept document.
+- When a change adds a feature, fixes a bug, or otherwise changes user-visible behavior, add a
+  brief, clear entry to `CHANGELOG.md`; do not write a full feature description.
 - Keep secrets and personal tracking data out of source control and documentation examples.
 - Describe recorded behavior accurately. Do not present a proposed score as a validated
   measurement of productivity, cognition, or mental health.
