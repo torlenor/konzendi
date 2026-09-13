@@ -1,6 +1,6 @@
 # Phase 17 — Storage location in an overflow menu
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 16](phase-16-topic-quick-keys.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 16](phase-16-topic-quick-keys.md) · next: [Phase 18](phase-18-window-content-fit.md)
 
 **Depends on:** [Phase 0](phase-0-repo-setup.md), [Phase 6](phase-6-application-theme.md)  
 **Effort:** M  
