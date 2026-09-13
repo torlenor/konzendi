@@ -11,6 +11,8 @@ notes into a dated entry.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-13
+
 ### Added
 
 - Topic tracking in a desktop window: name a topic and start, switch with one click or with
