@@ -14,6 +14,18 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ## [Unreleased]
 
+### Added
+
+- Quick access now has `K` to open the Konzendi tracking window.
+
+### Compatibility
+
+- No event or stored-data format changes.
+
+### Known limitations
+
+- The global shortcut and quick switcher remain X11-only.
+
 ## [0.1.1] - 2026-09-13
 
 ### Added

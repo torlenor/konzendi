@@ -65,12 +65,24 @@ impl Desktop {
         }
     }
 
+    /// Remove the interrupted window without activating anything.
+    pub fn take_interrupted(&self) -> Option<Window> {
+        let Ok(mut interrupted) = self.interrupted.lock() else {
+            return None;
+        };
+        interrupted.take()
+    }
+
+    /// Restore a saved interrupted-window target after a failed replacement.
+    pub fn restore_interrupted_target(&self, window: Option<Window>) {
+        if let Ok(mut interrupted) = self.interrupted.lock() {
+            *interrupted = window;
+        }
+    }
+
     /// Hand the keyboard back to the remembered window, if it is still there.
     pub fn restore_interrupted(&self) {
-        let Ok(mut interrupted) = self.interrupted.lock() else {
-            return;
-        };
-        if let Some(window) = interrupted.take() {
+        if let Some(window) = self.take_interrupted() {
             self.activate(window);
         }
     }

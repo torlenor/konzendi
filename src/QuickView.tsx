@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type Actions,
   STOP_MARK,
@@ -12,6 +12,7 @@ import {
   hideQuick,
   isQuickFocused,
   onQuickFocusChanged,
+  showMain,
 } from "./desktop";
 import { formatElapsedParts } from "./time";
 import { type Tracking, useNow, useTracking } from "./useTracking";
@@ -26,6 +27,7 @@ import "./App.css";
 
 const STOP_KEY = "s";
 const UNDO_KEY = "u";
+const OPEN_MAIN_KEY = "k";
 
 function Row({
   hint,
@@ -76,6 +78,7 @@ function QuickSurface({
   actions: Actions;
 }) {
   const { state, busy, error } = tracking;
+  const [openMainError, setOpenMainError] = useState<string | null>(null);
   const now = useNow();
   const surface = useRef<HTMLDivElement>(null);
   const current = state.current;
@@ -110,6 +113,16 @@ function QuickSurface({
     if (!busy && current !== null) void run(actions.undo(current.eventId));
   }, [busy, current, run, actions]);
 
+  const openMain = useCallback(async () => {
+    if (busy) return;
+    setOpenMainError(null);
+    try {
+      await showMain();
+    } catch (failure) {
+      setOpenMainError(`Could not open Konzendi: ${String(failure)}.`);
+    }
+  }, [busy]);
+
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.ctrlKey || event.altKey || event.metaKey) return;
@@ -131,11 +144,16 @@ function QuickSurface({
       if (event.key === UNDO_KEY) {
         event.preventDefault();
         undo();
+        return;
+      }
+      if (event.key.toLowerCase() === OPEN_MAIN_KEY) {
+        event.preventDefault();
+        void openMain();
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [choices, actions, run, stop, undo]);
+  }, [choices, actions, run, stop, undo, openMain]);
 
   // Losing focus dismisses the surface, so the working window keeps it no longer than
   // the interaction takes however the interaction ends. The shortcut's own key grab
@@ -166,6 +184,9 @@ function QuickSurface({
 
   const elapsed =
     current === null ? null : formatElapsedParts(current.start, now).hm;
+  const surfaceError = [error, openMainError]
+    .filter((message): message is string => message !== null)
+    .join(" ");
 
   return (
     <div className="quick" ref={surface}>
@@ -217,9 +238,15 @@ function QuickSurface({
           disabled={busy || current === null}
           onPick={undo}
         />
+        <Row
+          hint={OPEN_MAIN_KEY.toUpperCase()}
+          label="Open Konzendi"
+          disabled={busy}
+          onPick={() => void openMain()}
+        />
       </ol>
 
-      {error !== null && <p role="alert">{error}</p>}
+      {surfaceError !== "" && <p role="alert">{surfaceError}</p>}
     </div>
   );
 }

@@ -55,8 +55,9 @@ from the log.
 ### Quick access
 
 Press **Ctrl+Alt+K** anywhere to open a small switcher over whatever you are working in: press a
-topic's number to switch, `s` to stop, `u` to undo the last entry, or Escape to close it. The
-window that had the keyboard gets it back. The combination is shown at the bottom of the
+topic's number to switch, `s` to stop, `u` to undo the last entry, `K` to open the Konzendi
+tracking window, or Escape to close it. Escape returns the keyboard to the window that had it.
+The combination is shown at the bottom of the
 tracking window, where **change** records a new one; if another application already holds it, or
 the session is not X11, the same line says so instead of pretending the shortcut works. The key
 grab is X11-only.

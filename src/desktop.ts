@@ -29,7 +29,10 @@ function quickWindow(): Promise<Window> {
   return handle;
 }
 
-/** Bring the tracking window back, which is what the tray offers while it is hidden. */
+/**
+ * Bring the tracking window forward. Rust also replaces a visible quick switcher, so a
+ * caller can report a failed request without dismissing that surface first.
+ */
 export async function showMain(): Promise<void> {
   await invoke("show_main");
 }

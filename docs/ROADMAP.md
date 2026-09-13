@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last updated:** 12 September 2026
+**Last updated:** 13 September 2026
 
 ## Vision
 
@@ -25,7 +25,7 @@ Their checkboxes track individual work items only.
 | **6** | [Application theme](phases/phase-6-application-theme.md) | A deliberate visual theme for the application, expressed as a documented token set | 2 | Done |
 | **7** | [Releases and CI/CD](phases/phase-7-releases-ci-cd.md) | Local version/changelog helpers and tag-triggered private Linux release builds, with checksums, manual draft publication, and recovery | 2 | Done |
 | **8** | [Application window frame](phases/phase-8-window-frame.md) | The application's own title bar and window edge, absorbing the header and carrying the window commands, with a fallback to the desktop's decorations | 3, 6 | Done |
-| **9** | [Quick access: open window](phases/phase-9-quick-access-open-window.md) | A `K` command in the quick switcher that opens the Konzendi tracking window | 3 | Not started |
+| **9** | [Quick access: open window](phases/phase-9-quick-access-open-window.md) | A `K` command in the quick switcher that opens the Konzendi tracking window | 3 | In progress |
 | **10** | [Server-supported encrypted sync](phases/phase-10-encrypted-sync.md) | Opt-in, local-first multi-device sync in which the service stores opaque client-encrypted tracking data | 2 | Not started |
 | **11** | [Windows and macOS trial support](phases/phase-11-windows-macos.md) | Verified private trial builds for the selected Windows and macOS targets, without weakening Linux support | 7 | Not started |
 | **12** | [Logo design](phases/phase-12-logo-design.md) | A documented, accessible Konzendi logo system with a tray-sized mark and a README-ready version | 6 | Not started |

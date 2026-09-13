@@ -45,26 +45,26 @@ global shortcut, which is the wrong destination after `K`.
 
 ## Work packages
 
-- [ ] **Add the visible quick-access command** (`src/QuickView.tsx`). Add an `Open Konzendi`
+- [x] **Add the visible quick-access command** (`src/QuickView.tsx`). Add an `Open Konzendi`
   command row with `K` as its hint and route an unmodified `k` keypress to it. Disable it while
   an event append is in progress, consistently with the other commands. Complete when click and
   either key case take the same path, while modified `Ctrl+Alt+K` remains reserved for the
   global shortcut.
 
-- [ ] **Make main-window presentation replace quick access** (`src/desktop.ts`,
+- [x] **Make main-window presentation replace quick access** (`src/desktop.ts`,
   `src-tauri/src/lib.rs`, and `src-tauri/src/x11.rs` if its interrupted-window state needs an
   explicit clear operation). When `show_main` is invoked while `quick` is visible, hide `quick`,
   discard its saved interrupted-window target, then present and focus `main`. Keep the existing
   tray behaviour when `quick` is already hidden. Complete when opening the main window never
   lets quick access's focus-restoration path return the keyboard to the prior external window.
 
-- [ ] **Keep the surface's failure behaviour coherent** (`src/QuickView.tsx`, and tests where
+- [x] **Keep the surface's failure behaviour coherent** (`src/QuickView.tsx`, and tests where
   the project can cover the extracted logic). If the main-window request fails, leave quick
   access open and show the existing error treatment or a specific actionable error; do not hide
   it first. Complete when a failed request neither records an event nor strands the user with no
   focused window.
 
-- [ ] **Update the user-facing shortcut reference** (`README.md`). State that `K` opens the
+- [x] **Update the user-facing shortcut reference** (`README.md`). State that `K` opens the
   Konzendi tracking window from quick access. Complete when the documented key list matches the
   rendered command list.
 
@@ -73,15 +73,15 @@ global shortcut, which is the wrong destination after `K`.
 
 ## Acceptance and verification
 
-| # | Criterion | How it is checked |
-| --- | --- | --- |
-| 1 | `Ctrl+Alt+K`, then `K` opens and focuses the tracking window | With another X11 application focused and the main window hidden to the tray, use the global shortcut then press `K`; inspect visibility and keyboard focus. |
-| 2 | The command is discoverable and mouse-equivalent | Open quick access and confirm the `K`/`Open Konzendi` row is visible; click it and observe the same transition. |
-| 3 | `K` appends no event and changes no tracking state | Record the event-log line count and folded state before and after the command. |
-| 4 | The interrupted external application does not regain focus after `K` | Start with another application focused, invoke quick access, press `K`, wait longer than the focus-loss delay, then inspect the active X11 window. |
-| 5 | Escape and the global shortcut still return focus to the interrupted application | Repeat Phase 3's dismissal/toggle walkthrough without using `K`. |
-| 6 | A failed main-window request leaves quick access available and reports the failure | Exercise the failure seam added for the request; inspect the visible surface and event log. |
-| 7 | Project checks pass | Run `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build`; then run `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/`. |
+| # | Criterion | How it is checked | Actual result |
+| --- | --- | --- | --- |
+| 1 | `Ctrl+Alt+K`, then `K` opens and focuses the tracking window | With another X11 application focused and the main window hidden to the tray, use the global shortcut then press `K`; inspect visibility and keyboard focus. | Pending user X11 walkthrough. |
+| 2 | The command is discoverable and mouse-equivalent | Open quick access and confirm the `K`/`Open Konzendi` row is visible; click it and observe the same transition. | Pending user X11 walkthrough. |
+| 3 | `K` appends no event and changes no tracking state | Record the event-log line count and folded state before and after the command. | Pending user X11 walkthrough. |
+| 4 | The interrupted external application does not regain focus after `K` | Start with another application focused, invoke quick access, press `K`, wait longer than the focus-loss delay, then inspect the active X11 window. | Pending user X11 walkthrough. |
+| 5 | Escape and the global shortcut still return focus to the interrupted application | Repeat Phase 3's dismissal/toggle walkthrough without using `K`. | Pending user X11 walkthrough. |
+| 6 | A failed main-window request leaves quick access available and reports the failure | Exercise the failure seam added for the request; inspect the visible surface and event log. | Pending user failure walkthrough. |
+| 7 | Project checks pass | Run `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build`; then run `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/`. | Passed locally. The listed frontend and Rust checks passed. `npm run test:scripts` also passed with its Git fixture run outside the sandbox restriction. |
 
 Record actual results when executed. The X11 walkthrough uses the
 [desktop-testing](../../.claude/skills/desktop-testing/SKILL.md) procedure, as Phase 3 does.

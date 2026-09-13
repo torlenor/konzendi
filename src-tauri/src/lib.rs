@@ -98,11 +98,37 @@ fn show_quick(app: AppHandle) -> Result<(), String> {
     present(&app, window)
 }
 
-/// Bring the tracking window back, which is what the tray offers while it is hidden.
+/// Bring the tracking window back, or replace a visible quick switcher with it.
+///
+/// Hide quick access and clear its interrupted-window target before presenting the main
+/// window. If presentation fails, restore both so the quick switcher remains available.
 #[tauri::command]
 fn show_main(app: AppHandle) -> Result<(), String> {
+    let quick = window_of(&app, QUICK)?;
     let window = window_of(&app, MAIN)?;
-    present(&app, window)
+    let quick_visible = quick.is_visible().map_err(|error| error.to_string())?;
+
+    if !quick_visible {
+        return present(&app, window);
+    }
+
+    quick.hide().map_err(|error| error.to_string())?;
+    #[cfg(target_os = "linux")]
+    let interrupted = app
+        .try_state::<x11::Desktop>()
+        .and_then(|desktop| desktop.take_interrupted());
+
+    if let Err(error) = present(&app, window) {
+        #[cfg(target_os = "linux")]
+        if let Some(desktop) = app.try_state::<x11::Desktop>() {
+            desktop.restore_interrupted_target(interrupted);
+        }
+        // Re-open the surface without going through show_quick: its target was saved
+        // before this command started, and must not be replaced with the current window.
+        let _ = present(&app, quick);
+        return Err(error);
+    }
+    Ok(())
 }
 
 /// Leave for good. The tray is the only control that ends the application, because the
