@@ -9,9 +9,10 @@ Write new notes under `## [Unreleased]`, using `### Added`, `### Changed`, `### 
 systems and data compatibility) and `### Known limitations`. `npm run release:prepare` moves the
 notes into a dated entry.
 
-## [Unreleased]
+The tag `v0.1.0` exists but was never published: a defect in the release workflow was found
+while it was being built, and a pushed tag is never moved. The first release is 0.1.1.
 
-## [0.1.0] - 2026-09-13
+## [Unreleased]
 
 ### Added
 
