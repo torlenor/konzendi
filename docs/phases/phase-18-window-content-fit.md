@@ -1,6 +1,6 @@
 # Phase 18 — Window content that fits the window
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 17](phase-17-storage-location-menu.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 17](phase-17-storage-location-menu.md) · next: [Phase 19](phase-19-visible-scrollbar.md)
 
 **Depends on:** [Phase 8](phase-8-window-frame.md)  
 **Effort:** M  

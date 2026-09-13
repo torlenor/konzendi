@@ -35,6 +35,7 @@ Their checkboxes track individual work items only.
 | **16** | [Stable topic quick keys and topic colours](phases/phase-16-topic-quick-keys.md) | Optional topic keys 1–9 shared by both views, compact sparse assignments, access to unassigned topics, and an optional topic colour shown on every topic surface | 2, 3 | Not started |
 | **17** | [Storage location in an overflow menu](phases/phase-17-storage-location-menu.md) | A `…` menu in the bar that opens the data directory in the file manager, and holds the appearance override and About | 0, 6 | Not started |
 | **18** | [Window content that fits the window](phases/phase-18-window-content-fit.md) | Window content that adapts to the window size: the title bar and controls stay visible, and no content is cut off without a way to reach it | 8 | Done |
+| **19** | [A scrollbar that is always visible](phases/phase-19-visible-scrollbar.md) | A theme-styled scrollbar on the tracking window's content area that stays visible, so a view that continues below the window shows it | 6, 18 | Not started |
 
 Phase 16 can proceed independently of Phases 5 and 14. Navigation order does not imply a dependency.
 
