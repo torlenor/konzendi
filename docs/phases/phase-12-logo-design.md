@@ -180,14 +180,14 @@ fallback. Because the application icons now also show the logo, the fallback sho
       `assets/logo/`, add the deterministic 32 px tray export script and its pinned dependency,
       refresh notices, and commit only the generated tray PNG. Complete when a clean checkout can
       regenerate a byte-identical PNG and the script rejects wrong dimensions.
-- [ ] **Integrate the tray mark.** Update only the tray-icon path required by the selected
+- [x] **Integrate the tray mark.** Update only the tray-icon path required by the selected
       contract, preserve the default-icon failure path, and do not change tray actions or
       lifecycle. Complete when the mark renders correctly in Cinnamon's real Linux/X11
       status-notifier host on the declared light and dark panel treatments.
-- [ ] **Replace the application icons and favicon.** Regenerate `src-tauri/icons/` with
+- [x] **Replace the application icons and favicon.** Regenerate `src-tauri/icons/` with
       `npm run logo:icons` and link the favicon. Complete when the running window shows the new
       icon and the Debian package installs the new icons.
-- [ ] **Integrate the README version.** Add the selected documentation asset and concise
+- [x] **Integrate the README version.** Add the selected documentation asset and concise
       alternative text before the README title. Complete when GitHub-style rendering selects the
       correct light or dark source and has no broken local asset link, unreadable fallback, or
       distracting layout at desktop and narrow widths.
