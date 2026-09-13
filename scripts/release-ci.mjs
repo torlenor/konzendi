@@ -78,11 +78,26 @@ export function tagVersion(ref) {
 }
 
 /**
+ * A hidden line in the notes of every draft this script writes. GitHub detaches a draft from
+ * its tag (its `tag_name` becomes `untagged-…`) when an update omits `tag_name`, for example
+ * after an edit elsewhere; the marker still finds such a draft so that it is re-attached
+ * instead of duplicated.
+ */
+export function releaseMarker(tag) {
+  return `<!-- konzendi-release-tag: ${tag} -->`;
+}
+
+/**
  * Decide what may happen to the release for `tag`: never touch a published one, and only
  * release versions above every published version. Returns the existing draft, if any.
  */
 export function releaseFor(releases, tag, version) {
-  const own = releases.filter((release) => release.tag_name === tag);
+  const marker = releaseMarker(tag);
+  const own = releases.filter(
+    (release) =>
+      release.tag_name === tag ||
+      (release.draft && (release.body ?? "").includes(marker)),
+  );
   const published = own.find((release) => !release.draft);
   if (published) {
     throw new ReleaseCiError(
@@ -242,9 +257,10 @@ export class GitHub {
     });
   }
 
-  updateRelease(id, fields) {
+  /** Every update names the tag: GitHub detaches a draft from its tag otherwise. */
+  updateRelease(id, tag, fields) {
     return this.request("PATCH", `/repos/${this.repository}/releases/${id}`, {
-      body: fields,
+      body: { ...fields, tag_name: tag },
     });
   }
 
@@ -460,7 +476,7 @@ export async function publish({
   };
   await recheck();
 
-  const body = notes(root, version);
+  const body = `${notes(root, version)}\n${releaseMarker(tag)}\n`;
   const prerelease = parseVersion(version)[0] === 0;
   let release = releaseFor(await github.releases(), tag, version);
   if (release === null) {
@@ -473,7 +489,7 @@ export async function publish({
     });
     log(`Created draft ${release.id} for ${tag}`);
   } else {
-    release = await github.updateRelease(release.id, {
+    release = await github.updateRelease(release.id, tag, {
       name: incompleteTitle(version),
       body: INCOMPLETE + body,
       prerelease,
@@ -536,11 +552,16 @@ export async function publish({
     throw new ReleaseCiError(
       `${tag} was published during this run; stopping without changes`,
     );
-  const ready = await github.updateRelease(release.id, {
+  const ready = await github.updateRelease(release.id, tag, {
     name: `Konzendi ${version}`,
     body,
     prerelease,
   });
+  if (!ready.draft || ready.tag_name !== tag) {
+    throw new ReleaseCiError(
+      `the draft is not attached to ${tag} after completion (tag_name ${ready.tag_name}); re-run the draft job`,
+    );
+  }
   return {
     release: ready,
     uploaded: plan.upload,
