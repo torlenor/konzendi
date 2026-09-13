@@ -5,7 +5,7 @@ decisions are in [Phase 12](../../docs/phases/phase-12-logo-design.md).
 
 ## Rights
 
-All rights reserved. The [logo rights notice](../../docs/phases/phase-12-logo-design/RIGHTS.md)
+All rights reserved. The [logo rights notice](RIGHTS.md)
 applies to these sources and to all exports from them. It does not apply to other repository
 files.
 

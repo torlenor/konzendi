@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">Event Thread candidate mark</title>
-  <desc id="desc">An unbroken vertical thread with three recorded events on alternating sides.</desc>
-  <rect x="28" y="5" width="8" height="54" rx="4" fill="#0d151a"/>
-  <rect x="6" y="10" width="17" height="13" rx="3" fill="#6fb2e8"/>
-  <rect x="41" y="26" width="17" height="13" rx="3" fill="#0d151a"/>
-  <rect x="6" y="42" width="17" height="13" rx="3" fill="#6fb2e8"/>
-</svg>

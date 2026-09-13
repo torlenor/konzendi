@@ -17,12 +17,16 @@ discovery unless the selected geometry fails.
 
 ### Discovery run: 13 September 2026
 
-The first discovery run produced a brief and three candidate directions. The
-[candidate record](phase-12-logo-design/README.md) contains the vector geometry probes, generated
-context boards, strengths, risks, provenance, and owner decisions.
-[`review.html`](phase-12-logo-design/review.html) renders each vector at 16, 22, 24, and 32 CSS
-pixels on light and dark strips. These are geometry checks. They are not evidence from a tray
+The first discovery run produced a brief and three candidate directions. The candidate record
+contained the vector geometry probes, generated context boards, image prompts, strengths, risks,
+provenance, and owner decisions. A review page rendered each vector at 16, 22, 24, and 32 CSS
+pixels on light and dark strips. These were geometry checks. They were not evidence from a tray
 host.
+
+The discovery files were removed on 13 September 2026 after implementation, because the
+production sources are in [`assets/logo/`](../../assets/logo/README.md). They remain in Git
+history in the `docs/phases/phase-12-logo-design/` directory of commit `b1d3f91`. Use, for example,
+`git show b1d3f91:docs/phases/phase-12-logo-design/README.md`.
 
 The owner then asked to combine a brain with the logo. This is an explicit change to the first
 brief, which avoided brain imagery. Three additional candidates use a simplified brain to mean
@@ -57,8 +61,7 @@ sizes, not four runtime assets.
 On 13 September 2026, the owner decided that the tray does not get a special treatment. The tray
 uses the logo as it is. This replaces the earlier plan for a separate tray SVG with light and
 petrol keylines. Rationale: one logo source is simpler, and the tray mark must be the same as the
-logo that people see elsewhere. The real-host acceptance check below
-still applies. If the petrol lobes are not visible on the dark panel, record that result before
+logo that people see elsewhere. The real-host acceptance check below still applies. If the petrol lobes are not visible on the dark panel, record that result before
 you change the treatment.
 
 The first implementation exported a 16 px PNG. On 13 September 2026, the owner saw that this
@@ -91,15 +94,15 @@ product outcomes. A later change to that scope requires a roadmap update.
 ## Decisions and evidence
 
 The selected mark is **F1. Balanced**, stored as
-[`threaded-mind-balanced.svg`](phase-12-logo-design/threaded-mind-balanced.svg). The public
+[`konzendi-mark-on-light.svg`](../../assets/logo/konzendi-mark-on-light.svg). The public
 wordmark is `Konzendi`. The README keeps its text heading, so it does not embed a font in an
 image. Phase 6 supplies the current visual language, including the *Readout* direction and its
 light/dark accessibility floor.
 
-The [selected source contract](phase-12-logo-design/README.md#selected-source-contract) fixes the
-two-colour and monochrome SVG sources, 64-unit geometry, clear space, 32 px tray export, 16–32 px
-test matrix, and 80 px README treatment. The owner selected an
-[asset-specific all-rights-reserved notice](phase-12-logo-design/RIGHTS.md). It applies to F1 and
+The selected source contract fixes the two-colour SVG sources in a transparent 64-unit view box,
+clear space of at least the 6-unit spine width outside the view box, the 32 px tray export, the
+16–32 px test matrix, and the 80 px README treatment. The owner selected an
+[asset-specific all-rights-reserved notice](../../assets/logo/RIGHTS.md). It applies to F1 and
 its derivatives, does not license other repository files, and does not imply trademark
 registration.
 
@@ -133,16 +136,18 @@ The six candidates are:
 
 | Candidate | Product idea | Principal risk |
 | --- | --- | --- |
-| [A. Continuity Gate](phase-12-logo-design/README.md#a-continuity-gate) | Work continues through a context switch. | The crossing can become busy at 16 px. |
-| [B. Switch Lanes](phase-12-logo-design/README.md#b-switch-lanes) | A recorded path changes from one context to another. | The mark can resemble a menu or generic routing symbol. |
-| [C. Event Thread](phase-12-logo-design/README.md#c-event-thread) | An unbroken record carries events on alternating sides. | The mark can resemble sliders or controls. |
-| [D. Neural Gate](phase-12-logo-design/README.md#d-neural-gate) | A continuous path crosses a simplified brain-shaped gate. | The path competes with the brain at 16 px. |
-| [E. Split Focus](phase-12-logo-design/README.md#e-split-focus) | A brain is divided by a context-switch path in negative space. | The central path can look decorative. |
-| **[F. Threaded Mind](phase-12-logo-design/README.md#f-threaded-mind) — selected** | Brain lobes attach to an unbroken event-record thread. | The mark can resemble controls or a butterfly. |
+| A. Continuity Gate | Work continues through a context switch. | The crossing can become busy at 16 px. |
+| B. Switch Lanes | A recorded path changes from one context to another. | The mark can resemble a menu or generic routing symbol. |
+| C. Event Thread | An unbroken record carries events on alternating sides. | The mark can resemble sliders or controls. |
+| D. Neural Gate | A continuous path crosses a simplified brain-shaped gate. | The path competes with the brain at 16 px. |
+| E. Split Focus | A brain is divided by a context-switch path in negative space. | The central path can look decorative. |
+| **F. Threaded Mind — selected** | Brain lobes attach to an unbroken event-record thread. | The mark can resemble controls or a butterfly. |
 
-All six are original project studies. Their SVG files are deterministic geometry probes. The
-PNG boards came from OpenAI's built-in image generation tool and are context references only;
-they are not sources for production exports. F1 is the only selected geometry source.
+All six are original project studies. Their SVG files were deterministic geometry probes. The
+PNG boards came from OpenAI's built-in image generation tool and were context references only;
+they were not sources for production exports. The F1, F2, and F3 SVG files were redrawn to match
+their boards, with arcs fitted to the average of the four lobes. F1 is the only selected geometry
+source.
 
 Before this phase, the tray called `defaultWindowIcon()` and therefore showed the generated
 application icon. The tray now receives its own PNG and keeps `defaultWindowIcon()` as a failure
