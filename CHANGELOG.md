@@ -18,6 +18,10 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 - Quick access now has `K` to open the Konzendi tracking window.
 
+### Changed
+
+- The tray, window, and application package icons now show the Konzendi logo.
+
 ### Compatibility
 
 - No event or stored-data format changes.

@@ -1,4 +1,5 @@
 import { defaultWindowIcon } from "@tauri-apps/api/app";
+import { Image } from "@tauri-apps/api/image";
 import { Menu } from "@tauri-apps/api/menu";
 import { TrayIcon } from "@tauri-apps/api/tray";
 import { useEffect, useState } from "react";
@@ -10,6 +11,7 @@ import {
   subjectMark,
   TOPIC_MARK,
 } from "./actions";
+import trayIconUrl from "./assets/konzendi-tray-32.png";
 import type { TrackingState } from "./core/fold";
 import { quit, showMain } from "./desktop";
 import { formatStamp } from "./time";
@@ -100,6 +102,23 @@ function lastTopicId(state: TrackingState): string | null {
   return null;
 }
 
+/**
+ * The Konzendi logo, exported by `npm run logo:export`. If it cannot be loaded, the tray
+ * keeps the generated application icon, so a broken asset never removes the tray.
+ */
+async function trayIcon(): Promise<Image | null> {
+  try {
+    const response = await fetch(trayIconUrl);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await Image.fromBytes(await response.arrayBuffer());
+  } catch (failure) {
+    console.error(
+      `Could not load the tray logo, using the application icon: ${String(failure)}`,
+    );
+    return defaultWindowIcon();
+  }
+}
+
 /** The menu the tray is showing, so the one it replaces can be released. */
 const shown: { menu: Menu | null } = { menu: null };
 
@@ -116,7 +135,7 @@ export function useTray(tracking: Tracking, actions: Actions): void {
         setTray(existing);
         return;
       }
-      const icon = await defaultWindowIcon();
+      const icon = await trayIcon();
       // A Linux tray icon is not shown at all until it has a menu, even an empty one.
       const created = await TrayIcon.new({
         id: TRAY_ID,

@@ -51,33 +51,42 @@ the verified target.
 The current Linux implementation of Tauri 2.11.5 writes the supplied tray image as one PNG and
 gives its path to AppIndicator. It does not expose the Status Notifier Item specification's
 multi-resolution pixmap list through the current JavaScript path. The implementation must supply
-one 16 by 16 px PNG and let the host scale it. The 16, 22, 24, and 32 px sizes are visual test
+one 32 by 32 px PNG and let the host scale it. The 16, 22, 24, and 32 px sizes are visual test
 sizes, not four runtime assets.
 
 On 13 September 2026, the owner decided that the tray does not get a special treatment. The tray
-uses the logo as it is, exported as a 16 px PNG. This replaces the earlier plan for a separate
-tray SVG with light and petrol keylines. Rationale: one logo source is simpler, and the tray mark
-must be the same as the logo that people see elsewhere. The real-host acceptance check below
+uses the logo as it is. This replaces the earlier plan for a separate tray SVG with light and
+petrol keylines. Rationale: one logo source is simpler, and the tray mark must be the same as the
+logo that people see elsewhere. The real-host acceptance check below
 still applies. If the petrol lobes are not visible on the dark panel, record that result before
 you change the treatment.
 
+The first implementation exported a 16 px PNG. On 13 September 2026, the owner saw that this
+icon looks too pixelated in the real panel and decided to export 32 px again. Rationale: the host
+scales the PNG to its icon box, and a 16 px source becomes blocky when the box is larger.
+
+On 13 September 2026, the owner also added the window icon, the application package icons in
+`src-tauri/icons/`, and the favicon to this phase. They use the two-colour logo as it is, on a
+transparent background, like the tray. Rationale: the application must show one logo in all
+places. This changes the earlier tray-only scope, and the roadmap row shows the change.
+
 ## Outcome and scope
 
-The result is one coherent Konzendi logo system with two purposeful applications:
+The result is one coherent Konzendi logo system with these applications:
 
 - a compact tray mark that remains identifiable and legible at the selected Linux desktop sizes;
-  and
+- the window icon and the application package icons in `src-tauri/icons/`;
+- the favicon of the application web view; and
 - a README-ready version that places the mark before the approved text heading at documentation
   scale and has useful alternative text.
 
-The selected assets replace the current generated Tauri icon only in the tray and are integrated
-into the README. The phase also documents the source asset, export rule, accessibility
-requirements, and licensing notice.
+The selected assets replace the generated Tauri icons and are integrated into the README. The
+phase also documents the source asset, export rules, accessibility requirements, and licensing
+notice.
 
 Out of scope: a full rename, product-copy rewrite, application theme redesign, a marketing site,
-social-media collateral, package signing, or claims about product outcomes. A window icon,
-installer icon, favicon, splash screen, and platform-specific icon sets are excluded. A later
-change to that scope requires a roadmap update.
+social-media collateral, package signing, a splash screen, Android and iOS icons, or claims about
+product outcomes. A later change to that scope requires a roadmap update.
 
 ## Decisions and evidence
 
@@ -88,8 +97,8 @@ image. Phase 6 supplies the current visual language, including the *Readout* dir
 light/dark accessibility floor.
 
 The [selected source contract](phase-12-logo-design/README.md#selected-source-contract) fixes the
-two-colour and monochrome SVG sources, 64-unit geometry, clear space, 16 px tray export, 16–32 px
-test matrix, 80 px README treatment, and tray-only application scope. The owner selected an
+two-colour and monochrome SVG sources, 64-unit geometry, clear space, 32 px tray export, 16–32 px
+test matrix, and 80 px README treatment. The owner selected an
 [asset-specific all-rights-reserved notice](phase-12-logo-design/RIGHTS.md). It applies to F1 and
 its derivatives, does not license other repository files, and does not imply trademark
 registration.
@@ -105,7 +114,7 @@ registration.
 - Do not add a tray-specific SVG, keyline, or other tray treatment. The tray uses
   `assets/logo/konzendi-mark-on-light.svg` without changes. Do not select a tray asset from the
   application theme because the panel can use a different theme.
-- Export only `src/assets/konzendi-tray-16.png` for runtime use. Add a pinned development
+- Export only `src/assets/konzendi-tray-32.png` for runtime use. Add a pinned development
   dependency and `npm run logo:export` script that produces it deterministically from
   `konzendi-mark-on-light.svg`. The script must fail if source dimensions or expected output
   dimensions differ, and
@@ -113,8 +122,12 @@ registration.
 - In `useTray.ts`, load the PNG bytes and construct the Tauri image with `Image.fromBytes` before
   `TrayIcon.new`. The existing `image-png` Cargo feature supports this path. If asset loading or
   decoding fails, use `defaultWindowIcon()` and report the failure without removing the tray.
-- Do not change `src-tauri/icons/`, `tauri.conf.json`, the window icon, package icon, favicon, or
-  platform-specific icon sets.
+- Add `npm run logo:icons`. It runs the locked Tauri CLI (`tauri icon`) on
+  `konzendi-mark-on-light.svg` and replaces only the existing desktop icon files in
+  `src-tauri/icons/`. Do not add Android or iOS icons. Do not change the `bundle.icon` list in
+  `tauri.conf.json`; the Linux window icon is its first PNG, `icons/32x32.png`.
+- In `index.html`, link the favicon to `assets/logo/konzendi-mark-on-light.svg`. Vite copies it
+  into the build.
 
 The six candidates are:
 
@@ -131,10 +144,9 @@ All six are original project studies. Their SVG files are deterministic geometry
 PNG boards came from OpenAI's built-in image generation tool and are context references only;
 they are not sources for production exports. F1 is the only selected geometry source.
 
-The current tray calls `defaultWindowIcon()` and therefore shows the generated application icon.
-The inspected Tauri configuration uses separate generated package icons. The least disruptive
-path is to replace only the image passed to `TrayIcon.new` and keep the current default as a
-failure fallback.
+Before this phase, the tray called `defaultWindowIcon()` and therefore showed the generated
+application icon. The tray now receives its own PNG and keeps `defaultWindowIcon()` as a failure
+fallback. Because the application icons now also show the logo, the fallback shows the logo too.
 
 ## Work packages
 
@@ -145,19 +157,22 @@ failure fallback.
 - [x] **Explore and select a logo direction.** Create original, attributable candidate marks and
       show each in the selected tray and README contexts. Complete when the owner selects one
       direction and the rejected alternatives and rationale are recorded.
-- [ ] **Create the production sources and export.** Promote F1 to the two SVG sources under
-      `assets/logo/`, add the deterministic 16 px tray export script and its pinned dependency,
+- [x] **Create the production sources and export.** Promote F1 to the two SVG sources under
+      `assets/logo/`, add the deterministic 32 px tray export script and its pinned dependency,
       refresh notices, and commit only the generated tray PNG. Complete when a clean checkout can
       regenerate a byte-identical PNG and the script rejects wrong dimensions.
 - [ ] **Integrate the tray mark.** Update only the tray-icon path required by the selected
       contract, preserve the default-icon failure path, and do not change tray actions or
       lifecycle. Complete when the mark renders correctly in Cinnamon's real Linux/X11
       status-notifier host on the declared light and dark panel treatments.
+- [ ] **Replace the application icons and favicon.** Regenerate `src-tauri/icons/` with
+      `npm run logo:icons` and link the favicon. Complete when the running window shows the new
+      icon and the Debian package installs the new icons.
 - [ ] **Integrate the README version.** Add the selected documentation asset and concise
       alternative text before the README title. Complete when GitHub-style rendering selects the
       correct light or dark source and has no broken local asset link, unreadable fallback, or
       distracting layout at desktop and narrow widths.
-- [ ] **Record usage and recovery.** Document source location, allowed variants, export steps,
+- [x] **Record usage and recovery.** Document source location, allowed variants, export steps,
       licence/attribution, and replacement procedure. Complete when a later contributor can
       update the mark without guessing which output belongs in the tray or README.
 
@@ -166,12 +181,14 @@ failure fallback.
 Do not claim a completed logo until all of the following have recorded results:
 
 - The investigation gate is resolved and the Konzendi wordmark agrees with every new public asset.
-- `npm run logo:export` produces a byte-identical 16 by 16 px RGBA PNG from a clean checkout and
+- `npm run logo:export` produces a byte-identical 32 by 32 px RGBA PNG from a clean checkout and
   fails on an invalid source or output dimension.
 - The selected tray mark is visibly distinguishable in the 16, 22, 24, and 32 px review renders.
   Record the actual box used by Cinnamon in the running Linux/X11 application on both light and
   dark panel treatments. The full silhouette must remain visible, without clipping or blur that
   changes its meaning.
+- The running window uses `src-tauri/icons/32x32.png` as its icon. The Debian package installs
+  the regenerated icons, and the built `index.html` links the favicon.
 - The tray menu, open-window action, tracking actions, close-to-tray behavior, and quit behavior
   retain the Phase 3 acceptance behaviour after the icon change.
 - The README variant renders both colour-scheme sources from repository-relative paths, uses the
@@ -183,6 +200,46 @@ Do not claim a completed logo until all of the following have recorded results:
   the applicable Rust checks pass after integration. Record actual commands and results here;
   do not prefill a successful outcome.
 
+### Verification record: 13 September 2026
+
+Implementation added `assets/logo/konzendi-mark-on-light.svg`, `konzendi-mark-on-dark.svg`,
+[usage and recovery notes](../../assets/logo/README.md), `npm run logo:export` with the pinned
+development dependency `@resvg/resvg-js` 2.6.2, `src/assets/konzendi-tray-32.png`, the tray
+change in `src/useTray.ts`, `npm run logo:icons`, regenerated icons in `src-tauri/icons/`, the
+favicon link in `index.html`, and the README `<picture>` element.
+
+- `npm run logo:export` wrote a 32 by 32 px 8-bit RGBA PNG (SHA-256
+  `a185e5f99624f391e3a0a71fec6a231b46bc0afbc7b3d76042ec34e074fd6c42`).
+  `npm run logo:export -- --check` passed. The script tests in `scripts/logo-export.test.mjs`
+  compare the committed PNG with a new export and reject a wrong view box, a wrong intrinsic
+  size, a wrong output size, data that is not a PNG, and unknown arguments. The clean-checkout
+  run is not recorded yet; CI runs these tests after `npm ci`.
+- `npm run logo:icons` ran two times. The PNG and ICO files were the same after each run;
+  `icon.icns` was different after each run.
+- `npm run typecheck`, `npm run lint`, `npm test` (55 tests), `npm run test:scripts` (62 tests),
+  and `npm run build` passed. The built `dist/index.html` links the hashed favicon SVG.
+  In `src-tauri/`, `cargo fmt --check`, `cargo clippy --locked -- -D warnings`, and
+  `cargo test --locked` passed after the icon change.
+- `npm run notices -- --check` did not run: `cargo-about` is not installed on the development
+  machine. The new package is a development dependency, so the npm part of the notices does not
+  change. CI runs this check.
+- `npm run tauri dev` ran on a private X server with a private session bus. The tray wrote
+  `tray-icon-konzendi-0.png`, 32 by 32 px, with pixels identical to
+  `src/assets/konzendi-tray-32.png`. The window `_NET_WM_ICON` property was 32 by 32 px, with
+  pixels identical to `src-tauri/icons/32x32.png`. Cargo did not rebuild the application after
+  only the icon files changed, so a first check showed the previous icon. `cargo clean -p konzendi`
+  forced the rebuild. This is not evidence from a status-notifier host.
+- The owner reported that the tray icon works in the real desktop session, and that the 16 px
+  export looked too pixelated. The rendered box and the panel treatment were not recorded.
+- In the owner's Cinnamon session, the panel first showed the previous icon with
+  `npm run tauri dev`. Cause: the installed 0.1.1 package provides `Konzendi.desktop` with
+  `StartupWMClass=konzendi` and `Icon=konzendi`, so Cinnamon used the old `konzendi.png` files in
+  `/usr/share/icons/hicolor/` and not the window icon. The owner then reported that the new icon
+  works. The steps that the owner used were not recorded.
+- Not verified yet: the rendered box and appearance in Cinnamon's panel on light and dark panel
+  treatments, the Phase 3 tray behaviour after the change, the icon files installed by a new
+  Debian package, the README rendering on GitHub, and the failure path to `defaultWindowIcon()`.
+
 ## Rollout and rollback
 
 This is local repository delivery until a release phase publishes it. Introduce the new assets in
@@ -192,5 +249,7 @@ without touching the append-only event log or tracking behavior.
 
 If the new tray mark is unreadable, absent, or harms status-notifier integration, restore the
 previous tray icon path first and investigate the affected host with synthetic tracking data.
-If the README asset breaks rendering, revert only its markup and asset reference; the document's
+If the application icons are wrong or missing in the window or package, revert the
+`src-tauri/icons/` files and the favicon link; they do not affect stored data. If the README
+asset breaks rendering, revert only its markup and asset reference; the document's
 text must still identify the project without the image.

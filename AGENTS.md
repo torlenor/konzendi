@@ -22,8 +22,9 @@ and builds private draft releases from pushed version tags; nothing is deployed.
 - `src/core/` — pure domain core: event types, merging, the event vocabulary, the fold, and their
   Vitest tests.
 - `src-tauri/` — Rust event store, IPC commands, and desktop configuration.
-- `scripts/` — release helpers, third-party notice generation, the package smoke test, and
-  their Node tests.
+- `assets/logo/` — Konzendi logo sources and their usage rules.
+- `scripts/` — release helpers, third-party notice generation, the logo export, the package
+  smoke test, and their Node tests.
 - `.github/workflows/` — CI (`ci.yml`) and the tag-triggered draft release (`release.yml`).
 - `CHANGELOG.md` — user-visible changes per release; `docs/RELEASING.md` — release procedure.
 - `THIRD_PARTY_NOTICES.md` — generated; run `npm run notices` when a lockfile changes.

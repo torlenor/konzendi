@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/logo/konzendi-mark-on-dark.svg">
+  <img src="assets/logo/konzendi-mark-on-light.svg" width="80" height="80" alt="Konzendi Threaded Mind logo">
+</picture>
+
 # Konzendi
 
 A project exploring a simple, robust tool for people working on a computer, especially

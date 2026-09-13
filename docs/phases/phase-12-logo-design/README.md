@@ -51,16 +51,16 @@ idea by shortening the spine. Keep both refinements as decision history.
 - Each source uses a transparent 64 by 64 view box. When the mark is placed beside other content,
   keep external clear space equal to at least the 6-unit spine width. This is layout space beyond
   the SVG view box, not transparent padding inside it.
-- The minimum test size is 16 px. The tray has one 16 px runtime PNG. The 16, 22, 24, and 32 px
+- The minimum test size is 16 px. The tray has one 32 px runtime PNG. The 16, 22, 24, and 32 px
   renders are the visual test matrix; they are not separate runtime assets.
 - The README treatment uses the two-colour mark at 80 px before the existing `# Konzendi`
   heading. It uses petrol and blue on light backgrounds, and cool light and blue on dark
   backgrounds. The text heading remains the fallback if the image does not load.
-- The tray uses the two-colour logo as it is, exported as a 16 px PNG. It has no keyline or
+- The tray uses the two-colour logo as it is, exported as a 32 px PNG. It has no keyline or
   other tray-specific treatment. The owner made this decision on 13 September 2026 so that the
   tray and the logo stay the same.
-- Window, installer, package, favicon, and platform-specific icon sets remain unchanged. This
-  phase changes only the tray and README assets. A wider change requires a roadmap update.
+- The window icon, the application package icons in `src-tauri/icons/`, and the favicon also
+  use the two-colour logo as it is. The owner added them to this phase on 13 September 2026.
 
 The repository has no `LICENSE` file. The owner selected an asset-specific
 [all-rights-reserved notice](RIGHTS.md) for F1, its monochrome variants, and derived exports. The

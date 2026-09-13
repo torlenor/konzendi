@@ -14,6 +14,8 @@
     "test": "vitest run",
     "test:scripts": "node --test \"scripts/*.test.mjs\"",
     "notices": "node scripts/third-party-notices.mjs",
+    "logo:export": "node scripts/logo-export.mjs",
+    "logo:icons": "node scripts/logo-export.mjs --app-icons",
     "release:prepare": "node scripts/release.mjs prepare",
     "release:check": "node scripts/release.mjs check"
   },
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2",
+    "@resvg/resvg-js": "2.6.2",
     "@tauri-apps/cli": "^2",
     "@types/node": "^24",
     "@types/react": "^19.1.8",
