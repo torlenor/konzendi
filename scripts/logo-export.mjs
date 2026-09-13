@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// Exports the tray icon PNG from the Konzendi logo source. `--check` compares instead of
-// writing. `--app-icons` regenerates the application icons in src-tauri/icons/ instead.
-// The tray and the application use the logo as it is; see docs/phases/phase-12-logo-design.md.
+// Exports the tray icon PNG from the Konzendi application icon source. `--check` compares
+// instead of writing. `--app-icons` regenerates the application icons in src-tauri/icons/
+// instead. The icon puts the logo on a light tile so that it shows on dark and light panels;
+// see docs/phases/phase-12-logo-design.md.
 
 import { execFileSync } from "node:child_process";
 import {
@@ -17,7 +18,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Resvg } from "@resvg/resvg-js";
 
-export const SOURCE = "assets/logo/konzendi-mark-on-light.svg";
+export const SOURCE = "assets/logo/konzendi-app-icon.svg";
 export const OUTPUT = "src/assets/konzendi-tray-32.png";
 export const SOURCE_VIEW_BOX = "0 0 64 64";
 export const OUTPUT_SIZE = 32;

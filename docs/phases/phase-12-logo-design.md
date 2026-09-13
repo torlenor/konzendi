@@ -61,8 +61,9 @@ sizes, not four runtime assets.
 On 13 September 2026, the owner decided that the tray does not get a special treatment. The tray
 uses the logo as it is. This replaces the earlier plan for a separate tray SVG with light and
 petrol keylines. Rationale: one logo source is simpler, and the tray mark must be the same as the
-logo that people see elsewhere. The real-host acceptance check below still applies. If the petrol lobes are not visible on the dark panel, record that result before
-you change the treatment.
+logo that people see elsewhere. The real-host acceptance check below still applies. If the
+petrol lobes are not visible on the dark panel, record that result before you change the
+treatment.
 
 The first implementation exported a 16 px PNG. On 13 September 2026, the owner saw that this
 icon looks too pixelated in the real panel and decided to export 32 px again. Rationale: the host
@@ -72,6 +73,17 @@ On 13 September 2026, the owner also added the window icon, the application pack
 `src-tauri/icons/`, and the favicon to this phase. They use the two-colour logo as it is, on a
 transparent background, like the tray. Rationale: the application must show one logo in all
 places. This changes the earlier tray-only scope, and the roadmap row shows the change.
+
+On 13 September 2026, the dark-panel check failed: the petrol lobes and the spine were not
+visible on the Cinnamon dark panel (see the verification record). The owner compared a light
+rounded tile, a light circle, a light keyline, and a theme-aware tray, and selected the light
+tile. The tray, the window and package icons, and the favicon now use
+`assets/logo/konzendi-app-icon.svg`: the logo at 78% scale on a rounded `#dbe5ea` square with a
+14-unit corner radius. This replaces the plain logo for these icons. The README keeps the plain
+light and dark logo sources. Rationale: the window-list icon comes from a static icon file and
+cannot follow the panel theme, so one static icon must show on dark and light panels. Petrol on
+the tile has high contrast, and the tile has high contrast on a dark panel. On a light panel the
+tile is faint, but the logo on it stays visible.
 
 ## Outcome and scope
 
@@ -114,22 +126,24 @@ registration.
   blue positions. README uses a `<picture>` element to choose these sources by colour scheme,
   renders the mark at 80 px, and keeps the existing `# Konzendi` heading as text and fallback.
   The image alternative text is `Konzendi Threaded Mind logo`.
-- Do not add a tray-specific SVG, keyline, or other tray treatment. The tray uses
-  `assets/logo/konzendi-mark-on-light.svg` without changes. Do not select a tray asset from the
-  application theme because the panel can use a different theme.
+- Add `assets/logo/konzendi-app-icon.svg`: the logo scaled to 78% about the centre, on a
+  rounded `#dbe5ea` tile that fills the 64-unit view box with a 14-unit corner radius. The tray,
+  application icons, and favicon use this source. Do not add a keyline or a theme-dependent
+  icon. Do not select a tray asset from the application theme because the panel can use a
+  different theme.
 - Export only `src/assets/konzendi-tray-32.png` for runtime use. Add a pinned development
   dependency and `npm run logo:export` script that produces it deterministically from
-  `konzendi-mark-on-light.svg`. The script must fail if source dimensions or expected output
+  `konzendi-app-icon.svg`. The script must fail if source dimensions or expected output
   dimensions differ, and
   `npm run notices` must refresh third-party notices after the lockfile changes.
 - In `useTray.ts`, load the PNG bytes and construct the Tauri image with `Image.fromBytes` before
   `TrayIcon.new`. The existing `image-png` Cargo feature supports this path. If asset loading or
   decoding fails, use `defaultWindowIcon()` and report the failure without removing the tray.
 - Add `npm run logo:icons`. It runs the locked Tauri CLI (`tauri icon`) on
-  `konzendi-mark-on-light.svg` and replaces only the existing desktop icon files in
+  `konzendi-app-icon.svg` and replaces only the existing desktop icon files in
   `src-tauri/icons/`. Do not add Android or iOS icons. Do not change the `bundle.icon` list in
   `tauri.conf.json`; the Linux window icon is its first PNG, `icons/32x32.png`.
-- In `index.html`, link the favicon to `assets/logo/konzendi-mark-on-light.svg`. Vite copies it
+- In `index.html`, link the favicon to `assets/logo/konzendi-app-icon.svg`. Vite copies it
   into the build.
 
 The six candidates are:
@@ -208,13 +222,16 @@ Do not claim a completed logo until all of the following have recorded results:
 ### Verification record: 13 September 2026
 
 Implementation added `assets/logo/konzendi-mark-on-light.svg`, `konzendi-mark-on-dark.svg`,
+`konzendi-app-icon.svg`,
 [usage and recovery notes](../../assets/logo/README.md), `npm run logo:export` with the pinned
 development dependency `@resvg/resvg-js` 2.6.2, `src/assets/konzendi-tray-32.png`, the tray
 change in `src/useTray.ts`, `npm run logo:icons`, regenerated icons in `src-tauri/icons/`, the
 favicon link in `index.html`, and the README `<picture>` element.
 
-- `npm run logo:export` wrote a 32 by 32 px 8-bit RGBA PNG (SHA-256
-  `a185e5f99624f391e3a0a71fec6a231b46bc0afbc7b3d76042ec34e074fd6c42`).
+- From the plain logo, `npm run logo:export` wrote a 32 by 32 px 8-bit RGBA PNG (SHA-256
+  `a185e5f99624f391e3a0a71fec6a231b46bc0afbc7b3d76042ec34e074fd6c42`). From the tiled
+  `konzendi-app-icon.svg`, it wrote a 32 by 32 px 8-bit RGBA PNG (SHA-256
+  `1de0a1fe9474c7a4ecfa2f93af1374a7cd7fd011b20708adaadc3aa95ae5498c`).
   `npm run logo:export -- --check` passed. The script tests in `scripts/logo-export.test.mjs`
   compare the committed PNG with a new export and reject a wrong view box, a wrong intrinsic
   size, a wrong output size, data that is not a PNG, and unknown arguments. The clean-checkout
@@ -241,9 +258,25 @@ favicon link in `index.html`, and the README `<picture>` element.
   `StartupWMClass=konzendi` and `Icon=konzendi`, so Cinnamon used the old `konzendi.png` files in
   `/usr/share/icons/hicolor/` and not the window icon. The owner then reported that the new icon
   works. The steps that the owner used were not recorded.
-- Not verified yet: the rendered box and appearance in Cinnamon's panel on light and dark panel
-  treatments, the Phase 3 tray behaviour after the change, the icon files installed by a new
-  Debian package, the README rendering on GitHub, and the failure path to `defaultWindowIcon()`.
+- The owner reported that the tray icons work and that the Debian package installs and shows the
+  new icons.
+- **Dark panel: failed.** An owner screenshot of the Cinnamon dark panel shows the window-list
+  icon and the tray icon with only the two blue lobes visible. The petrol lobes and the spine are
+  present in the pixels (`#0d151a`), but they do not separate from the panel. Measured contrast
+  ratios: petrol against the panel background `#1c1c20` is 1.09:1, and against the window-list
+  button `#303036` is 1.41:1. Blue is 7.45:1 and 5.75:1. The icon is correct; the plain two-colour
+  logo does not work on a dark panel.
+- The owner decided on 13 September 2026 that the light and dark panel behaviour is the only
+  remaining item to investigate before the phase is done. The README rendering on GitHub, the
+  rendered icon box, and the failure path to `defaultWindowIcon()` were not recorded.
+- After the change to the light tile, `npm run logo:export`, `npm run logo:icons`, and
+  `cargo clean -p konzendi` ran. On a private X server with a private session bus, the tray PNG
+  was pixel-identical to the tiled `src/assets/konzendi-tray-32.png`, and the window
+  `_NET_WM_ICON` was pixel-identical to the tiled `src-tauri/icons/32x32.png`. Calculated contrast
+  ratios: petrol on the tile 14.40:1, the tile on the dark panel `#1c1c20` 13.27:1 and on the
+  window-list button `#303036` 10.24:1, the tile on a light panel `#efefef` 1.11:1. Blue on the
+  tile is 1.78:1, so blue and tile are separated mainly by hue. Not verified yet: the tiled icons
+  in the owner's Cinnamon session on the dark and light panels.
 
 ## Rollout and rollback
 
