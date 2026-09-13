@@ -14,6 +14,8 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-13
+
 ### Added
 
 - Topic tracking in a desktop window: name a topic and start, switch with one click or with

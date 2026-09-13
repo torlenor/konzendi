@@ -1,6 +1,6 @@
 [package]
 name = "konzendi"
-version = "0.1.0"
+version = "0.1.1"
 description = "Track work topics and context switches in a local event log"
 authors = ["torlenor"]
 publish = false
