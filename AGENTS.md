@@ -1,6 +1,6 @@
 # Working in Konzendi
 
-Use concise, clean, understandable language. Use ASD-STE100. Read this file and the relevant documentation before making changes. Keep work within the requested scope and preserve unrelated edits.
+Unless the task states otherwise, write technical documentation, including phase design documents, comments, and other technical prose, in accordance with ASD-STE100 Simplified Technical English. Write UI text in clear, natural language suitable for non-technical users. Preserve quoted text, code, proper names, and explicit user wording. Read this file and the relevant documentation before making changes. Keep work within the requested scope and preserve unrelated edits.
 
 ## Repository layout
 
