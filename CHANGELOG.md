@@ -21,6 +21,9 @@ while it was being built, and a pushed tag is never moved. The first release is 
 ### Changed
 
 - The tray, window, and application package icons now show the Konzendi logo.
+- The title bar stays at the top of the window, and only the content below it scrolls. In a
+  narrow window the bar uses two rows, so no control is cut off. The window cannot be made
+  smaller than 480×320.
 
 ### Compatibility
 
@@ -29,6 +32,8 @@ while it was being built, and a pushed tag is never moved. The first release is 
 ### Known limitations
 
 - The global shortcut and quick switcher remain X11-only.
+- On some desktops the scrollbar shows only while you scroll, so it is not always visible that
+  a view continues below the window.
 
 ## [0.1.1] - 2026-09-13
 

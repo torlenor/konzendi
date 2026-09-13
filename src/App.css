@@ -81,8 +81,11 @@ body {
   margin: 0;
   background: var(--ground);
   font-size: 0.9375rem;
-  min-height: 100vh;
+  height: 100vh;
   box-sizing: border-box;
+}
+#root {
+  height: 100%;
 }
 :root[data-frame="custom"] body {
   border: 1px solid var(--edge);
@@ -158,6 +161,23 @@ body {
   cursor: se-resize;
 }
 
+/*
+ * The tracking window's surface fills the window inside its edge. The bar keeps its own
+ * height and only the content area below it scrolls, so the bar, the window controls,
+ * and all four edges stay in view. The document itself never scrolls.
+ */
+main {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.app-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 /* The tracking state resolves to one colour, read by the mark and the state bar. */
 main {
   --state: var(--rule);
@@ -190,6 +210,31 @@ main[data-state="stopped"] {
 .title-bar-identity {
   flex: 1;
   min-width: 4.75rem;
+}
+/*
+ * One row needs 682px with the current controls. Below that width the navigation moves
+ * to a second row, and the identity and the window controls keep the first. The DOM order
+ * is unchanged, so Tab still goes identity, navigation, window controls. The navigation can
+ * wrap again, so a control is never cut off. The window floor is 480px (tauri.conf.json).
+ */
+@media (max-width: 43rem) {
+  .title-bar {
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+    padding-left: 0.5rem;
+  }
+  /* The name and `‹ Back` differ in height; the row must not move when the view changes. */
+  .title-bar-identity {
+    display: flex;
+    align-items: center;
+    min-height: 2.25rem;
+  }
+  .title-bar nav {
+    order: 1;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
 }
 h1 {
   margin: 0;

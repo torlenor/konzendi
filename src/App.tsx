@@ -56,34 +56,37 @@ function App() {
       {/* A maximised window does not resize from its edges, so the zones go away. */}
       {frame === "custom" && !maximized && <ResizeEdges />}
 
-      <div className="app-content">
-        {tracking.error && (
-          <p role="alert">
-            {tracking.error}
-            <button
-              type="button"
-              className="link"
-              onClick={tracking.dismissError}
-            >
-              dismiss
-            </button>
-          </p>
-        )}
+      {/* The bar stays in place: only this area scrolls when the content is taller. */}
+      <div className="app-scroll">
+        <div className="app-content">
+          {tracking.error && (
+            <p role="alert">
+              {tracking.error}
+              <button
+                type="button"
+                className="link"
+                onClick={tracking.dismissError}
+              >
+                dismiss
+              </button>
+            </p>
+          )}
 
-        {tracking.loading ? (
-          <p>Reading the stored log…</p>
-        ) : view === "analytics" ? (
-          <AnalyticsView tracking={tracking} />
-        ) : view === "entries" ? (
-          <EntriesView tracking={tracking} actions={actions} />
-        ) : view === "topics" ? (
-          <TopicsView tracking={tracking} actions={actions} />
-        ) : (
-          <>
-            <TrackView tracking={tracking} actions={actions} />
-            <QuickAccessBand quick={quick} />
-          </>
-        )}
+          {tracking.loading ? (
+            <p>Reading the stored log…</p>
+          ) : view === "analytics" ? (
+            <AnalyticsView tracking={tracking} />
+          ) : view === "entries" ? (
+            <EntriesView tracking={tracking} actions={actions} />
+          ) : view === "topics" ? (
+            <TopicsView tracking={tracking} actions={actions} />
+          ) : (
+            <>
+              <TrackView tracking={tracking} actions={actions} />
+              <QuickAccessBand quick={quick} />
+            </>
+          )}
+        </div>
       </div>
     </main>
   );
