@@ -4,7 +4,6 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
-  cpSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -24,6 +23,7 @@ import {
   parseVersion,
   prepare,
   ReleaseError,
+  setVersions,
   VERSION_FILES,
   versions,
 } from "./release.mjs";
@@ -72,9 +72,12 @@ function read(file) {
 /** A repository with the real version files and the given changelog, committed on main. */
 function repository(changelogText) {
   dir = join(scratch, `repo-${counter++}`);
-  for (const file of VERSION_FILES) {
-    mkdirSync(dirname(join(dir, file)), { recursive: true });
-    cpSync(join(root, file), join(dir, file));
+  // The real files, at a fixed version, so the tests do not depend on the current release.
+  const real = Object.fromEntries(
+    VERSION_FILES.map((file) => [file, readFileSync(join(root, file), "utf8")]),
+  );
+  for (const [file, text] of Object.entries(setVersions(real, "0.1.0"))) {
+    write(file, text);
   }
   write(CHANGELOG, changelogText);
   write("src/unrelated.ts", "export const untouched = 1;\n");
