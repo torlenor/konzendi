@@ -25,9 +25,8 @@ application, and no application code was written.
 | 8 | Surface boundary | The quick-access surface offers switching, pause, and undo of the last entry. Everything else is window-only. See [Surface boundary](#surface-boundary). |
 | 9 | Missed entries | A prominent elapsed time, back-dating in the same interaction, and a window path to add a missed switch. Nothing automatic. See [Missed entries](#missed-entries). |
 
-Recording these outcomes resolves [Q05](../OPEN_QUESTIONS.md). Scoring
-([Q07](../OPEN_QUESTIONS.md)) and analytics ([Q08](../OPEN_QUESTIONS.md)) were out of scope and
-remain open; no decision here depends on them.
+Scoring ([Q07](../OPEN_QUESTIONS.md)) and analytics were out of scope. Analytics is handled by
+[Phase 4](phase-4-timeline-analytics.md); no decision here depends on either topic.
 
 ## Outcome and scope
 
@@ -542,8 +541,8 @@ proposal and no decision here depends on it.
   [Acceptance checks for the implementation phase](#acceptance-checks-for-the-implementation-phase)
   lists sixteen criteria, each with how it is checked, including the fold example as a test case.
 
-- [x] **Close the phase.** Q05 resolved in the open questions with a link here, readiness
-  changed to `Implementation-ready`, roadmap status updated, and navigation links unchanged
+- [x] **Close the phase.** The tracking decisions were recorded here, readiness changed to
+  `Implementation-ready`, roadmap status updated, and navigation links unchanged
   because scope did not change.
 
 ## Acceptance and verification
@@ -559,7 +558,7 @@ Checked on 6 September 2026.
 | Screen design covers first run, ordinary switch, pause and resume, undo, and a late correction | Passed. Five window states plus the quick-access surface. |
 | Each action assigned to the window, the quick-access surface, or both | Passed. Nine actions in [Surface boundary](#surface-boundary). |
 | No production code added; any prototype deleted and not committed | Passed. No prototype was built and no file outside `docs/` changed. |
-| Q05 resolved and linking here; Q07 and Q08 still open | Passed. |
+| Tracking decisions recorded here; scoring remains open and analytics moved to Phase 4 | Passed. |
 | Local documentation links resolve and phase metadata matches the working rules | Passed. Anchors and relative links checked; readiness is `Implementation-ready`, dependency on Phase 0 matches the roadmap row, and the previous/next chain is unchanged. |
 
 This records a design. It establishes nothing about whether the interaction works in practice;
@@ -570,8 +569,8 @@ that is [Phase 5](phase-5-validation-trial.md)'s subject.
 The deliverable is this document. There is no build, release, or user-visible change, and no
 external service is involved.
 
-Rollback is reverting the recorded decisions and returning readiness to `Discovery required`,
-leaving Q05 open. There is no data compatibility concern: no tracking data exists yet, and the
+Rollback is reverting the recorded decisions and returning readiness to `Discovery required`.
+There is no data compatibility concern: no tracking data exists yet, and the
 Phase 0 round-trip log holds only placeholder records. Should the decisions change after the
 tracking implementation exists, the append-only log means superseded history is retained, and
 the migration cost falls on the fold in the TypeScript core rather than on stored data.

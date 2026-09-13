@@ -10,10 +10,9 @@
 ## Investigation gate
 
 Resolved by the owner on 11 September 2026. The command opens the Konzendi tracking window
-when the user presses `K` in quick access: `Ctrl+Alt+K`, then `K`. This resolves
-[Q18](../OPEN_QUESTIONS.md). The existing surface already owns unmodified letter-key commands,
-and its tray has an **Open Konzendi** item backed by `show_main`; no discovery remains before
-implementation.
+when the user presses `K` in quick access: `Ctrl+Alt+K`, then `K`. The existing surface already
+owns unmodified letter-key commands, and its tray has an **Open Konzendi** item backed by
+`show_main`; no discovery remains before implementation.
 
 ## Outcome and scope
 

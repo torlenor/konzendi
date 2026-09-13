@@ -10,8 +10,8 @@
 ## Investigation gate
 
 Resolved. The user decided this on 12 September 2026, after the
-[Phase 4](phase-4-timeline-analytics.md) analytics made the problem visible. This resolves
-[Q22](../OPEN_QUESTIONS.md) and changes nothing about [Q05](../OPEN_QUESTIONS.md)'s mechanics.
+[Phase 4](phase-4-timeline-analytics.md) analytics made the problem visible. This changes only
+the presentation of the mechanics decided in [Phase 1](phase-1-tracking-design.md).
 
 | # | Question | Decision |
 | --- | --- | --- |

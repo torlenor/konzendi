@@ -16,7 +16,7 @@ answer. The rest of the plan can be read as the accepted target.
 
 ### Decided by the owner, 12 September 2026
 
-These answers resolve [Q24](../OPEN_QUESTIONS.md).
+The accepted answers are:
 
 | Area | Decision |
 | --- | --- |
@@ -107,8 +107,8 @@ Tab, Enter, and Space work without any of it.
 
 ### Nothing here is recorded
 
-The menu appends no event. The appearance choice keeps the `localStorage` key it has, which
-[Q12](../OPEN_QUESTIONS.md) already decided appends nothing. Opening a folder is an action on
+The menu appends no event. The appearance choice keeps the `localStorage` key that
+[Phase 6](phase-6-application-theme.md) already decided appends nothing. Opening a folder is an action on
 the desktop, not a fact about the user's work.
 
 ## Work packages
@@ -154,7 +154,7 @@ Use a temporary data directory. Do not record personal logs in these checks. The
 7. About shows the version of the running build. It claims no licence file that is absent
    from the repository.
 8. Check the panel in light and dark, with focus visible on every control, against the
-   WCAG 2.2 AA floor [Q12](../OPEN_QUESTIONS.md) set. Check it at the window's smallest
+   WCAG 2.2 AA floor [Phase 6](phase-6-application-theme.md) set. Check it at the window's smallest
    size and with the desktop frame preference set to `Desktop frame`.
 9. The quick switcher is unchanged. It has no `…` button, and the global shortcut, topic
    selection, Stop, and Undo behave as before.

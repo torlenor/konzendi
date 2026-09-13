@@ -29,7 +29,7 @@ single-digit shortcuts and does not require Phase 5's validation trial.
 
 ### Existing coverage
 
-[Q16](../OPEN_QUESTIONS.md) deferred topic pinning until after the validation trial.
+[Phase 3](phase-3-quick-access.md) deferred topic pinning until after the validation trial.
 [Phase 2](phase-2-tracking-implementation.md#rationale) chose creation order instead of
 recent-use order. [Phase 3](phase-3-quick-access.md#interpretations-of-the-design) limited
 the quick switcher to nine topics. Neither phase designed user-assigned keys.
@@ -62,16 +62,16 @@ These are source observations, not desktop verification for this phase.
 - Let the topic colour fill the analytics lane segments in place of the state colour. The
   running lane keeps its mark and its wording.
 
-These decisions resolve Q16 and replace its trial dependency. Explicit assignments replace
+These decisions replace the trial dependency. Explicit assignments replace
 position-based numbering so the user can rely on a learned key.
 
-The colour decisions resolve [Q25](../OPEN_QUESTIONS.md) and change Phase 6's rule for
+The colour decisions change Phase 6's rule for
 topic identity only: colour may now say *which topic*, beside saying *which state*. The
 state colour keeps the window bar, the control outlines, and the marks. A free colour
 cannot be checked against the accessibility floor before it is picked, so the contract
 below keeps every swatch visible, keeps text out of the topic colour, and warns without
-blocking the save. This changes the lanes recorded under Q08; the readings and the lane
-layout are unchanged.
+blocking the save. This changes the lanes defined in Phase 4; the readings and the lane layout
+are unchanged.
 
 ### Implementation contract
 

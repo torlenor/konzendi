@@ -16,7 +16,7 @@ Required while discovery remains; replace with findings and accepted decisions o
 
 - Questions that must be answered before implementation.
 - Evidence to gather, including any bounded experiment and its evaluation criteria.
-- Decision to record, who must decide, and which open-question IDs it resolves.
+- Decision to record and who must decide it.
 
 ## Outcome and scope
 
@@ -25,7 +25,8 @@ Describe the concrete result and why it matters. State what is excluded.
 ## Decisions and evidence
 
 Record accepted choices, rationale, alternatives where useful, and relevant evidence.
-Separate verified facts from assumptions. Link unresolved decisions to the open-questions file.
+Separate verified facts from assumptions. Keep unresolved decisions that this phase owns here.
+Use the open-questions file only for questions that no phase handles.
 
 ## Work packages
 

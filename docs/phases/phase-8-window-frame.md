@@ -15,7 +15,7 @@ directory and did not read or write the owner's event log.
 
 ### Decided by the owner, 10 September 2026
 
-These answers resolve [Q17](../OPEN_QUESTIONS.md) and are not reopened by the investigation.
+These decisions are final and are not reopened by the investigation.
 
 | Area | Decision |
 | --- | --- |

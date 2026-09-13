@@ -13,8 +13,8 @@ The owner selected private releases, unsigned x86_64 Debian packages for Ubuntu 
 SHA-256 checksums, and manual publication of an automatically prepared draft on 7 September
 2026. The owner subsequently chose local changelog/version preparation, with optional helper
 scripts, followed by a pushed Git tag triggering checks, packaging, and draft creation. This
-supersedes the earlier workflow-driven version updates and tagging. These decisions resolve
-[Q13–Q15](../OPEN_QUESTIONS.md); technical contracts and verification limits are below.
+supersedes the earlier workflow-driven version updates and tagging. The technical contracts and
+verification limits are below.
 
 On 11 September 2026, the owner decided that Windows and macOS trial support should be
 investigated only after this release pipeline is implemented. That work is deferred to
@@ -60,7 +60,7 @@ Repository inspection on that date found:
   workflows, artifacts, or Actions caches exist. `main` is unprotected. Ruleset access returned
   HTTP 403 with an upgrade/public-repository requirement. Account billing was not verified.
 
-### CI and operating limits — Q13
+### CI and operating limits
 
 Use GitHub Actions on `ubuntu-24.04` x86_64, Node `24.16.0`, npm `11.13.0`, and Rust `1.98.0`
 with rustfmt and clippy. Record actual runner image and native package versions in build
@@ -97,7 +97,7 @@ gate. Release jobs enforce their own check dependencies. Do not claim CI prevent
 from merging or manually publishing outside this workflow. No paid upgrade is required to
 finish this phase under that documented limitation.
 
-### Local preparation and tag-triggered releases — Q14
+### Local preparation and tag-triggered releases
 
 The maintainer writes/reviews the changelog and version changes locally, commits them to
 `main`, and pushes an annotated `vVERSION` tag. GitHub builds that exact commit and prepares
@@ -179,7 +179,7 @@ Retain build handoff artifacts for 30 days. Release assets remain until the main
 deliberately removes them. Manual publication is the final review point
 ([GitHub release management](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository)).
 
-### Package and distribution contract — Q15
+### Package and distribution contract
 
 Build only `deb`, with `npm run tauri build -- --ci --bundles deb -- --locked`. The target is
 `x86_64-unknown-linux-gnu`; package architecture is `amd64`. Build on Ubuntu 24.04 and claim
@@ -193,7 +193,8 @@ data path. Tauri warns about `.app` on macOS; macOS is out of scope. Any future 
 needs an explicit data migration. Keep existing icons for prototype packages and set package
 publisher/maintainer to `torlenor`, with a concrete tracking description and Utility category.
 Do not add an open-source licence or grant public redistribution rights in this phase. Private
-repository access is the distribution boundary; Q09/Q10 retain commercial and licensing policy.
+repository access is the distribution boundary; [Q09](../OPEN_QUESTIONS.md) and
+[Q10](../OPEN_QUESTIONS.md) retain commercial and licensing policy.
 Inventory bundled third-party licences, include their required texts in `THIRD_PARTY_NOTICES.md`
 and `/usr/share/doc/konzendi/`, and verify packaged contents before distribution.
 
@@ -475,7 +476,8 @@ Cargo download caches were used; compilation outputs were fresh.
 Package SHA-256: `6fe8adbb054695b201a80d47fbaeb9ca681174c4ff43ea4aa3f6f00c59cfc0de`.
 The dependency-container setup initially tried to create a UID already supplied by Ubuntu;
 using the existing `ubuntu` account resolved that setup issue. No host dependencies or user
-tracking data were changed. The build's `.app` identifier warning is accounted for in Q15.
+tracking data were changed. The package and distribution contract accounts for the build's
+`.app` identifier warning.
 
 Hosted Actions execution, account allowance/budget, upgrade/downgrade, and failure/retry
 automation are not verified by these local checks. The private Ubuntu container is a bounded

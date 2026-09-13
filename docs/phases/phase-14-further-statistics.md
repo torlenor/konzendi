@@ -14,7 +14,7 @@
 
 ## Investigation gate
 
-Answering these resolves [Q21](../OPEN_QUESTIONS.md).
+This phase must answer:
 
 - **Which of the deferred candidates earns a place?** Phase 4 deferred two by name: the typical
   (median) uninterrupted stretch per topic, and the topics most often switched between. The

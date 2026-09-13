@@ -25,24 +25,23 @@ those choices.
 
 ## Decisions and evidence
 
-Discovery is complete. The decisions below were made by the user on 6 September 2026 and
-resolve [Q01–Q04](../OPEN_QUESTIONS.md).
+Discovery is complete. The decisions below were made by the user on 6 September 2026.
 
 ### Accepted decisions
 
-| Area | Decision | Resolves |
-| --- | --- | --- |
-| Product name | Konzendi is the public product name and is used for package and bundle identifiers. | Q01 |
-| First deliverable | A validation prototype: the smallest scope that tests whether switches get logged at all. Its features are planned in a later phase, not here. | Q02 |
-| Delivery form | Tauri v2 desktop application with a React + TypeScript + Vite frontend. | Q03 |
-| Initial target | Linux (X11). macOS and Windows are not initial targets. | Q03 |
-| Connectivity | Offline-only in the prototype. No network call is required for any function. | Q04 |
-| Accounts | None. No authentication, no server, no operating cost. | Q04 |
-| Data location | Local files in the application data directory, owned by the user. | Q04 |
-| Data model | Append-only JSONL event log, one file per device. Every event carries a unique id, an originating device id, and a recorded timestamp. | Q04 |
-| Logic split | Rust owns durability; a pure TypeScript module owns the domain core and analytics. | Q04 |
-| Backup and portability | Manual export and import; the log files are the export format. | Q04 |
-| Checks | Biome, `tsc`, Vitest, `cargo fmt`, `cargo clippy`. | Q04 |
+| Area | Decision |
+| --- | --- |
+| Product name | Konzendi is the public product name and is used for package and bundle identifiers. |
+| First deliverable | A validation prototype: the smallest scope that tests whether switches get logged at all. Its features are planned in a later phase, not here. |
+| Delivery form | Tauri v2 desktop application with a React + TypeScript + Vite frontend. |
+| Initial target | Linux (X11). macOS and Windows are not initial targets. |
+| Connectivity | Offline-only in the prototype. No network call is required for any function. |
+| Accounts | None. No authentication, no server, no operating cost. |
+| Data location | Local files in the application data directory, owned by the user. |
+| Data model | Append-only JSONL event log, one file per device. Every event carries a unique id, an originating device id, and a recorded timestamp. |
+| Logic split | Rust owns durability; a pure TypeScript module owns the domain core and analytics. |
+| Backup and portability | Manual export and import; the log files are the export format. |
+| Checks | Biome, `tsc`, Vitest, `cargo fmt`, `cargo clippy`. |
 
 ### Rationale
 
@@ -65,7 +64,8 @@ prototype.
 computers, so multi-device use is expected, and monetization may later require device
 identity. Assigning event ids, a device id, and recorded timestamps now costs little and keeps
 synchronization additive rather than a migration that discards early tracking history. The
-sync mechanism itself stays open (see Q04's outcome).
+sync mechanism itself stays open and is now handled by
+[Phase 10](phase-10-encrypted-sync.md).
 
 **JSONL, one file per device, over SQLite or a JSON snapshot.** Each device appends only to
 its own file, so merging several devices is a union of files with no conflict resolution. This
@@ -140,7 +140,7 @@ recorded for the later phase that implements the shortcut, and is not a Phase 0 
 - [x] Align AGENTS.md, the roadmap, open questions, and the phase template; verify local links,
   metadata, and navigation. Add a README that accurately describes the current workspace.
 - [x] Resolve the investigation gate and record the selected setup and its rationale.
-      Complete: decisions and rationale above; Q01–Q04 updated in the open questions.
+      Complete: decisions and rationale are recorded above.
 
 - [x] **Scaffold the application at the repository root.** Generate a Tauri v2 project with the
   React + TypeScript template into an empty temporary directory, then move the generated files

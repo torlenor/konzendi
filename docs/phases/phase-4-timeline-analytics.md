@@ -17,9 +17,8 @@
 ## Investigation gate
 
 Resolved. The user decided the four questions on 12 September 2026, against the log recorded on
-the development machine by Phase 2 and Phase 3. This resolves [Q08](../OPEN_QUESTIONS.md).
-[Q07](../OPEN_QUESTIONS.md) stays open: no score and no effort level is decided or implemented
-here.
+the development machine by Phase 2 and Phase 3. [Q07](../OPEN_QUESTIONS.md) stays open: no score
+and no effort level is decided or implemented here.
 
 | # | Question | Decision |
 | --- | --- | --- |

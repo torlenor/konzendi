@@ -13,7 +13,7 @@ and builds private draft releases from pushed version tags; nothing is deployed.
 - `README.md` — project introduction and documentation entry point.
 - `AGENTS.md` — working rules; `CLAUDE.md` links to this file.
 - `docs/ROADMAP.md` — product direction, phase index, and the sole source of phase status.
-- `docs/OPEN_QUESTIONS.md` — questions, decision status, outcomes, timing, and related phases.
+- `docs/OPEN_QUESTIONS.md` — unanswered questions that are not handled by or assigned to a phase.
 - `docs/phases/` — implementation plans and a reusable phase template.
 - `docs/brainstorming/` — discussion history and proposals, not approved specifications.
 - `.claude/skills/` — repeatable working procedures, such as driving the desktop window headlessly.
@@ -40,8 +40,10 @@ Do not invent commands or describe planned components as implemented.
 
 Explicit user decisions take precedence over proposals in documents. Record accepted decisions
 in the relevant phase document (including rationale), update the roadmap if scope changes, and
-retain the resolved entry in `docs/OPEN_QUESTIONS.md` with its status and a brief outcome.
-Link to the recorded decision for rationale rather than duplicating the full decision record. Ask when conflicting instructions affect the work.
+remove the question from `docs/OPEN_QUESTIONS.md`. Questions assigned to or handled by a phase
+belong in that phase document, even while they are unanswered. Track a question in
+`docs/OPEN_QUESTIONS.md` only while it is unanswered, unhandled, and not assigned to a phase.
+Ask when conflicting instructions affect the work.
 
 The roadmap owns what is being built and why; phase documents own how. Brainstorming material
 is historical context: its platform, pricing, licensing, and scoring recommendations remain
@@ -63,7 +65,7 @@ relying on them for implementation.
 Keep dependency declarations consistent between the table and phase header. Item checkboxes
 may track work inside a phase, but must not duplicate its overall status.
 
-There is no need to always define a question a phase must answer.
+A phase does not need to link to or originate from an open question.
 
 ## Phase readiness
 

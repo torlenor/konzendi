@@ -13,7 +13,7 @@
 
 ## Investigation gate
 
-Answering these resolves [Q06](../OPEN_QUESTIONS.md):
+This phase must answer:
 
 - Who takes part, on which machines, and for how long? The concept proposes one week with a
   small group; nothing is scheduled.

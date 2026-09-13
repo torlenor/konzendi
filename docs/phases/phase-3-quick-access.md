@@ -20,12 +20,12 @@ Evidence for each finding is in [Decisions and evidence](#decisions-and-evidence
 | 3 | Which actions the surface offers | Fixed by [Phase 1](phase-1-tracking-design.md#surface-boundary), not reopened: switch, pause, undo the last entry. |
 | 4 | Is the shortcut configurable, and what happens when the combination is taken? | Configurable, stored like the appearance preference. A combination another application holds is refused by the X server, and the window says so rather than showing a shortcut that does nothing. See [Accepted decisions](#accepted-decisions). |
 
-No open question is resolved by this phase. It opens [Q16](../OPEN_QUESTIONS.md), which asks how
-the surface's nine numbered slots are chosen once a user has more topics than slots.
+This phase left the choice of nine numbered slots to later work. Phase 16 now handles stable
+assignments and access to topics without a key.
 
 > Planned replacement: [Phase 16](phase-16-topic-quick-keys.md#decisions-and-evidence)
 > replaces position-based numbering with optional saved topic keys and adds access to
-> unassigned topics on both surfaces. It resolves Q16 without waiting for Phase 5.
+> unassigned topics on both surfaces without waiting for Phase 5.
 > The behavior and verification below describe this earlier phase.
 
 ## Outcome and scope
@@ -134,7 +134,7 @@ reports the failure, and re-reads the log — on whichever surface the action wa
 | The running topic in the tray | Not listed; the header names it | The tray has no numbers to keep stable, and an item that does nothing is worse than no item |
 | `Quit` in the tray | An ordinary item calling a command that exits | Tauri's predefined `Quit` item is silently ignored on Linux; only `Separator`, the clipboard items and `About` are implemented there |
 | The tray's state header | Names the subject and the start time, not the elapsed time | A menu holds no ticking clock, and the menu is rebuilt only when the folded state changes |
-| Topics beyond the ninth | Listed in the tray, not on the surface | Every row on the surface is one keystroke, and there are nine. See [Q16](../OPEN_QUESTIONS.md) |
+| Topics beyond the ninth | Listed in the tray, not on the surface | Every row on the surface is one keystroke, and there are nine. [Phase 16](phase-16-topic-quick-keys.md) replaces this behavior. |
 
 ### Rejected alternatives
 

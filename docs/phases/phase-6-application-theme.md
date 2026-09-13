@@ -10,8 +10,7 @@
 ## Investigation gate
 
 Closed. The project owner chose the direction, the mode support, and the typography from three
-named candidates on 7 September 2026; the answers below resolve
-[Q12](../OPEN_QUESTIONS.md).
+named candidates on 7 September 2026; the answers are recorded below.
 
 **Which qualities follow from the intended user base?** Three are real constraints, and the rest
 is taste. Glanceability of the elapsed time is a constraint, because Phase 1 made an implausible
@@ -177,7 +176,7 @@ covers.
 ## Work packages
 
 - [x] Record the accepted visual direction in this document — palette roles, typography, mode
-      support, and rationale — and update [Q12](../OPEN_QUESTIONS.md).
+      support, and rationale.
 - [x] Introduce the token layer in `src/App.css`: one custom property per role. Colour literals
       appear only in the three token blocks (light, system dark, explicit dark) and nowhere else
       in the file; verified by search. Three blocks rather than one is what mode support

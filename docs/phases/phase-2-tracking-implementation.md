@@ -19,8 +19,7 @@ and are not reopened here.
 | 2 | How the folded state is held in the interface, and whether the log is re-read after each append | The merged log is held in memory, the record returned by `append_event` is added to it, and the pure fold runs again. The log is re-read at startup and after a failure. See [State in the interface](#state-in-the-interface). |
 | 3 | What happens when an append fails while a switch is being recorded | Nothing is shown as recorded until the store confirms it. The failure is reported on the control and the log is re-read to reconcile. See [Failure handling](#failure-handling). |
 
-No open question is resolved by this phase. [Q05](../OPEN_QUESTIONS.md) was resolved by Phase 1
-and this phase implements its outcome.
+The product decisions were made in Phase 1; this phase implements their outcome.
 
 ## Outcome and scope
 
@@ -62,7 +61,8 @@ are only the implementation choices this phase had to make.
 
 > Planned replacement: [Phase 16](phase-16-topic-quick-keys.md#decisions-and-evidence)
 > replaces position-based numbering with optional saved topic keys and adds access to
-> unassigned topics on both surfaces. It resolves Q16 without waiting for Phase 5.
+> unassigned topics on both surfaces. It replaces this phase's earlier numbering behavior
+> without waiting for Phase 5.
 > The behavior and verification below describe this earlier phase.
 
 ### Rationale

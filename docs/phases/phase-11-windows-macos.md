@@ -14,8 +14,7 @@ other people can try Konzendi, but only after the Linux release pipeline in Phas
 implemented. This records the sequence; it does not yet select operating-system versions,
 architectures, package formats, signing policy, or distribution channels.
 
-Resolve [Q19](../OPEN_QUESTIONS.md) before writing production platform support. Gather evidence
-and record decisions for:
+Before writing production platform support, gather evidence and record decisions for:
 
 1. Which supported Windows and macOS versions and architectures match the intended trial group.
 2. Whether global shortcuts, quick-switcher focus and focus restoration, the tray, close-to-tray,
@@ -32,8 +31,8 @@ and record decisions for:
    persistence, upgrade, downgrade, removal, and failure recovery on every claimed target.
 
 Discovery may narrow the first expansion to one operating system or architecture. Record that
-outcome here, update Q19 and the roadmap delivery text if needed, and change readiness only when
-the selected support contract and work packages are decision-complete.
+outcome here, update the roadmap delivery text if needed, and change readiness only when the
+selected support contract and work packages are decision-complete.
 
 ## Outcome and scope
 
@@ -80,8 +79,8 @@ architecture combination named in the support contract.
       backup, removal, and rollback checks using synthetic data. Complete when each supported
       combination has an owned environment and observable pass/fail criteria.
 - [ ] Replace this discovery outline with decision-complete implementation work packages,
-      acceptance checks, rollout, and rollback; update Q19 and readiness without changing
-      roadmap status merely because planning completed.
+      acceptance checks, rollout, and rollback; update readiness without changing roadmap status
+      merely because planning completed.
 
 ## Acceptance and verification
 

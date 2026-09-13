@@ -21,8 +21,7 @@ The owner established the following direction on 11 September 2026:
 - tracking data stored or relayed by the service is protected by a user-held password; and
 - the service operator must not be able to read the synchronized tracking content.
 
-This begins the investigation of [Q11](../OPEN_QUESTIONS.md). It does not yet resolve the
-question.
+The remaining synchronization questions are owned by this phase and listed below.
 
 ### Terminology and target claim
 
@@ -271,8 +270,8 @@ written only after the gate closes.
   password prompts, sync health, recovery warnings, service deployment, logging, quotas, backup,
   deletion, and incident response. Complete when these have testable failure and recovery paths.
 - [ ] Replace this discovery outline with decision-complete implementation work packages,
-  acceptance checks, rollout, and rollback; update Q11 and readiness without changing roadmap
-  status merely because planning completed.
+  acceptance checks, rollout, and rollback; update readiness without changing roadmap status
+  merely because planning completed.
 
 ## Acceptance and verification
 

@@ -9,8 +9,8 @@
 
 ## Investigation gate
 
-Resolve [Q20](../OPEN_QUESTIONS.md) before creating or adopting a production logo. The approved
-public product name is `Konzendi` (Q01); use it for any wordmark. This phase does not change
+Resolve this phase's investigation gate before creating or adopting a production logo. The
+approved public product name is `Konzendi`; use it for any wordmark. This phase does not change
 identifiers, data paths, window titles, package metadata, or existing product text.
 
 Gather and record:
@@ -68,7 +68,7 @@ record the least disruptive integration path.
 
 ## Work packages
 
-- [ ] **Define the brief.** Resolve Q20; record the Konzendi wordmark, desired and avoided
+- [ ] **Define the brief.** Record the Konzendi wordmark, desired and avoided
       associations, target contexts, and the owner-approved evaluation criteria. Complete when
       no later asset work has to infer the public-facing name or the intended meaning of the
       mark.
@@ -93,7 +93,7 @@ record the least disruptive integration path.
 
 Do not claim a completed logo until all of the following have recorded results:
 
-- Q20 is resolved and the Konzendi wordmark agrees with every new public asset.
+- The investigation gate is resolved and the Konzendi wordmark agrees with every new public asset.
 - The selected tray mark is visibly distinguishable at each declared pixel size in a running
   Linux/X11 application, on both light and dark panel treatments, with no clipped or blurred
   detail that changes its meaning.

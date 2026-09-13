@@ -24,7 +24,7 @@ One numbering, in both surfaces. The window's switch list holds every topic that
 in creation order, so a number belongs to a topic and never moves. The running topic is marked in
 the list instead of being removed from it.
 
-Out of scope: what happens beyond nine topics, which was deferred as [Q16](../OPEN_QUESTIONS.md) and is now planned in
+Out of scope: what happens beyond nine topics, which is now planned in
 [Phase 16](phase-16-topic-quick-keys.md); ordering by recent use, rejected in
 [Phase 2](phase-2-tracking-implementation.md#rationale); and any change to the card, the Resume
 control, or the events that a selection appends.
