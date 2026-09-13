@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Konzendi v0.1.1 owner pilot</title>
+  <style>
+    @page { size: A4 landscape; margin: 6mm; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      color: #12222a;
+      background: #ffffff;
+      font-family: "Inter", "Fira Sans", Arial, sans-serif;
+      font-size: 8.2pt;
+      line-height: 1.22;
+    }
+    main { width: 100%; }
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8mm;
+      align-items: end;
+      padding: 3mm 4mm;
+      color: white;
+      background: #0f4c81;
+      border-radius: 3mm;
+    }
+    h1 { margin: 0; font-size: 19pt; line-height: 1; letter-spacing: -0.35px; }
+    .subtitle { margin-top: 1.5mm; color: #dcecf8; font-size: 9.5pt; }
+    .dates { text-align: right; font-weight: 650; }
+    .dates small { display: block; color: #dcecf8; font-weight: 450; margin-top: 1mm; }
+    h2 {
+      margin: 0 0 2mm;
+      color: #0f4c81;
+      font-size: 11.5pt;
+      line-height: 1.1;
+    }
+    p { margin: 0; }
+    ul, ol { margin: 0; padding-left: 4.8mm; }
+    li { margin: 0.7mm 0; }
+    code {
+      font-family: "DejaVu Sans Mono", monospace;
+      font-size: 8pt;
+      background: #e9eff2;
+      border-radius: 1mm;
+      padding: 0.2mm 0.8mm;
+    }
+    .goal {
+      margin: 2mm 0;
+      padding: 2mm 3mm;
+      background: #f1f4f5;
+      border-left: 1.5mm solid #0f4c81;
+      border-radius: 1.5mm;
+      font-size: 9pt;
+    }
+    .top {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 3mm;
+      margin-bottom: 2mm;
+    }
+    .card {
+      padding: 2.2mm 3mm;
+      border: 0.35mm solid #a5b3b9;
+      border-radius: 2mm;
+      background: #fbfcfc;
+    }
+    .during {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2mm 4mm;
+    }
+    .during .wide { grid-column: 1 / -1; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 0.25mm solid #8d9ba2;
+      padding: 1.1mm 1.3mm;
+      vertical-align: top;
+    }
+    th {
+      color: #ffffff;
+      background: #355e74;
+      font-size: 7.7pt;
+      line-height: 1.15;
+      text-align: left;
+    }
+    td { height: 10.5mm; }
+    tbody tr:nth-child(even) { background: #f3f6f7; }
+    .day { width: 8%; font-weight: 700; }
+    .narrow { width: 6.5%; text-align: center; }
+    .entry { width: 13%; }
+    .note { width: 23%; }
+    .hint { display: block; color: #50636d; font-size: 6.8pt; font-weight: 450; margin-top: 0.5mm; }
+    .lower {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr 1.1fr;
+      gap: 3mm;
+      margin-top: 2mm;
+    }
+    .scale {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border: 0.25mm solid #a5b3b9;
+      border-radius: 1.5mm;
+      overflow: hidden;
+    }
+    .scale div { padding: 1.6mm; border-right: 0.25mm solid #a5b3b9; }
+    .scale div:last-child { border-right: 0; }
+    .scale strong { color: #0f4c81; display: block; font-size: 9pt; }
+    .small { font-size: 7.5pt; line-height: 1.25; }
+    .rules { margin-top: 2mm; padding-top: 1.8mm; border-top: 0.25mm solid #a5b3b9; }
+    .privacy {
+      margin-top: 2mm;
+      padding: 1.8mm 2.2mm;
+      color: #5b3a05;
+      background: #fff5df;
+      border: 0.25mm solid #d9a64e;
+      border-radius: 1.5mm;
+    }
+    footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5mm;
+      color: #51636d;
+      font-size: 7pt;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Konzendi owner pilot</h1>
+      <div class="subtitle">One-page field sheet · published release v0.1.1</div>
+    </div>
+    <div class="dates">
+      14–18 September 2026
+      <small>Five normal workdays · Linux Mint / Cinnamon / X11</small>
+    </div>
+  </header>
+
+  <div class="goal"><strong>Question:</strong> Do I record topic switches during normal computer work, and do I learn something useful from the result?</div>
+
+  <section class="top">
+    <div class="card">
+      <h2>Before normal work on Monday</h2>
+      <ol>
+        <li>Verify the v0.1.1 package with <code>SHA256SUMS</code>, then install it.</li>
+        <li>Back up <code>~/.local/share/com.konzendi.app</code> to a private location.</li>
+        <li>Record the actual start time: ______________________________</li>
+        <li>Confirm: data opens · <code>Ctrl+Alt+K</code> works over another app · Stop works · Analytics opens.</li>
+        <li>Use real topics only. Do not add synthetic events after the start time.</li>
+      </ol>
+    </div>
+    <div class="card during">
+      <div class="wide"><h2>During normal work</h2></div>
+      <div>Record a switch when you notice it.</div>
+      <div>Use <strong>Entries</strong> for a missed or late switch.</div>
+      <div>Use the main window, quick switcher, or tray naturally.</div>
+      <div>Do not use reminder alarms or a parallel tracker.</div>
+      <div class="wide"><strong>Keep working normally.</strong> Do not create extra switches for the pilot. If logging becomes inconvenient, keep that as evidence.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Five-minute daily review</h2>
+    <table>
+      <thead>
+        <tr>
+          <th class="day">Day</th>
+          <th class="narrow">Normal work?<span class="hint">Y / N</span></th>
+          <th class="narrow">Known switches</th>
+          <th class="narrow">At time</th>
+          <th class="narrow">Added / fixed later</th>
+          <th class="narrow">Still absent</th>
+          <th class="narrow">Friction<span class="hint">0–4</span></th>
+          <th class="entry">Main entry point<span class="hint">window / quick / tray / mixed</span></th>
+          <th class="note">What helped or prevented logging?</th>
+          <th class="note">Useful Analytics observation → action or question</th>
+          <th class="narrow">Data usable?<span class="hint">Y / N</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="day">Mon 14</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="day">Tue 15</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="day">Wed 16</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="day">Thu 17</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="day">Fri 18</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="lower">
+    <div class="card small">
+      <h2>Friction scale</h2>
+      <div class="scale">
+        <div><strong>0</strong>None</div>
+        <div><strong>1</strong>Noticeable</div>
+        <div><strong>2</strong>Sometimes delayed</div>
+        <div><strong>3</strong>Often avoided</div>
+        <div><strong>4</strong>Abandoned</div>
+      </div>
+      <p class="rules"><strong>Unavailable workday:</strong> record why and extend by one workday, at most to 22 September. Do not extend because logging was inconvenient.</p>
+    </div>
+    <div class="card small">
+      <h2>Friday review</h2>
+      <ol>
+        <li>Which logged pattern was useful, and why?</li>
+        <li>Would I keep using v0.1.1 for another week without the trial?</li>
+        <li>Which entry point worked best? What still caused missed entries?</li>
+        <li>Did an installation, integrity, persistence, or privacy problem make the data unsafe to interpret?</li>
+      </ol>
+    </div>
+    <div class="card small">
+      <h2>Decision gates</h2>
+      <ul>
+        <li><strong>Repair first:</strong> unsafe or unreliable data.</li>
+        <li><strong>Redirect and repeat:</strong> fewer than 4 usable days, under 80% of known switches present after correction, or median friction above 2.</li>
+        <li><strong>Continue:</strong> gates pass and at least one observation suggests a useful action or question.</li>
+        <li><strong>Stop expansion:</strong> reliable and low-friction, but not useful and I would not continue.</li>
+      </ul>
+      <p class="privacy"><strong>Private:</strong> Keep the raw log, topic names, work screenshots, and identifying notes off the repository. Share only redacted counts and findings.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>The counts are estimates, not ground truth. This pilot does not measure productivity, cognition, or health.</span>
+    <span>Konzendi Phase 5 · owner pilot</span>
+  </footer>
+</main>
+</body>
+</html>
