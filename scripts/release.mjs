@@ -510,7 +510,7 @@ Nothing was staged, committed, tagged, or pushed. Next steps:
   git add ${result.changed.join(" ")}
   git commit -m 'Release ${version}'
   git push origin main
-Wait for CI on that commit, then follow "Tag and publish" in docs/RELEASING.md.`);
+Wait for CI on that commit, then tag and push it: README.md, Releases, steps 4 to 6.`);
       return;
     }
     case "check":
