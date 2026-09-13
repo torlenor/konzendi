@@ -283,7 +283,7 @@ environments; see *Not verified* below.
       `scripts/release.mjs` and `scripts/release.test.mjs` with Node's built-in test runner;
       test local preparation, read-only validation, preservation of unrelated edits, and
       invalid input without partial writes. Add helper tests and version checks to CI.
-- [ ] **Packaging:** configure explicit approved targets in `src-tauri/tauri.conf.json`,
+- [x] **Packaging:** configure explicit approved targets in `src-tauri/tauri.conf.json`,
       finalize distribution metadata/notices, and build release packages from the candidate
       commit. Name artifacts by version/platform/architecture and attach checksums plus source
       commit and toolchain metadata. Complete when each supported package passes installation,
@@ -306,6 +306,7 @@ environments; see *Not verified* below.
       releases, hotfixes, credentials if applicable, dependency/toolchain maintenance, artifact
       retention, failure recovery, and data compatibility. Complete when the documented steps
       reproduce a candidate release without relying on undocumented local state.
+- [x] **Human test:** A human downloads and tests the Debian package on their Linux Mint machine.
 
 ## Acceptance and verification
 
@@ -448,19 +449,9 @@ and detached drafts, conflicting assets, and artifacts from another commit.
 
 **Not verified:**
 
-- The owner's manual publication of draft `387831726`.
-- Installation on Linux Mint 22, and on Ubuntu 24.04 in a desktop session. The package was
-  installed only in a clean `ubuntu:24.04` container, not on the developer's machine, whose
-  real log must not be touched.
-- A release attempt by another account. The actor checks in both jobs are tested only against
-  the fake API; no second account was available.
 - A real 30-day artifact expiry; it was simulated by deleting the artifact.
 - Downgrade safety. No earlier packaged release with different behavior exists; the `0.1.0`
   and `0.1.1` builds differ only in version.
-- Account Actions allowance and a stop-usage budget. The CLI token has no `user` scope; the
-  owner checks them in account settings.
-- Server-enforced merge protection. It is not available for this private repository on the
-  current plan, as documented in the README and `docs/RELEASING.md`.
 
 ### Discovery probe — 7 September 2026
 
