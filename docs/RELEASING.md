@@ -145,14 +145,21 @@ The run summary of the `draft release` job links to the draft. The draft is also
 Before publishing, check the draft:
 
 ```bash
+gh api repos/torlenor/konzendi/releases --jq '.[] | select(.draft) | .name + " " + .tag_name'   # Konzendi 0.1.1 v0.1.1
 mkdir -p /tmp/konzendi-0.1.1 && cd /tmp/konzendi-0.1.1
 gh release download v0.1.1 --repo torlenor/konzendi
 sha256sum --check SHA256SUMS
 jq '{version, tag, source, workflow}' release-manifest.json   # tag and commit match
 ```
 
-Read the notes, then open the draft on GitHub, select **Edit**, and select
-**Publish release**. The release stays a prerelease for `0.x` versions.
+The draft must name the tag `v0.1.1`, not `untagged-…`. GitHub detaches a draft from its tag
+when an API update leaves out `tag_name`; the workflow always sends it and refuses to report a
+detached draft as ready. If a draft shows `untagged-…`, re-run the `draft release` job, which
+finds the draft by a hidden marker in its notes and attaches it again. Do not publish a
+detached draft.
+
+Read the notes, then open the draft on GitHub, select **Edit**, check that the tag field shows
+`v0.1.1`, and select **Publish release**. The release stays a prerelease for `0.x` versions.
 
 ## Manual preparation
 
@@ -196,6 +203,7 @@ commit or tag.
 | A job fails for a runner or network reason | Transient | **Re-run failed jobs**. |
 | `package-smoke` fails | The package does not work | Download `smoke-evidence` (screenshots, logs, synthetic events) and fix the problem on `main`. Release a new version. |
 | `draft release` fails after some uploads | Upload interrupted | **Re-run failed jobs**. Matching assets are kept, missing ones uploaded, and the draft is verified again. The draft title says *incomplete* until then. |
+| Two drafts exist for the tag | A draft was duplicated, for example by an older workflow version | Nothing was changed. Delete the extra draft by its id, keeping the tag: `gh api -X DELETE repos/torlenor/konzendi/releases/<id>`. Then re-run the `draft release` job. |
 | `draft release` reports conflicting assets | A draft asset differs from the checked build | Nothing was overwritten. Delete only the draft, keeping the tag: `gh release delete vX.Y.Z --repo torlenor/konzendi --yes`. Then **Re-run failed jobs**. |
 | `draft release` cannot download `release-assets` | The 30-day handoff expired | **Re-run all jobs**. The same commit is checked and built again. A rebuilt package can differ byte for byte, so if a draft with assets from the earlier build exists, delete that draft first (keep the tag). |
 | `validate` fails with *only torlenor may release* | Another account pushed the tag or started the re-run | Expected. The owner decides whether to release. |

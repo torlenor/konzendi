@@ -161,7 +161,14 @@ class FakeGitHub {
         /\/releases\/(\d+)$/,
         ([, id], method, body) => {
           const release = byId(id);
-          if (method === "PATCH") Object.assign(release, JSON.parse(body));
+          if (method === "PATCH") {
+            const fields = JSON.parse(body);
+            // As measured on GitHub: an update to a draft that omits tag_name detaches it.
+            if (release.draft && fields.tag_name === undefined) {
+              fields.tag_name = `untagged-${release.id}`;
+            }
+            Object.assign(release, fields);
+          }
           return this.response(200, this.view(release));
         },
       ],
@@ -485,6 +492,7 @@ describe("publish", () => {
     assert.equal(release.name, "Konzendi 0.1.0");
     assert.match(release.body, /^### Added\n\n- Tracking\./);
     assert.doesNotMatch(release.body, /incomplete/);
+    assert.equal(release.tag_name, "v0.1.0");
     assert.ok(
       !github.writes().some((request) => /git\/refs|git\/tags/.test(request)),
     );
@@ -522,6 +530,52 @@ describe("publish", () => {
     assert.equal(result.uploaded.length, 3);
     assert.equal(github.releases.length, 1);
     assert.equal(github.releases[0].name, "Konzendi 0.1.0");
+    assert.equal(github.releases[0].tag_name, "v0.1.0");
+  });
+
+  test("a re-run after a ready draft continues that draft and keeps it on the tag", async () => {
+    const { root, dir } = fixture("rerun-ready");
+    const github = new FakeGitHub();
+    const client = github.client();
+    const run = () =>
+      publish({
+        env: env(),
+        github: client,
+        dir,
+        tag: "v0.1.0",
+        commit: COMMIT,
+        root,
+        log: quiet,
+      });
+    await run();
+    const second = await run();
+    assert.equal(github.releases.length, 1);
+    assert.equal(second.kept.length, 4);
+    assert.deepEqual(second.uploaded, []);
+    assert.equal(github.releases[0].tag_name, "v0.1.0");
+  });
+
+  test("a draft detached from its tag is found by its marker and attached again", async () => {
+    const { root, dir } = fixture("detached");
+    const github = new FakeGitHub();
+    const client = github.client();
+    const run = () =>
+      publish({
+        env: env(),
+        github: client,
+        dir,
+        tag: "v0.1.0",
+        commit: COMMIT,
+        root,
+        log: quiet,
+      });
+    await run();
+    // An edit elsewhere that omits the tag, as on GitHub.
+    github.releases[0].tag_name = "untagged-abc";
+    const second = await run();
+    assert.equal(github.releases.length, 1);
+    assert.equal(second.kept.length, 4);
+    assert.equal(github.releases[0].tag_name, "v0.1.0");
   });
 
   test("a conflicting asset stops without overwriting anything", async () => {
