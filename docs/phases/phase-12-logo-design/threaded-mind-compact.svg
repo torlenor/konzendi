@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Threaded Mind compact refinement</title>
+  <desc id="desc">Four enlarged brain lobes surround a compact unbroken central record.</desc>
+  <rect x="30" y="2" width="5" height="60" rx="2.5" fill="#0d151a"/>
+  <path fill="#0d151a" d="M26 7c-8-2-15 4-14 12-7 3-7 11 0 15 4 2 9 1 14 0zM39 40c5-1 10-2 14 0 7 4 7 12 0 15 1 6-6 8-14 5z"/>
+  <path fill="#6fb2e8" d="M39 7c8-2 15 4 14 12 7 3 7 11 0 15-4 2-9 1-14 0zM26 40c-5-1-10-2-14 0-7 4-7 12 0 15-1 6 6 8 14 5z"/>
+</svg>

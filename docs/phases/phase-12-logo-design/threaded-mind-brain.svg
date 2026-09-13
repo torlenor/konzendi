@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Threaded Mind brain-emphasis refinement</title>
+  <desc id="desc">Four subtly notched brain lobes surround an unbroken central record.</desc>
+  <rect x="29" y="1" width="6" height="62" rx="3" fill="#0d151a"/>
+  <path fill="#0d151a" d="M25 6c-8-2-14 4-12 11-8 1-10 10-4 15 4 3 10 2 16 1zM39 40c6-1 12-2 16 1 6 5 4 14-4 15 2 6-4 8-12 4z"/>
+  <path fill="#6fb2e8" d="M39 6c8-2 14 4 12 11 8 1 10 10 4 15-4 3-10 2-16 1zM25 40c-6-1-12-2-16 1-6 5-4 14 4 15-2 6 4 8 12 4z"/>
+</svg>

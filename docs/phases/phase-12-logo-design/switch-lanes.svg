@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Switch Lanes candidate mark</title>
+  <desc id="desc">Three horizontal lanes with one path that changes lanes.</desc>
+  <path fill="#0d151a" d="M6 8h52v11H6zM6 45h52v11H6z"/>
+  <path fill="#6fb2e8" d="M6 27h18c6 0 9 10 15 10h19v11H39c-12 0-14-10-20-10H6z"/>
+</svg>
