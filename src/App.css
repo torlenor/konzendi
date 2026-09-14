@@ -3,13 +3,18 @@
  *
  * The window is an instrument panel: horizontal bands in the order Phase 1 fixed, an
  * elapsed reading that dominates the fold, and switch targets carrying the number key
- * that actually triggers them. Colour is state, not decoration — live for a running
+ * that actually triggers them. Color is state, not decoration — live for a running
  * interval, rest for a stop, alarm for a failure — so a glance from across the desk
  * answers "am I still on this?" without reading a word.
  *
- * Every colour is a token. No literal colour appears below this block.
+ * One exception, from Phase 16: a topic can have a color that the user picks. It tells
+ * topics apart and replaces no key, mark, name, or word. It arrives as the custom property
+ * --topic-color, fills only swatches and analytics segments, always has a --rule outline,
+ * and never colors text or has text on it.
+ *
+ * Every color is a token. No literal color appears below this block.
  * Roles: ground, band, ink, ink-soft, ink-faint, edge, rule, live, rest, alarm,
- * on-accent, focus, and state (the resolved colour of the current tracking state).
+ * on-accent, focus, and state (the resolved color of the current tracking state).
  */
 
 :root {
@@ -97,7 +102,7 @@ body {
  * The window has no desktop frame, so it states its own resize regions. tao resizes
  * from five logical pixels inside each edge; these zones cover that band and carry the
  * cursor for it, because the webview otherwise paints the normal pointer over the whole
- * surface. They add no behaviour: the press starts the same built-in resize.
+ * surface. They add no behavior: the press starts the same built-in resize.
  */
 .resize-edge {
   position: fixed;
@@ -178,7 +183,7 @@ main {
   overflow-y: auto;
 }
 
-/* The tracking state resolves to one colour, read by the mark and the state bar. */
+/* The tracking state resolves to one color, read by the mark and the state bar. */
 main {
   --state: var(--rule);
 }
@@ -260,7 +265,7 @@ nav {
   padding-left: 0.375rem;
 }
 
-/* ---- Controls. Radius means pressable; nothing else is rounded. ---- */
+/* ---- Controls. Radius means pressable; only the round topic swatch is also rounded. ---- */
 
 button {
   background: var(--live);
@@ -340,6 +345,31 @@ input {
   font-size: 0.75rem;
   pointer-events: none;
 }
+/* A select in a form draws its own arrow too, so it matches the text fields beside it. */
+.select-field {
+  position: relative;
+  display: inline-flex;
+}
+.select-field select {
+  appearance: none;
+  padding-right: 2rem;
+  background: var(--band);
+  color: var(--ink);
+  cursor: pointer;
+}
+.select-field select:hover {
+  border-color: var(--ink);
+}
+.select-field::after {
+  content: "\25be";
+  position: absolute;
+  right: 0.625rem;
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+  pointer-events: none;
+}
 .window-control {
   display: grid;
   place-items: center;
@@ -399,7 +429,7 @@ input {
   padding: 1.125rem 1.25rem 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
 }
-/* The status bar. Colour and a mark both carry state, so colour never carries it alone. */
+/* The status bar. Color and a mark both carry state, so color never carries it alone. */
 .card::before {
   content: "";
   position: absolute;
@@ -459,7 +489,8 @@ input {
   padding-top: 0.75rem;
   margin-bottom: 1.25rem;
 }
-.picks ol {
+.picks ol,
+.picks ul {
   list-style: none;
   margin: 0 0 0.75rem;
   padding: 0;
@@ -510,6 +541,94 @@ button.pick:hover:enabled {
 button.pick:hover:enabled .key {
   color: var(--live);
   border-color: var(--live);
+}
+
+/* Topics without a quick key: one disclosure, then a plain list with no key column. */
+button.disclosure {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 0;
+  border-radius: 3px;
+  padding: 0.375rem 0.25rem;
+  font-weight: 400;
+}
+button.disclosure:hover:enabled {
+  color: var(--ink);
+  background: var(--band);
+}
+.disclosure-mark {
+  display: inline-block;
+  width: 1.5rem;
+  flex: none;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+/* ---- Topic color ---- */
+
+/* The outline keeps a color close to either surface visible in both themes. */
+.swatch,
+.swatch-preview,
+.swatch-choice {
+  box-sizing: border-box;
+  flex: none;
+  border-radius: 50%;
+  background: var(--topic-color);
+  border: 1px solid var(--rule);
+}
+.swatch {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  align-self: center;
+}
+.swatch-preview {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.swatch-preview.empty {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--edge);
+}
+fieldset.swatch-choices {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+button.swatch-choice {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: var(--topic-color);
+  border-color: var(--rule);
+  border-radius: 50%;
+}
+/* The chosen suggestion is shown by a ring, not by the color. */
+button.swatch-choice[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 2px var(--band),
+    0 0 0 4px var(--ink);
+}
+button.quiet[aria-pressed="true"] {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+input.color-picker {
+  flex: none;
+  width: 3rem;
+  height: 2.25rem;
+  padding: 0.125rem;
+}
+input.color-hex {
+  flex: none;
+  width: 7.5rem;
+  font-family: var(--mono);
 }
 
 /* ---- Footer bands ---- */
@@ -569,6 +688,9 @@ button.pick:hover:enabled .key {
   color: var(--ink-faint);
   font-size: 0.8125rem;
 }
+.picks .note {
+  margin: 0 0 0.5rem;
+}
 /* In a log the entries are the content, so row actions stay quiet until they are wanted. */
 .entry .quiet {
   border-color: transparent;
@@ -577,6 +699,10 @@ button.pick:hover:enabled .key {
 .entry .quiet:hover:enabled,
 .entry .quiet:focus-visible {
   border-color: var(--edge);
+}
+/* A topic without a quick key keeps the column, so the names stay aligned. */
+.entry .key:empty {
+  border-color: transparent;
 }
 
 /* ---- Panels and messages ---- */
@@ -595,6 +721,9 @@ button.pick:hover:enabled .key {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+.entry .panel {
+  margin-left: 2rem;
 }
 [role="alert"] {
   color: var(--alarm);
@@ -623,16 +752,37 @@ button.pick:hover:enabled .key {
 /* ---- Quick switcher: a borrowed moment, so it is a list of keys and nothing else ---- */
 
 .quick {
+  display: flex;
+  flex-direction: column;
   background: var(--band);
   border: 1px solid var(--edge);
   padding: 0.375rem 0.5rem;
   box-sizing: border-box;
 }
-.quick ol {
+.quick > * {
+  flex: none;
+}
+.quick ol,
+.quick ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
+/*
+ * The surface is capped to the work area. Only the Other topics list gives up height,
+ * so the numbered rows and the commands stay in view, and that list scrolls.
+ */
+.quick > .others {
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.quick .others ul {
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .quick .commands {
   border-top: 1px solid var(--rule);
   margin-top: 0.375rem;
@@ -649,6 +799,17 @@ button.pick:hover:enabled .key {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.quick button.disclosure {
+  padding: 0.25rem;
+  gap: 0.5rem;
+}
+.quick button.disclosure .label {
+  color: var(--ink-soft);
+}
+/* An outline outside a scrolling list is cut off, so it is drawn inside the row. */
+.quick .others button:focus-visible {
+  outline-offset: -3px;
 }
 .quick .mark {
   flex: none;
@@ -668,8 +829,8 @@ button.pick:hover:enabled .key {
   padding: 0.25rem;
   color: var(--rest);
 }
-/* The state row has no key to press, so its first column is an empty gap. */
-.quick .gap {
+/* A row with no key to press keeps an empty first column, so the names stay aligned. */
+.gap {
   width: 1.5rem;
   flex: none;
 }
@@ -700,9 +861,10 @@ button.pick:hover:enabled .key {
 
 /* ---- Analytics view: one lane per subject, so position carries identity ----
  *
- * Colour still means state and nothing else: live for a topic and rule for the axis.
- * A lane is a row, not a hue, which is why no topic colour exists. A
- * stretch that nothing ended is hatched, never trimmed. A stop is drawn as absence.
+ * A lane is a row first. A topic with a color fills its segments with that color;
+ * a topic without one keeps the state color, live. The label keeps the mark and the
+ * name, so the color is never the only way to tell lanes apart. A stretch that nothing
+ * ended is hatched above either fill, never trimmed. A stop is drawn as absence.
  */
 
 .analytics {
@@ -769,7 +931,11 @@ button.pick:hover:enabled .key {
   bottom: 0;
   /* A minute is a fifth of a pixel at this width, so a short interval is held to 2px. */
   min-width: 2px;
-  background: var(--state);
+  background-color: var(--state);
+}
+.lane[data-colored="true"] .segment {
+  background-color: var(--topic-color);
+  outline: 1px solid var(--rule);
 }
 /* Nothing ended this stretch. Hatched, and said in words as well. */
 .segment[data-forgotten="true"] {
@@ -822,7 +988,7 @@ button.pick:hover:enabled .key {
   font-variant-numeric: tabular-nums;
   font-size: 1.0625rem;
 }
-/* A left bar means status of this block; the edge colour keeps it out of the state set. */
+/* A left bar means status of this block; the edge color keeps it out of the state set. */
 .note[data-forgotten="true"] {
   border-left: 3px solid var(--edge);
   padding: 0.125rem 0 0.125rem 0.625rem;

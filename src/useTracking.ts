@@ -9,6 +9,8 @@ const naming: Record<EventKind, string> = {
   "topic.renamed": "the new name",
   "topic.archived": "archiving the topic",
   "topic.restored": "restoring the topic",
+  "topic.quick-key-set": "the quick key",
+  "topic.color-set": "the topic color",
   "focus.started": "the switch",
   "focus.paused": "the stop",
   "entry.revoked": "the undo",

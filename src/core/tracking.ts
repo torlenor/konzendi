@@ -9,6 +9,10 @@ export interface TrackingPayloads {
   "topic.renamed": { topicId: string; name: string };
   "topic.archived": { topicId: string };
   "topic.restored": { topicId: string };
+  /** A quick key from 1 to 9, or null to clear the topic's key. */
+  "topic.quick-key-set": { topicId: string; key: QuickKey | null };
+  /** A `#rrggbb` color, or null to clear the topic's color. */
+  "topic.color-set": { topicId: string; color: string | null };
   "focus.started": { topicId: string; effectiveAt: string };
   "focus.paused": { effectiveAt: string };
   "entry.revoked": { targetId: string };
@@ -16,6 +20,22 @@ export interface TrackingPayloads {
 }
 
 export type EventKind = keyof TrackingPayloads;
+
+/** The digits a topic can hold as its quick key. */
+export type QuickKey = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+
+export function isQuickKey(value: unknown): value is QuickKey {
+  return (
+    Number.isInteger(value) && (value as number) >= 1 && (value as number) <= 9
+  );
+}
+
+/** Six hexadecimal digits after `#`, in either case. No shorthand, name, or alpha. */
+const COLOR = /^#[0-9a-f]{6}$/i;
+
+export function isTopicColor(value: unknown): value is string {
+  return typeof value === "string" && COLOR.test(value);
+}
 
 /** What an action hands to the store; the store assigns id, device, and recordedAt. */
 export type EventDraft<K extends EventKind = EventKind> = K extends EventKind
@@ -62,6 +82,17 @@ const readers: {
     identifier(fields.topicId) ? { topicId: fields.topicId } : null,
   "topic.restored": (fields) =>
     identifier(fields.topicId) ? { topicId: fields.topicId } : null,
+  // A missing value is not a clear: only an explicit null clears.
+  "topic.quick-key-set": (fields) =>
+    identifier(fields.topicId) &&
+    (fields.key === null || isQuickKey(fields.key))
+      ? { topicId: fields.topicId, key: fields.key }
+      : null,
+  "topic.color-set": (fields) =>
+    identifier(fields.topicId) &&
+    (fields.color === null || isTopicColor(fields.color))
+      ? { topicId: fields.topicId, color: fields.color }
+      : null,
   "focus.started": (fields) =>
     identifier(fields.topicId) && instant(fields.effectiveAt)
       ? { topicId: fields.topicId, effectiveAt: fields.effectiveAt }
@@ -115,6 +146,23 @@ export function topicArchived(topicId: string): EventDraft<"topic.archived"> {
 
 export function topicRestored(topicId: string): EventDraft<"topic.restored"> {
   return { kind: "topic.restored", payload: { topicId } };
+}
+
+export function topicQuickKeySet(
+  topicId: string,
+  key: QuickKey | null,
+): EventDraft<"topic.quick-key-set"> {
+  return { kind: "topic.quick-key-set", payload: { topicId, key } };
+}
+
+export function topicColorSet(
+  topicId: string,
+  color: string | null,
+): EventDraft<"topic.color-set"> {
+  return {
+    kind: "topic.color-set",
+    payload: { topicId, color: color === null ? null : color.toLowerCase() },
+  };
 }
 
 export function focusStarted(

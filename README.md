@@ -50,6 +50,22 @@ stretch; a stretch that nothing ended is marked, not trimmed, and time when trac
 is a gap rather than a measurement. **Entries** lists everything recorded, including revoked
 entries and a way to insert a switch that was missed; **Topics** renames and archives.
 
+In **Topics**, a topic can have a **quick key** from 1 to 9 and a **color**. A topic with a key
+shows in the tracking window and in quick access as a numbered row, and pressing that digit
+switches to it. The key does not change when you switch, rename, or add topics. You can use only
+some digits, for example 1, 3, and 9; a digit that no topic has does nothing. To give a key that
+another topic has, confirm the move; the other topic then has no key. Topics without a key are
+under **Other topics**, which you open with the pointer or the keyboard. New topics and topics
+from an older log have no key and no color. Archiving a topic removes its key, and restoring it
+does not give the key back; the color stays.
+
+A color helps you tell topics apart: choose it with the color picker, type a `#rrggbb` value,
+or pick a suggestion. Two topics can have the same color. The color shows as a small dot next
+to the topic name in the tracking window, quick access, Topics, and Entries, and it fills the
+topic's bars in **Analytics**. The tray menu and the topic list in **Add a missed switch** show
+names only, without a color. Topics warns you when a color is hard to see in the light or dark
+theme, but you can still save it.
+
 The analytics view reads the log and writes nothing. Its sums say what was logged; they are not a
 measure of work.
 
@@ -60,7 +76,7 @@ from the log.
 ### Quick access
 
 Press **Ctrl+Alt+K** anywhere to open a small switcher over whatever you are working in: press a
-topic's number to switch, `s` to stop, `u` to undo the last entry, `K` to open the Konzendi
+topic's quick key to switch, open **Other topics** for topics without a key, `s` to stop, `u` to undo the last entry, `K` to open the Konzendi
 tracking window, or Escape to close it. Escape returns the keyboard to the window that had it.
 The combination is shown at the bottom of the
 tracking window, where **change** records a new one; if another application already holds it, or
@@ -171,7 +187,7 @@ recovery, data compatibility, artifact retention, and toolchain maintenance.
 To install a release, download `konzendi_VERSION_amd64.deb` and `SHA256SUMS`, run
 `sha256sum --check --ignore-missing SHA256SUMS`, back up `~/.local/share/com.konzendi.app`, and
 run `sudo apt install ./konzendi_VERSION_amd64.deb`. The checksum detects a damaged download; it
-does not prove who built the package. Bundled third-party licences are listed in
+does not prove who built the package. Bundled third-party licenses are listed in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and installed to `/usr/share/doc/konzendi/`.
 
 ## Local data

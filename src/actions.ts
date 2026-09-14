@@ -4,8 +4,11 @@ import {
   entryRevoked,
   focusPaused,
   focusStarted,
+  type QuickKey,
   topicArchived,
+  topicColorSet,
   topicCreated,
+  topicQuickKeySet,
   topicRenamed,
   topicRestored,
 } from "./core/tracking";
@@ -44,6 +47,11 @@ export function trackingActions(record: Tracking["record"]) {
       record(topicRenamed(topicId, name)),
     archive: (topicId: string) => record(topicArchived(topicId)),
     unarchive: (topicId: string) => record(topicRestored(topicId)),
+    /** One event also takes the key from its previous owner; the fold applies both. */
+    setQuickKey: (topicId: string, key: QuickKey | null) =>
+      record(topicQuickKeySet(topicId, key)),
+    setColor: (topicId: string, color: string | null) =>
+      record(topicColorSet(topicId, color)),
   };
 }
 
@@ -55,6 +63,15 @@ export function nameOf(topics: readonly Topic[], topicId: string): string {
     topics.find((topic) => topic.id === topicId)?.name ??
     `Unknown topic ${topicId.slice(0, 8)}`
   );
+}
+
+/** The color of a subject's topic. A stop and a topic without a color have none. */
+export function colorOf(
+  topics: readonly Topic[],
+  subject: Subject,
+): string | null {
+  if (subject.type === "pause") return null;
+  return topics.find((topic) => topic.id === subject.topicId)?.color ?? null;
 }
 
 export function subjectLabel(

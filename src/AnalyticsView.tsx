@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { subjectLabel, subjectMark } from "./actions";
+import { colorOf, subjectLabel, subjectMark } from "./actions";
 import { type DaySegment, sliceDay } from "./core/day";
+import { Swatch } from "./Swatch";
 import {
   formatClock,
   formatDay,
@@ -10,9 +11,10 @@ import {
   nowIso,
   shiftLocalDays,
 } from "./time";
+import { topicColorStyle } from "./topicColor";
 import { type Tracking, useNow } from "./useTracking";
 
-/** Every third hour is labelled; the axis runs the whole day so two days compare. */
+/** Every third hour is labeled; the axis runs the whole day so two days compare. */
 const TICKS = [0, 3, 6, 9, 12, 15, 18, 21, 24];
 
 /**
@@ -84,6 +86,7 @@ export function AnalyticsView({ tracking }: { tracking: Tracking }) {
           <div className="lanes">
             {day.lanes.map((lane) => {
               const name = subjectLabel(topics, lane.subject);
+              const color = colorOf(topics, lane.subject);
               return (
                 <div
                   className="lane"
@@ -93,11 +96,14 @@ export function AnalyticsView({ tracking }: { tracking: Tracking }) {
                       : "stop"
                   }
                   data-state="running"
+                  data-colored={color !== null || undefined}
+                  style={topicColorStyle(color)}
                 >
                   <span className="lane-label">
                     <span className="mark" aria-hidden="true">
                       {subjectMark(lane.subject)}
                     </span>
+                    <Swatch color={color} />
                     {name}
                   </span>
                   <span className="lane-total">{formatDuration(lane.ms)}</span>

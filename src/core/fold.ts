@@ -7,6 +7,7 @@ import {
 import {
   isTrackingEvent,
   type KnownEvent,
+  type QuickKey,
   readEvent,
   type TrackingEvent,
 } from "./tracking";
@@ -18,6 +19,10 @@ export interface Topic {
   id: string;
   name: string;
   archived: boolean;
+  /** The digit that selects this topic. No two topics hold the same key. */
+  quickKey: QuickKey | null;
+  /** A lower-case `#rrggbb` color. Two topics can hold the same color. */
+  color: string | null;
 }
 
 /** One tracking event as the entry list shows it, revoked ones included. */
@@ -131,20 +136,54 @@ export function foldLog(
         id: event.payload.topicId,
         name: event.payload.name,
         archived: false,
+        quickKey: null,
+        color: null,
       });
     }
   }
+  //    Keys and colors are applied in the same pass, so an archive between two
+  //    assignments is seen in merge order. An assignment to an archived topic has no
+  //    effect, and a restore does not recover a key that the archive cleared.
   for (const event of known) {
     if (
       event.kind !== "topic.renamed" &&
       event.kind !== "topic.archived" &&
-      event.kind !== "topic.restored"
+      event.kind !== "topic.restored" &&
+      event.kind !== "topic.quick-key-set" &&
+      event.kind !== "topic.color-set"
     )
       continue;
     const topic = topics.get(event.payload.topicId);
     if (!topic || !isEffective(event.id)) continue;
-    if (event.kind === "topic.renamed") topic.name = event.payload.name;
-    else topic.archived = event.kind === "topic.archived";
+    switch (event.kind) {
+      case "topic.renamed":
+        topic.name = event.payload.name;
+        break;
+      case "topic.archived":
+        topic.archived = true;
+        topic.quickKey = null;
+        break;
+      case "topic.restored":
+        topic.archived = false;
+        break;
+      case "topic.quick-key-set": {
+        if (topic.archived) break;
+        const { key } = event.payload;
+        // The last effective assignment wins. The topic it displaces becomes
+        // unassigned and does not take back an earlier key.
+        if (key !== null) {
+          for (const other of topics.values()) {
+            if (other.quickKey === key) other.quickKey = null;
+          }
+        }
+        topic.quickKey = key;
+        break;
+      }
+      case "topic.color-set":
+        if (topic.archived) break;
+        topic.color = event.payload.color?.toLowerCase() ?? null;
+        break;
+    }
   }
 
   // 4. Timeline. A correction of a correction targets the same original entry, so the
