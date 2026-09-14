@@ -1,6 +1,6 @@
 # Phase 20 — Add topics in Topics
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 19](phase-19-visible-scrollbar.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 19](phase-19-visible-scrollbar.md) · next: [Phase 21](phase-21-game-detection.md)
 
 **Depends on:** [Phase 2](phase-2-tracking-implementation.md), [Phase 16](phase-16-topic-quick-keys.md)  
 **Effort:** L  
