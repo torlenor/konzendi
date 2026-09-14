@@ -34,20 +34,24 @@ fn read_events(store: State<'_, Store>) -> Result<Vec<Event>, String> {
     store.read().map_err(|error| error.to_string())
 }
 
-/// The window system actually in use, which decides whether a global shortcut can work.
-/// `global-hotkey` grabs keys through X11 and nothing else, so the answer is reported
-/// rather than assumed.
+/// The desktop integration in use, which decides whether a global shortcut can work.
+/// Linux needs X11. The global-shortcut plugin also has native Windows and macOS backends.
+/// Report the detected integration instead of treating a successful build as runtime proof.
 #[tauri::command]
 fn window_system() -> String {
+    #[cfg(target_os = "windows")]
+    return "windows".to_string();
+    #[cfg(target_os = "macos")]
+    return "macos".to_string();
+    #[cfg(target_os = "linux")]
     if std::env::var_os("WAYLAND_DISPLAY").is_some()
         || std::env::var("XDG_SESSION_TYPE").is_ok_and(|value| value == "wayland")
     {
-        "wayland".to_string()
+        return "wayland".to_string();
     } else if std::env::var_os("DISPLAY").is_some() {
-        "x11".to_string()
-    } else {
-        "unknown".to_string()
+        return "x11".to_string();
     }
+    "unknown".to_string()
 }
 
 fn window_of(app: &AppHandle, label: &str) -> Result<tauri::WebviewWindow, String> {

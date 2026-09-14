@@ -2,7 +2,8 @@
 // Release steps that run in GitHub Actions. See docs/RELEASING.md and
 // .github/workflows/release.yml.
 //
-//   node scripts/release-ci.mjs assets --deb PATH --version V --commit SHA --out DIR [--tag TAG]
+//   node scripts/release-ci.mjs assets --deb PATH --nsis PATH --dmg PATH --version V --commit SHA --out DIR [--tag TAG]
+//   node scripts/release-ci.mjs stage --platform PLATFORM --input PATH --version V --commit SHA --out DIR [--tag TAG]
 //   node scripts/release-ci.mjs validate
 //   node scripts/release-ci.mjs publish --dir DIR --tag TAG --commit SHA
 //
@@ -40,12 +41,28 @@ export class ReleaseCiError extends Error {}
 
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-export function packageName(version) {
-  return `konzendi_${version}_amd64.deb`;
+export function packageName(platform, version) {
+  switch (platform) {
+    case "linux":
+      return `konzendi_${version}_amd64.deb`;
+    case "windows":
+      return `Konzendi_${version}_x64-setup.exe`;
+    case "macos":
+      return `Konzendi_${version}_aarch64.dmg`;
+    default:
+      throw new ReleaseCiError(`unknown package platform ${platform}`);
+  }
 }
 
 export function assetNames(version) {
-  return [packageName(version), SUMS, MANIFEST, NOTICES];
+  return [
+    packageName("linux", version),
+    packageName("windows", version),
+    packageName("macos", version),
+    SUMS,
+    MANIFEST,
+    NOTICES,
+  ];
 }
 
 /** Both the account that pushed the tag and the account that started this attempt. */
@@ -294,9 +311,123 @@ function run(command, args) {
   }
 }
 
-/** Collect the four release assets from a checked build. */
+const PACKAGE_TARGETS = [
+  {
+    platform: "linux",
+    input: "deb",
+    target: "x86_64-unknown-linux-gnu",
+    format: "deb",
+    signed: false,
+  },
+  {
+    platform: "windows",
+    input: "nsis",
+    target: "x86_64-pc-windows-msvc",
+    format: "nsis",
+    signed: false,
+  },
+  {
+    platform: "macos",
+    input: "dmg",
+    target: "aarch64-apple-darwin",
+    format: "dmg",
+    signed: false,
+  },
+];
+
+function packageTarget(platform) {
+  const spec = PACKAGE_TARGETS.find((entry) => entry.platform === platform);
+  if (!spec) throw new ReleaseCiError(`unknown package platform ${platform}`);
+  return spec;
+}
+
+function toolchains(probe) {
+  return {
+    node: process.version,
+    npm: probe("npm", ["--version"]),
+    rustc: probe("rustc", ["--version"]),
+    cargo: probe("cargo", ["--version"]),
+    tauriCli: existsSync("node_modules/@tauri-apps/cli/package.json")
+      ? JSON.parse(
+          readFileSync("node_modules/@tauri-apps/cli/package.json", "utf8"),
+        ).version
+      : null,
+  };
+}
+
+function nativePackages(env, probe) {
+  const versions = {};
+  for (const pkg of (env.NATIVE_PACKAGES ?? "").split(/\s+/).filter(Boolean)) {
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: a dpkg-query format, not JavaScript.
+    versions[pkg] = probe("dpkg-query", ["-W", "-f=${Version}", pkg]);
+  }
+  return versions;
+}
+
+export function buildReportName(platform) {
+  packageTarget(platform);
+  return `${platform}-build.json`;
+}
+
+/** Normalize one native package and record the runner that built and exercised it. */
+export function stagePackage({
+  platform,
+  input,
+  version,
+  commit,
+  out,
+  tag = null,
+  env = process.env,
+  probe = run,
+}) {
+  if (!parseVersion(version))
+    throw new ReleaseCiError(`invalid version ${version}`);
+  if (!/^[0-9a-f]{40}$/.test(commit ?? ""))
+    throw new ReleaseCiError(`invalid commit ${commit}`);
+  if (!input || !existsSync(input))
+    throw new ReleaseCiError(`missing ${platform} package: ${input}`);
+  const spec = packageTarget(platform);
+  const file = packageName(platform, version);
+  mkdirSync(out, { recursive: true });
+  copyFileSync(input, join(out, file));
+  const bytes = readFileSync(join(out, file));
+  const report = {
+    schema: 1,
+    version,
+    tag,
+    source: { repository: env.GITHUB_REPOSITORY ?? null, commit },
+    runner: {
+      os: env.RUNNER_OS ?? process.platform,
+      arch: env.RUNNER_ARCH ?? process.arch,
+      image: env.ImageOS ?? null,
+      imageVersion: env.ImageVersion ?? null,
+    },
+    toolchains: toolchains(probe),
+    nativePackages:
+      platform === "linux" ? nativePackages(env, probe) : undefined,
+    package: {
+      platform,
+      target: spec.target,
+      format: spec.format,
+      signed: spec.signed,
+      file,
+      sha256: sha256(bytes),
+      size: bytes.length,
+    },
+  };
+  writeFileSync(
+    join(out, buildReportName(platform)),
+    `${JSON.stringify(report, null, 2)}\n`,
+  );
+  return report;
+}
+
+/** Collect the release assets from the three native builds. */
 export function assets({
   deb,
+  nsis,
+  dmg,
+  staged,
   version,
   commit,
   out,
@@ -310,25 +441,49 @@ export function assets({
   if (!/^[0-9a-f]{40}$/.test(commit ?? ""))
     throw new ReleaseCiError(`invalid commit ${commit}`);
   mkdirSync(out, { recursive: true });
-  const name = packageName(version);
-  copyFileSync(deb, join(out, name));
+  const inputs = { deb, nsis, dmg };
+  const packages = PACKAGE_TARGETS.map((spec) => {
+    const file = packageName(spec.platform, version);
+    const source = staged ? join(staged, file) : inputs[spec.input];
+    if (!source || !existsSync(source)) {
+      throw new ReleaseCiError(`missing ${spec.platform} package: ${source}`);
+    }
+    copyFileSync(source, join(out, file));
+    const bytes = readFileSync(join(out, file));
+    const packageRecord = {
+      platform: spec.platform,
+      target: spec.target,
+      format: spec.format,
+      signed: spec.signed,
+      file,
+      sha256: sha256(bytes),
+      size: bytes.length,
+    };
+    const reportPath = staged
+      ? join(staged, buildReportName(spec.platform))
+      : null;
+    if (reportPath && existsSync(reportPath)) {
+      const report = JSON.parse(readFileSync(reportPath, "utf8"));
+      if (
+        report.version !== version ||
+        report.tag !== tag ||
+        report.source?.commit !== commit ||
+        JSON.stringify(report.package) !== JSON.stringify(packageRecord)
+      ) {
+        throw new ReleaseCiError(
+          `${buildReportName(spec.platform)} does not describe the checked package`,
+        );
+      }
+      return { ...packageRecord, build: report };
+    }
+    return packageRecord;
+  });
   copyFileSync(notices, join(out, NOTICES));
-  const bytes = readFileSync(join(out, name));
-  const nativePackages = {};
-  for (const pkg of (env.NATIVE_PACKAGES ?? "").split(/\s+/).filter(Boolean)) {
-    // biome-ignore lint/suspicious/noTemplateCurlyInString: a dpkg-query format, not JavaScript.
-    nativePackages[pkg] = probe("dpkg-query", ["-W", "-f=${Version}", pkg]);
-  }
-  const tauriCli = existsSync("node_modules/@tauri-apps/cli/package.json")
-    ? JSON.parse(
-        readFileSync("node_modules/@tauri-apps/cli/package.json", "utf8"),
-      ).version
-    : null;
   const osRelease = existsSync("/etc/os-release")
     ? readFileSync("/etc/os-release", "utf8")
     : "";
   const manifest = {
-    schema: 1,
+    schema: 2,
     name: "konzendi",
     version,
     tag,
@@ -341,25 +496,17 @@ export function assets({
           workflowRef: env.GITHUB_WORKFLOW_REF ?? null,
         }
       : null,
-    runner: {
+    assembly: {
       image: env.ImageOS ?? null,
       imageVersion: env.ImageVersion ?? null,
       os: /^PRETTY_NAME="?([^"\n]*)"?$/m.exec(osRelease)?.[1] ?? null,
       arch: process.arch,
+      toolchains: toolchains(probe),
     },
-    target: "x86_64-unknown-linux-gnu",
-    toolchains: {
-      node: process.version,
-      npm: probe("npm", ["--version"]),
-      rustc: probe("rustc", ["--version"]),
-      cargo: probe("cargo", ["--version"]),
-      tauriCli,
-    },
-    nativePackages,
-    package: { file: name, sha256: sha256(bytes), size: bytes.length },
+    packages,
   };
   writeFileSync(join(out, MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
-  const sums = [name, MANIFEST, NOTICES]
+  const sums = [...packages.map(({ file }) => file), MANIFEST, NOTICES]
     .sort()
     .map((file) => `${sha256(readFileSync(join(out, file)))}  ${file}`)
     .join("\n");
@@ -462,8 +609,19 @@ export async function publish({
       `${MANIFEST} describes ${manifest.tag} at ${manifest.source?.commit}, not ${tag} at ${commit}`,
     );
   }
-  if (manifest.package?.sha256 !== local.get(packageName(version))) {
-    throw new ReleaseCiError(`${MANIFEST} records a different package hash`);
+  const recordedPackages = new Map(
+    (manifest.packages ?? []).map((entry) => [entry.file, entry.sha256]),
+  );
+  const expectedPackages = ["linux", "windows", "macos"].map((platform) =>
+    packageName(platform, version),
+  );
+  if (
+    recordedPackages.size !== expectedPackages.length ||
+    expectedPackages.some(
+      (name) => recordedPackages.get(name) !== local.get(name),
+    )
+  ) {
+    throw new ReleaseCiError(`${MANIFEST} records different package hashes`);
   }
 
   const recheck = async () => {
@@ -597,6 +755,11 @@ async function main(argv) {
     args: rest,
     options: {
       deb: { type: "string" },
+      nsis: { type: "string" },
+      dmg: { type: "string" },
+      staged: { type: "string" },
+      platform: { type: "string" },
+      input: { type: "string" },
       version: { type: "string" },
       commit: { type: "string" },
       out: { type: "string" },
@@ -606,6 +769,14 @@ async function main(argv) {
   });
   const root = resolve(import.meta.dirname, "..");
   switch (command) {
+    case "stage": {
+      const report = stagePackage({
+        ...values,
+        tag: values.tag || null,
+      });
+      console.log(JSON.stringify(report, null, 2));
+      return;
+    }
     case "assets": {
       const manifest = assets({
         ...values,

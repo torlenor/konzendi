@@ -17,6 +17,8 @@ while it was being built, and a pushed tag is never moved. The first release is 
 ### Added
 
 - Quick access now has `K` to open the Konzendi tracking window.
+- Private trial packages are prepared for Windows 11 x64 and macOS 15 on Apple silicon. The
+  release remains a prototype and needs native installed-application verification.
 
 ### Changed
 
@@ -31,7 +33,11 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ### Known limitations
 
-- The global shortcut and quick switcher remain X11-only.
+- Windows and macOS packages are unsigned. Windows can show a SmartScreen warning. macOS needs
+  approval in Privacy & Security before the application can open.
+- Windows and macOS shortcut, tray, focus, and persistence behavior still needs native
+  installed-application verification before those packages are supported trial downloads.
+- On Linux, the global shortcut and quick switcher remain X11-only.
 - On some desktops the scrollbar shows only while you scroll, so it is not always visible that
   a view continues below the window.
 

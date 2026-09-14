@@ -17,7 +17,7 @@ on:
         type: string
         required: true
       artifact-name:
-        description: Name of the uploaded package artifact.
+        description: Name of the combined release-assets artifact.
         type: string
         default: package
       retention-days:
@@ -246,19 +246,22 @@ jobs:
       - name: Build Debian package
         run: npm run tauri build -- --ci --bundles deb -- --locked
 
-      - name: Collect package assets
+      - name: Stage Debian package
         env:
           TAG: ${{ inputs.tag }}
         run: |
           version="$(node scripts/release.mjs versions)"
           echo "VERSION=$version" >> "$GITHUB_ENV"
-          node scripts/release-ci.mjs assets \
-            --deb "src-tauri/target/release/bundle/deb/Konzendi_${version}_amd64.deb" \
-            --version "$version" --commit "$(git rev-parse HEAD)" --tag "$TAG" --out release-assets
-          (cd release-assets && sha256sum --check SHA256SUMS)
+          arguments=(
+            stage --platform linux
+            --input "src-tauri/target/release/bundle/deb/Konzendi_${version}_amd64.deb"
+            --version "$version" --commit "$(git rev-parse HEAD)" --out platform-output
+          )
+          if [ -n "$TAG" ]; then arguments+=(--tag "$TAG"); fi
+          node scripts/release-ci.mjs "${arguments[@]}"
 
       - name: Install and exercise the package offline
-        run: EXPECTED_VERSION="$VERSION" scripts/package-smoke.sh "release-assets/konzendi_${VERSION}_amd64.deb" smoke-output
+        run: EXPECTED_VERSION="$VERSION" scripts/package-smoke.sh "platform-output/konzendi_${VERSION}_amd64.deb" smoke-output
 
       - name: Keep smoke evidence
         if: always()
@@ -270,11 +273,11 @@ jobs:
           if-no-files-found: ignore
           overwrite: true
 
-      - name: Upload checked package
+      - name: Upload checked Linux package
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ inputs.artifact-name || 'package' }}
-          path: release-assets
+          name: ${{ format('{0}-linux', inputs.artifact-name || 'package') }}
+          path: platform-output
           retention-days: ${{ inputs.retention-days || 7 }}
           if-no-files-found: error
           # A re-run of all jobs rebuilds the same commit and replaces the handoff.
@@ -291,3 +294,191 @@ jobs:
             ~/.cargo/git/db
             src-tauri/target
           key: package-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('src-tauri/Cargo.lock', 'package-lock.json') }}
+
+  windows-package:
+    name: windows-package
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Set up Rust
+        shell: pwsh
+        run: |
+          rustup toolchain install $env:RUST_VERSION --profile minimal
+          rustup default $env:RUST_VERSION
+          rustc --version
+          cargo --version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Pin npm and install dependencies
+        shell: pwsh
+        run: |
+          if ((npm --version) -ne $env:NPM_VERSION) { npm install --global "npm@$env:NPM_VERSION" }
+          npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build unsigned NSIS package
+        run: npm run tauri build -- --ci --bundles nsis -- --locked
+
+      - name: Install, restart, and remove package
+        shell: pwsh
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          $version = node scripts/release.mjs versions
+          $commit = git rev-parse HEAD
+          $built = "src-tauri/target/release/bundle/nsis/Konzendi_${version}_x64-setup.exe"
+          $package = "platform-output/Konzendi_${version}_x64-setup.exe"
+          $arguments = @("scripts/release-ci.mjs", "stage", "--platform", "windows", "--input", $built, "--version", $version, "--commit", $commit, "--out", "platform-output")
+          if ($env:TAG) { $arguments += @("--tag", $env:TAG) }
+          node @arguments
+          ./scripts/package-smoke-windows.ps1 $package smoke-output
+
+      - name: Keep Windows smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-smoke-evidence
+          path: smoke-output
+          retention-days: 7
+          if-no-files-found: ignore
+          overwrite: true
+
+      - name: Upload checked Windows package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ format('{0}-windows', inputs.artifact-name || 'package') }}
+          path: platform-output
+          retention-days: ${{ inputs.retention-days || 7 }}
+          if-no-files-found: error
+          overwrite: true
+
+  macos-package:
+    name: macos-package
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Set up Rust
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal
+          rustup default "$RUST_VERSION"
+          rustc --version
+          cargo --version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Pin npm and install dependencies
+        run: |
+          if [ "$(npm --version)" != "$NPM_VERSION" ]; then npm install --global "npm@$NPM_VERSION"; fi
+          npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build unsigned DMG package
+        run: npm run tauri build -- --ci --bundles dmg -- --locked
+
+      - name: Install, restart, and remove package
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          version="$(node scripts/release.mjs versions)"
+          package="platform-output/Konzendi_${version}_aarch64.dmg"
+          arguments=(
+            stage --platform macos
+            --input "src-tauri/target/release/bundle/dmg/Konzendi_${version}_aarch64.dmg"
+            --version "$version" --commit "$(git rev-parse HEAD)" --out platform-output
+          )
+          if [ -n "$TAG" ]; then arguments+=(--tag "$TAG"); fi
+          node scripts/release-ci.mjs "${arguments[@]}"
+          scripts/package-smoke-macos.sh "$package" smoke-output
+
+      - name: Keep macOS smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: macos-smoke-evidence
+          path: smoke-output
+          retention-days: 7
+          if-no-files-found: ignore
+          overwrite: true
+
+      - name: Upload checked macOS package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ format('{0}-macos', inputs.artifact-name || 'package') }}
+          path: platform-output
+          retention-days: ${{ inputs.retention-days || 7 }}
+          if-no-files-found: error
+          overwrite: true
+
+  release-assets:
+    name: release-assets
+    needs: [package-smoke, windows-package, macos-package]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download Linux package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ format('{0}-linux', inputs.artifact-name || 'package') }}
+          path: platform-input
+
+      - name: Download Windows package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ format('{0}-windows', inputs.artifact-name || 'package') }}
+          path: platform-input
+
+      - name: Download macOS package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ format('{0}-macos', inputs.artifact-name || 'package') }}
+          path: platform-input
+
+      - name: Assemble and verify release assets
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          version="$(node scripts/release.mjs versions)"
+          arguments=(
+            --staged platform-input
+            --version "$version" --commit "$(git rev-parse HEAD)" --out release-assets
+          )
+          if [ -n "$TAG" ]; then arguments+=(--tag "$TAG"); fi
+          node scripts/release-ci.mjs assets "${arguments[@]}"
+          (cd release-assets && sha256sum --check SHA256SUMS)
+
+      - name: Upload combined package set
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ inputs.artifact-name || 'package' }}
+          path: release-assets
+          retention-days: ${{ inputs.retention-days || 7 }}
+          if-no-files-found: error
+          overwrite: true

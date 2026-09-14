@@ -43,7 +43,7 @@ describe("parseAccelerator", () => {
     ["Control+", "no key"],
     ["Control+K+J", "two keys"],
     ["Control+Control+K", "a repeated modifier"],
-    ["Hyper+K", "a modifier the X11 grab does not report"],
+    ["Hyper+K", "a modifier the desktop plugin does not report"],
     ["Control+Compose", "a key the grab cannot find"],
     ["", "nothing at all"],
   ])("rejects %j — %s", (text) => {

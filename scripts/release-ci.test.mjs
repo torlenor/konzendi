@@ -17,6 +17,7 @@ import {
   assetNames,
   assets,
   authorize,
+  buildReportName,
   GitHub,
   MANIFEST,
   planAssets,
@@ -24,6 +25,7 @@ import {
   ReleaseCiError,
   releaseFor,
   SUMS,
+  stagePackage,
   tagVersion,
   validate,
 } from "./release-ci.mjs";
@@ -244,11 +246,15 @@ function fixture(name = "build") {
   );
   const input = join(scratch, `${name}-input`);
   mkdirSync(input, { recursive: true });
-  writeFileSync(join(input, "Konzendi_0.1.0_amd64.deb"), "package bytes");
+  writeFileSync(join(input, "Konzendi_0.1.0_amd64.deb"), "linux bytes");
+  writeFileSync(join(input, "Konzendi_0.1.0_x64-setup.exe"), "windows bytes");
+  writeFileSync(join(input, "Konzendi_0.1.0_aarch64.dmg"), "macos bytes");
   writeFileSync(join(input, "NOTICES.md"), "notices");
   const dir = join(scratch, `${name}-assets`);
   assets({
     deb: join(input, "Konzendi_0.1.0_amd64.deb"),
+    nsis: join(input, "Konzendi_0.1.0_x64-setup.exe"),
+    dmg: join(input, "Konzendi_0.1.0_aarch64.dmg"),
     notices: join(input, "NOTICES.md"),
     version: "0.1.0",
     commit: COMMIT,
@@ -445,6 +451,47 @@ describe("validate", () => {
 });
 
 describe("assets", () => {
+  test("staged packages retain native build provenance", () => {
+    const staged = join(scratch, "staged-input");
+    const assembled = join(scratch, "staged-assets");
+    mkdirSync(staged, { recursive: true });
+    for (const [platform, file] of [
+      ["linux", "linux.deb"],
+      ["windows", "windows.exe"],
+      ["macos", "macos.dmg"],
+    ]) {
+      const input = join(scratch, file);
+      writeFileSync(input, `${platform} package`);
+      stagePackage({
+        platform,
+        input,
+        version: "0.1.0",
+        commit: COMMIT,
+        tag: "v0.1.0",
+        out: staged,
+        env: { RUNNER_OS: platform, ImageVersion: "runner-version" },
+        probe: () => "tool-version",
+      });
+      assert.ok(readFileSync(join(staged, buildReportName(platform))));
+    }
+    assets({
+      staged,
+      notices: join(fixture("staged-notices").root, "CHANGELOG.md"),
+      version: "0.1.0",
+      commit: COMMIT,
+      tag: "v0.1.0",
+      out: assembled,
+      probe: () => "tool-version",
+    });
+    const manifest = JSON.parse(
+      readFileSync(join(assembled, MANIFEST), "utf8"),
+    );
+    assert.deepEqual(
+      manifest.packages.map(({ build }) => build.runner.imageVersion),
+      ["runner-version", "runner-version", "runner-version"],
+    );
+  });
+
   test("names, checksums, and manifest describe the checked commit", () => {
     const { dir } = fixture("assets");
     const manifest = JSON.parse(readFileSync(join(dir, MANIFEST), "utf8"));
@@ -454,9 +501,17 @@ describe("assets", () => {
       manifest.workflow.url,
       `https://github.com/${REPO}/actions/runs/42`,
     );
-    assert.equal(manifest.package.sha256, sha256(Buffer.from("package bytes")));
+    assert.equal(manifest.schema, 2);
+    assert.deepEqual(
+      manifest.packages.map(({ platform }) => platform),
+      ["linux", "windows", "macos"],
+    );
+    assert.equal(
+      manifest.packages[0].sha256,
+      sha256(Buffer.from("linux bytes")),
+    );
     const sums = readFileSync(join(dir, SUMS), "utf8").trim().split("\n");
-    assert.equal(sums.length, 3);
+    assert.equal(sums.length, 5);
     for (const line of sums) {
       const [hash, file] = line.split("  ");
       assert.equal(hash, sha256(readFileSync(join(dir, file))), file);
@@ -534,7 +589,7 @@ describe("publish", () => {
       log: quiet,
     });
     assert.equal(result.kept.length, 1);
-    assert.equal(result.uploaded.length, 3);
+    assert.equal(result.uploaded.length, 5);
     assert.equal(github.releases.length, 1);
     assert.equal(github.releases[0].name, "Konzendi 0.1.0");
     assert.equal(github.releases[0].tag_name, "v0.1.0");
@@ -557,7 +612,7 @@ describe("publish", () => {
     await run();
     const second = await run();
     assert.equal(github.releases.length, 1);
-    assert.equal(second.kept.length, 4);
+    assert.equal(second.kept.length, 6);
     assert.deepEqual(second.uploaded, []);
     assert.equal(github.releases[0].tag_name, "v0.1.0");
   });
@@ -581,7 +636,7 @@ describe("publish", () => {
     github.releases[0].tag_name = "untagged-abc";
     const second = await run();
     assert.equal(github.releases.length, 1);
-    assert.equal(second.kept.length, 4);
+    assert.equal(second.kept.length, 6);
     assert.equal(github.releases[0].tag_name, "v0.1.0");
   });
 

@@ -5,106 +5,190 @@
 **Depends on:** [Phase 7](phase-7-releases-ci-cd.md)  
 **Effort:** H  
 **Complexity:** H  
-**Readiness:** Discovery required
+**Readiness:** Implementation-ready
 
 ## Investigation gate
 
-The owner decided on 11 September 2026 that Windows and macOS support is worth investigating so
-other people can try Konzendi, but only after the Linux release pipeline in Phase 7 is
-implemented. This records the sequence; it does not yet select operating-system versions,
-architectures, package formats, signing policy, or distribution channels.
+The owner selected the first non-Linux trial matrix on 14 September 2026. It contains Windows
+11 x64 and macOS 15 on Apple silicon. Both packages are unsigned prototype packages in the
+private GitHub release. Trial users accept the operating-system warning and use the documented
+override. This policy is for a small, known trial group. It is not suitable for public release.
 
-Before writing production platform support, gather evidence and record decisions for:
+The selected matrix is the smallest matrix that gives one current target for each operating
+system and that GitHub-hosted native runners can build. GitHub documents `windows-2025` as an
+x64 runner and `macos-15` as an Apple-silicon runner for private repositories in its
+[hosted-runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
+Tauri builds NSIS on Windows and DMG on macOS. It does not use cross-compilation for these
+packages.
 
-1. Which supported Windows and macOS versions and architectures match the intended trial group.
-2. Whether global shortcuts, quick-switcher focus and focus restoration, the tray, close-to-tray,
-   startup, and both application windows behave acceptably on each candidate target.
-3. Which native package formats, code-signing and notarization policies, publisher identities,
-   certificates, accounts, costs, and private download path are required for people to install
-   the application without unsafe workarounds.
-4. Whether Phase 7's version, changelog, tag, checksum, manifest, draft-release, retry, and
-   recovery contracts can be extended as a native build matrix without allowing one platform to
-   publish artifacts from a different source revision.
-5. How the current bundle identifier and application-data paths behave on both platforms, and
-   how existing Linux data remains compatible if identity or storage conventions change.
-6. Which real or virtual machines can exercise installation, launch, offline tracking, restart
-   persistence, upgrade, downgrade, removal, and failure recovery on every claimed target.
-
-Discovery may narrow the first expansion to one operating system or architecture. Record that
-outcome here, update the roadmap delivery text if needed, and change readiness only when the
-selected support contract and work packages are decision-complete.
+Apple states that an unsigned application needs a manual **Open Anyway** action in **Privacy &
+Security**. Windows can run an unsigned application, but a browser download can show a
+SmartScreen warning. These warnings are an accepted trial limitation, not a support defect.
+Signing and notarization need separate owner decisions and credentials before wider
+distribution. See [Apple's Gatekeeper instructions](https://support.apple.com/en-euro/guide/mac-help/mh40616/mac)
+and [Tauri's Windows signing guide](https://v2.tauri.app/distribute/sign/windows/).
 
 ## Outcome and scope
 
-The eventual outcome is private, versioned trial builds for the selected Windows and macOS
-targets, produced from the same reviewed tag as the Linux package and verified on their declared
-systems. The existing Linux/X11 release must remain available and its acceptance checks must
-continue to pass.
+This phase adds private, versioned trial builds for:
 
-This phase includes native desktop behavior, packaging, signing or an explicitly accepted
-private-trial alternative, CI build hosts, platform-specific acceptance checks, documentation,
-and release recovery. It does not choose app stores, payments, entitlement, automatic updates,
-sync, or public redistribution policy. It does not claim that unselected operating-system
-versions, architectures, compatibility layers, or Linux/Wayland are supported.
+| Trial target | Architecture | Package | Native build runner | Installation |
+| --- | --- | --- | --- | --- |
+| Windows 11 | x64 | NSIS `.exe` | `windows-2025` | Current user, no administrator access |
+| macOS 15 | Apple silicon | `.dmg` | `macos-15` | Copy `Konzendi.app` to Applications |
+
+The Linux x86_64 Debian package remains supported and unchanged. The three packages come from
+one reviewed tag and one release workflow run. `SHA256SUMS` covers every package, the manifest,
+and the third-party notices. The release stays a private draft until the maintainer reviews it.
+
+The phase includes desktop behavior, packaging, CI builds, installed-package checks,
+documentation, withdrawal, and data recovery. It does not include Intel macOS, Windows on ARM,
+Windows 10, older macOS versions, app stores, signing, notarization, payments, automatic
+updates, synchronization, or public distribution.
 
 ## Decisions and evidence
 
-The sequence is accepted: implement and verify Phase 7 before beginning this phase's platform
-work. Reusing its release contract gives non-Linux builds an established source-tag, version,
-artifact-integrity, publication, and recovery model rather than creating a second release
-process first.
+### Desktop behavior
 
-Everything beyond that sequence remains undecided. Tauri configuration, cross-platform-looking
-dependencies, icons, or a successful compilation do not establish support. Each claim needs a
-native build and an installed-application walkthrough on the exact operating-system and
-architecture combination named in the support contract.
+The official Tauri global-shortcut plugin lists Linux, Windows, and macOS as supported
+platforms. Konzendi now enables its shortcut on Windows and macOS and keeps the Linux X11 gate.
+Linux/Wayland remains unsupported. Source inspection also found platform-neutral Tauri calls
+for the tray, close-to-tray, window show/hide, focus, resize, and local paths.
+
+Linux has an X11-specific focus-restoration helper. Windows and macOS use the native window
+focus request. Hiding the quick switcher does not make a platform-specific request to restore
+the previously focused external application. The native walkthrough must record whether each
+operating system restores it without such a request. A failure blocks the support claim and
+requires a platform-specific implementation or an explicit degraded-mode decision.
+
+The custom frame remains the default. The native-frame setting is the recovery path if the
+custom window controls or resize edges fail on a selected target. The walkthrough tests both
+settings.
+
+### Storage and compatibility
+
+The bundle identifier stays `com.konzendi.app`; there is no data migration. Tauri resolves the
+application data directory from that identifier:
+
+- Windows: `%APPDATA%\com.konzendi.app`
+- macOS: `~/Library/Application Support/com.konzendi.app`
+- Linux: `$XDG_DATA_HOME/com.konzendi.app`, or `~/.local/share/com.konzendi.app`
+
+Each target uses the same `device.json`, `events/*.jsonl`, and `store.lock` layout. Event files
+can move between these directories unchanged. Windows cannot open a directory through
+`std::fs::File`, so it keeps the durable file flushes but skips the Unix directory-handle flush.
+The native restart and abrupt-stop checks must verify identity and complete JSONL records.
+Tauri warns that an identifier ending in `.app` resembles the macOS application-bundle suffix.
+The owner keeps it in this phase so Linux and cross-platform event-store paths use one identity.
+The warning does not establish that the DMG works; the native build and walkthrough must verify
+it before the macOS trial starts.
+
+### Release matrix
+
+The release workflow keeps Phase 7's tag validation, owner checks, exact commit, manual draft
+publication, failure injection, and conflict refusal. The reusable CI workflow builds all three
+packages from the explicit commit. It then creates these six release assets:
+
+- `konzendi_VERSION_amd64.deb`
+- `Konzendi_VERSION_x64-setup.exe`
+- `Konzendi_VERSION_aarch64.dmg`
+- `SHA256SUMS`
+- `release-manifest.json`
+- `THIRD_PARTY_NOTICES.md`
+
+The manifest records each target, format, signing state, byte size, and SHA-256 hash. A missing
+or conflicting platform package stops draft completion. A failing platform job blocks the
+combined artifact and the draft job. A rerun uses the same tag and commit.
+
+Hosted package smoke checks use a disposable Windows runner profile and an isolated macOS home
+directory. They install, start, stop, restart, and remove the packages. They verify that the
+device identity survives restart and that removal keeps user data. Hosted runners do not
+provide the interactive evidence needed for shortcut, tray, focus, or warning-dialog claims.
 
 ## Work packages
 
-- [ ] **Identify trial targets and constraints.** Inventory the intended testers' operating
-      systems and architectures, available build/test machines, developer accounts, certificate
-      requirements, and acceptable installation friction. Complete when the owner selects the
-      smallest useful target matrix and records excluded combinations with rationale.
-- [ ] **Audit platform seams.** Trace compile guards and every window, shortcut, focus, tray,
-      lifecycle, path, identifier, and storage assumption through the frontend and Rust shell.
-      Run disposable native spikes where source inspection is insufficient. Complete when every
-      Linux-specific behavior has a selected native equivalent, an intentional degraded mode,
-      or a recorded reason to exclude the target.
-- [ ] **Design the release-matrix extension.** Specify native runners, pinned toolchains,
-      packages, signing/notarization, artifact names, checksums, manifests, permissions, and
-      tag-to-draft handoff while preserving Phase 7's exact-source and manual-publication rules.
-      Complete when failure and retry behavior cannot mix artifacts across commits or versions.
-- [ ] **Define native acceptance and recovery.** Specify per-target installation, first launch,
-      shortcut/tray interaction, offline tracking, restart persistence, upgrade, downgrade,
-      backup, removal, and rollback checks using synthetic data. Complete when each supported
-      combination has an owned environment and observable pass/fail criteria.
-- [ ] Replace this discovery outline with decision-complete implementation work packages,
-      acceptance checks, rollout, and rollback; update readiness without changing roadmap status
-      merely because planning completed.
+- [x] **Remove source portability blocks.** Report Windows and macOS shortcut backends, keep
+      the Wayland refusal, and avoid opening directories as files on Windows. Add unit coverage
+      for the platform gate.
+- [x] **Configure native packages.** Add per-platform Tauri configuration for a current-user
+      Windows NSIS package and a macOS 15 Apple-silicon DMG. Keep the common identifier and the
+      Linux Debian configuration.
+- [x] **Extend CI and release assembly.** Build all three native packages from the selected
+      commit. Run isolated package lifecycle probes. Create one checked asset set and require
+      all packages before the draft can become ready.
+- [x] **Document trial operation and recovery.** Document installation warnings, paths,
+      backups, downgrade limits, per-platform removal, artifact review, and support boundaries.
+- [ ] **Verify hosted native builds.** Run CI for the implementation commit. Record the runner
+      images, package hashes, smoke evidence, and result below. Fix build or lifecycle failures
+      before trial distribution.
+- [ ] **Complete installed-application walkthroughs.** Use a Windows 11 x64 machine and a
+      macOS 15 Apple-silicon machine. Complete every manual check below with synthetic data.
+      Record the exact OS version, hardware, package hash, result, and defects.
+- [ ] **Rehearse the combined draft.** Push a new release tag only with owner approval. Verify
+      all six assets, failure and retry behavior, selective withdrawal, and manual publication.
 
 ## Acceptance and verification
 
-The phase has no platform-support claim yet. Before changing readiness to
-`Implementation-ready`, this document must contain:
+Automated checks for each selected native package:
 
-- an owner-approved operating-system and architecture matrix;
-- recorded shortcut, focus, tray, window, lifecycle, and storage behavior on native systems;
-- selected package, signing/notarization, identity, and private-distribution policies;
-- a Phase 7-compatible native build, artifact, publication, retry, and recovery design;
-- owned native test environments and decision-complete automated and manual checks; and
-- explicit rollout, rollback, data-compatibility, and support-boundary language.
+1. Build on the named native runner from the exact selected commit.
+2. Install without administrator access.
+3. Start the installed application and create its store in an isolated data directory.
+4. Stop and restart it; confirm that `device.json` is unchanged.
+5. Remove the installed application; confirm that its data remains.
+6. Upload the normalized package only after these checks pass.
 
-The eventual implementation is complete only when every claimed package is built from one
-reviewed tag, installs on its named target, passes its native desktop and offline-persistence
-checks, and can be withdrawn or rolled back without changing the Linux user's event log.
+Perform this installed-application walkthrough on each declared trial target:
+
+1. Verify the package hash, back up any existing data, and follow the documented unsigned-app
+   warning procedure. Record the warning that the operating system shows.
+2. Start with synthetic data. Verify both windows, the default custom frame, the native-frame
+   recovery setting, minimize, maximize, resizing, close-to-tray, and **Quit Konzendi**.
+3. Register **Ctrl+Alt+K**. Open the quick switcher from another application, use a topic key,
+   Stop, Undo, `K`, Escape, repeated toggles, and a conflicting shortcut. Verify focus on open
+   and focus restoration after every dismissal path.
+4. Verify every tray action and its disabled states. Verify that the icon remains usable with
+   the system light and dark appearances.
+5. Record a topic switch while offline. Restart and confirm the state and unchanged device
+   identity. Confirm that the process makes no application network request.
+6. Upgrade from the previous package, then install the previous version again after a backup.
+   Confirm the documented data-compatibility limits and recovery path.
+7. Remove the application. Confirm that the event store remains and that reinstalling reads it.
+
+Phase 11 is complete only when the root checks, Rust checks, three hosted package jobs, combined
+release assembly, and both native walkthroughs pass. Record the evidence here and only then set
+the roadmap status to `Done`.
+
+### Recorded evidence
+
+- 14 September 2026, local source and documentation checks on Linux:
+  `npm run typecheck`, `npm run lint`, `npm test` (60 tests), `npm run test:scripts`,
+  `npm run build`, `cargo fmt --check`, `cargo clippy --locked -- -D warnings`, and
+  `cargo test --locked` (5 tests) passed. The release tests include staged native provenance,
+  six-asset checksum coverage, draft retry, conflicts, and exact-source checks.
+- 14 September 2026, local config probes: locked debug builds with the base configuration and
+  with each Windows and macOS configuration override passed. These probes validate merged
+  configuration and Linux compilation only. They are not native package builds.
+- 14 September 2026, documentation check: 31 Markdown files had valid local link targets. Phase
+  dependency metadata and the Phase 10 → 11 → 12 navigation chain matched the roadmap.
+- Hosted Windows and macOS builds: not run yet.
+- Windows 11 x64 installed-application walkthrough: not run yet.
+- macOS 15 Apple-silicon installed-application walkthrough: not run yet.
+- Combined tagged draft rehearsal: not run yet.
 
 ## Rollout and rollback
 
-No Windows or macOS rollout is authorized while this document requires discovery. Spikes use
-synthetic event logs and private, disposable artifacts; they must not be presented as supported
-downloads.
+Keep every Windows and macOS artifact in a private draft until its hosted check and matching
+native walkthrough pass. Start with one known tester per platform. Give the tester the package
+hash, unsigned-package warning, backup path, removal steps, and support boundary. Publish the
+draft only after all three platform assets pass. Do not publish a partial multi-platform draft.
 
-The eventual rollout begins with a private draft release and a small trial group on the smallest
-accepted target matrix. Linux artifacts remain unchanged. A failing platform build must not
-block withdrawal of only that platform's unpublished artifact, and rollback must preserve the
-same append-only event data or document and test an explicit backward-compatible migration.
+If one trial target fails before publication, keep the draft incomplete or remove the whole
+incomplete draft and rerun the same tag after a transient failure. Source defects require a new
+commit, version, and tag. Never move a pushed tag. If a published platform package is unsafe,
+edit the release warning immediately and withdraw the release assets. Keep the tag.
+
+Rollback closes Konzendi, backs up the current platform data directory, installs the previous
+package, and restores the backup only if the release notes permit the older event vocabulary.
+Removing an NSIS installation or `Konzendi.app` must not remove the event store. Linux rollback
+and its event log remain unchanged.

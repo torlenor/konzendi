@@ -8,7 +8,7 @@
 A project exploring a simple, robust tool for people working on a computer, especially
 developers and engineers, to understand context switching and reflect on their working habits.
 
-The current application tracks topics on Linux: name what you are working on, switch with one
+The supported application tracks topics on Linux: name what you are working on, switch with one
 click or one key, stop, undo an entry, and correct a time. A global shortcut and a tray icon do
 the same without leaving the application you are working in. A day view draws the result as a
 timeline with a few plain sums. Every action is appended to a local JSONL event log, and the
@@ -64,8 +64,9 @@ topic's number to switch, `s` to stop, `u` to undo the last entry, `K` to open t
 tracking window, or Escape to close it. Escape returns the keyboard to the window that had it.
 The combination is shown at the bottom of the
 tracking window, where **change** records a new one; if another application already holds it, or
-the session is not X11, the same line says so instead of pretending the shortcut works. The key
-grab is X11-only.
+the Linux session is not X11, the same line says so instead of pretending the shortcut works.
+Windows and macOS use their native shortcut backends; their trial packages still need the
+native walkthrough recorded in [Phase 11](docs/phases/phase-11-windows-macos.md).
 
 The tray icon offers the same three actions with the pointer, plus reopening the window and
 quitting. Closing the tracking window leaves Konzendi running in the tray, because a global
@@ -103,19 +104,25 @@ npm run tauri build -- --bundles deb        # Debian package in src-tauri/target
 scripts/package-smoke.sh src-tauri/target/release/bundle/deb/Konzendi_*_amd64.deb /tmp/konzendi-smoke
 ```
 
+GitHub also builds the Windows NSIS and macOS DMG packages on native runners. Their lifecycle
+probes are in `scripts/package-smoke-windows.ps1` and `scripts/package-smoke-macos.sh`.
+
 The package smoke test needs Docker. It installs the package in a clean Ubuntu 24.04 container
 and drives it offline with synthetic data; it never uses your display or your log.
 
-GitHub Actions runs the `frontend`, `rust`, and `package-smoke` jobs on every pull request and
-push to `main` ([`ci.yml`](.github/workflows/ci.yml)). GitHub does not block a merge on them in
-this private repository, so merge only with green checks.
+GitHub Actions runs frontend, Rust, Linux package, Windows package, macOS package, and combined
+asset checks on every pull request and push to `main` ([`ci.yml`](.github/workflows/ci.yml)).
+GitHub does not block a merge on them in this private repository, so merge only with green
+checks.
 
 ## Releases
 
-Releases are private, unsigned Debian packages for x86_64 Ubuntu 24.04 and Linux Mint 22 under
-X11, with SHA-256 checksums. You prepare the version and the changelog locally and push a tag;
-GitHub checks the tagged commit, builds and tests the package, and creates a draft release. You
-publish the draft by hand. No workflow commits, tags, or publishes.
+Releases are private and unsigned. They contain a Debian package for x86_64 Ubuntu 24.04 and
+Linux Mint 22 under X11, a Windows 11 x64 NSIS trial package, and a macOS 15 Apple-silicon DMG
+trial package, with SHA-256 checksums. The Windows and macOS support claim remains pending until
+their Phase 11 native walkthroughs pass. You prepare the version and the changelog locally and
+push a tag; GitHub checks the tagged commit, builds and tests all packages, and creates a draft
+release. You publish the draft by hand. No workflow commits, tags, or publishes.
 
 1. Write the changes under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md), including
    `### Compatibility` and `### Known limitations`.
@@ -168,15 +175,29 @@ publish the draft by hand. No workflow commits, tags, or publishes.
 [docs/RELEASING.md](docs/RELEASING.md) covers manual preparation, hotfixes, re-runs and
 recovery, data compatibility, artifact retention, and toolchain maintenance.
 
-To install a release, download `konzendi_VERSION_amd64.deb` and `SHA256SUMS`, run
+To install on Linux, download `konzendi_VERSION_amd64.deb` and `SHA256SUMS`, run
 `sha256sum --check --ignore-missing SHA256SUMS`, back up `~/.local/share/com.konzendi.app`, and
 run `sudo apt install ./konzendi_VERSION_amd64.deb`. The checksum detects a damaged download; it
 does not prove who built the package. Bundled third-party licences are listed in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and installed to `/usr/share/doc/konzendi/`.
 
+For a Windows 11 x64 trial, verify `Konzendi_VERSION_x64-setup.exe`, back up
+`%APPDATA%\com.konzendi.app`, and run the installer for the current user. Windows can show a
+SmartScreen warning because the package is unsigned. Remove it through **Installed apps**; its
+event store stays in place.
+
+For a macOS 15 Apple-silicon trial, verify `Konzendi_VERSION_aarch64.dmg`, back up
+`~/Library/Application Support/com.konzendi.app`, open the DMG, and copy `Konzendi.app` to
+Applications. Because the application is unsigned, first try to open it, then allow it with
+**Open Anyway** in **System Settings → Privacy & Security**. Delete `Konzendi.app` to remove the
+application; its event store stays in place. Only accept these warnings for a package and hash
+that the maintainer provided through the private repository.
+
 ## Local data
 
-On Linux, files live in `$XDG_DATA_HOME/com.konzendi.app`, defaulting to
+Files live in `%APPDATA%\com.konzendi.app` on Windows, in
+`~/Library/Application Support/com.konzendi.app` on macOS, and in
+`$XDG_DATA_HOME/com.konzendi.app` on Linux, which defaults to
 `~/.local/share/com.konzendi.app`:
 
 - `device.json` holds the persistent device UUID.
@@ -199,7 +220,7 @@ logs in this repository.
 
 - `src/` — React interface, both the tracking window and the quick switcher; `src/core/` —
   framework-independent event merging and tests.
-- `src-tauri/src/` — Rust storage, Tauri commands, and the X11 requests quick access needs.
+- `src-tauri/src/` — Rust storage, Tauri commands, and the platform requests quick access needs.
 - `scripts/` — release helpers, notice generation, and the package smoke test, with their tests.
 - `.github/workflows/` — CI and the tag-triggered release workflow.
 - `docs/` — roadmap, decisions, phase plans, and discussion history.

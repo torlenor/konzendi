@@ -3,14 +3,18 @@
 This guide is the operating manual for releases. The short sequence is in the
 [README](../README.md#releases). The decisions behind it, and their rationale, are in
 [Phase 7](phases/phase-7-releases-ci-cd.md#decisions-and-evidence).
+The Windows and macOS extension is in
+[Phase 11](phases/phase-11-windows-macos.md#decisions-and-evidence).
 
 ## Policy in brief
 
 - Releases are private GitHub releases of `torlenor/konzendi`. Only repository readers can
   download them.
-- Each release has four assets: `konzendi_VERSION_amd64.deb`, `SHA256SUMS`,
-  `release-manifest.json`, and `THIRD_PARTY_NOTICES.md`. The package is unsigned and
-  targets x86_64 Ubuntu 24.04 and Linux Mint 22 under X11.
+- Each release has six assets: `konzendi_VERSION_amd64.deb`,
+  `Konzendi_VERSION_x64-setup.exe`, `Konzendi_VERSION_aarch64.dmg`, `SHA256SUMS`,
+  `release-manifest.json`, and `THIRD_PARTY_NOTICES.md`. All packages are unsigned. The Linux
+  package targets x86_64 Ubuntu 24.04 and Linux Mint 22 under X11. The other packages target
+  Windows 11 x64 and macOS 15 on Apple silicon for the private Phase 11 trial.
 - Versions are `MAJOR.MINOR.PATCH` with no prefix or suffix. Tags are `vMAJOR.MINOR.PATCH`,
   annotated. Every `0.x` release is a GitHub prerelease.
 - The maintainer prepares the version and changelog locally and pushes a tag. GitHub builds a
@@ -22,18 +26,24 @@ This guide is the operating manual for releases. The short sequence is in the
 
 | Workflow | Trigger | Jobs | Writes |
 | --- | --- | --- | --- |
-| [`ci.yml`](../.github/workflows/ci.yml) | Pull requests, pushes to `main` | `frontend`, `rust`, `package-smoke` | Caches, only on pushes to `main` |
+| [`ci.yml`](../.github/workflows/ci.yml) | Pull requests, pushes to `main` | `frontend`, `rust`, three native package jobs, `release-assets` | Caches, only on pushes to `main` |
 | [`release.yml`](../.github/workflows/release.yml) | A pushed `v*` tag | `validate`, `checks` (calls `ci.yml`), `draft release` | One draft release and its assets |
 
 - **frontend:** version agreement, release script tests, typecheck, lint, Vitest, and the
   frontend build.
 - **rust:** `cargo fmt --check`, `cargo clippy --locked -- -D warnings`, `cargo test --locked`.
 - **package-smoke:** third-party notice check, `npm run tauri build -- --ci --bundles deb --
-  --locked`, asset collection, and [`scripts/package-smoke.sh`](../scripts/package-smoke.sh).
+  --locked`, and [`scripts/package-smoke.sh`](../scripts/package-smoke.sh).
   The smoke test installs the package in a clean Ubuntu 24.04 container, then runs it with no
   network on a private X server with synthetic data: first run, back-dating, stop, restart
   persistence, and a log in the prototype format. Screenshots and logs are kept as the
   `smoke-evidence` artifact.
+- **windows-package:** native x64 NSIS build on `windows-2025`, then a current-user install,
+  start, restart, identity check, removal, and data-preservation check with isolated data.
+- **macos-package:** native Apple-silicon DMG build on `macos-15`, then a copied-app start,
+  restart, identity check, removal, and data-preservation check with isolated data.
+- **release-assets:** downloads the three checked packages, normalizes their names, records
+  their targets and hashes, and creates the combined checksum-covered artifact.
 
 `validate` refuses the release before anything is built when the tag was not pushed and
 started by `torlenor`, is not an annotated `vMAJOR.MINOR.PATCH` tag, has moved, points to a
@@ -51,8 +61,8 @@ maintainer convention. The release workflow enforces its own checks.
 2. In the GitHub account settings, confirm the remaining Actions minutes for private
    repositories and set a budget that stops usage at the limit
    ([budgets](https://docs.github.com/en/billing/how-tos/set-up-budgets)). A full release run
-   uses roughly 20–30 runner minutes. If the allowance is exhausted, delivery stops; do not
-   skip checks to save minutes.
+   now uses Linux, Windows, and macOS runner minutes. Check the actual duration after the first
+   run. If the allowance is exhausted, delivery stops; do not skip checks to save minutes.
 3. Confirm Actions are enabled for the repository and the default workflow token is read-only
    (Settings → Actions → General). The workflows request the permissions they need.
 
@@ -112,7 +122,8 @@ gh run list --workflow CI --branch main --limit 3
 gh run watch <run-id> --exit-status
 ```
 
-Continue only when all three jobs pass for the release commit. Then confirm the local state:
+Continue only when all native package and combined asset jobs pass for the release commit. Then
+confirm the local state:
 
 ```bash
 git fetch origin
@@ -149,7 +160,7 @@ gh api repos/torlenor/konzendi/releases --jq '.[] | select(.draft) | .name + " "
 mkdir -p /tmp/konzendi-0.1.2 && cd /tmp/konzendi-0.1.2
 gh release download v0.1.2 --repo torlenor/konzendi
 sha256sum --check SHA256SUMS
-jq '{version, tag, source, workflow}' release-manifest.json   # tag and commit match
+jq '{version, tag, source, workflow, packages}' release-manifest.json   # tag, commit, targets, and hashes match
 ```
 
 The draft must name the tag `v0.1.2`, not `untagged-…`. (The draft's web address contains
@@ -203,6 +214,8 @@ commit or tag.
 | `validate` or `draft release` fails: the tag now points to another commit | Someone moved the tag during the run | Stop. Restore the tag to the checked commit if it was an accident, or release a new version. |
 | A job fails for a runner or network reason | Transient | **Re-run failed jobs**. |
 | `package-smoke` fails | The package does not work | Download `smoke-evidence` (screenshots, logs, synthetic events) and fix the problem on `main`. Release a new version. |
+| `windows-package` or `macos-package` fails | A native build, install, restart, removal, or persistence probe failed | Download that platform's smoke evidence. Fix the problem on `main` and release a new version. |
+| `release-assets` fails | A native package is missing or the combined checksums do not match | Re-run the failed native job for a transient artifact failure. Fix source defects on `main` and use a new version. |
 | `draft release` fails after some uploads | Upload interrupted | **Re-run failed jobs**. Matching assets are kept, missing ones uploaded, and the draft is verified again. The draft title says *incomplete* until then. |
 | Two drafts exist for the tag | A draft was duplicated, for example by an older workflow version | Nothing was changed. Delete the extra draft by its id, keeping the tag: `gh api -X DELETE repos/torlenor/konzendi/releases/<id>`. Then re-run the `draft release` job. |
 | `draft release` reports conflicting assets | A draft asset differs from the checked build | Nothing was overwritten. Delete only the draft, keeping the tag: `gh release delete vX.Y.Z --repo torlenor/konzendi --yes`. Then **Re-run failed jobs**. |
@@ -216,7 +229,9 @@ afterwards with `gh variable delete RELEASE_FAULT`.
 
 ## Data compatibility, upgrade, and downgrade
 
-- Close Konzendi and back up `~/.local/share/com.konzendi.app` before installing any version.
+- Close Konzendi and back up its data directory before installing any version:
+  `%APPDATA%\com.konzendi.app` on Windows, `~/Library/Application Support/com.konzendi.app` on
+  macOS, or `~/.local/share/com.konzendi.app` on the supported Linux systems.
 - The identifier `com.konzendi.app` decides the data location. Changing it needs an explicit
   migration in a planned phase.
 - Rust stores event kinds without interpreting them, but the interface decides what they mean.
@@ -225,15 +240,18 @@ afterwards with `gh variable delete RELEASE_FAULT`.
 - To go back after a bad upgrade: close Konzendi, install the older package with
   `sudo apt install --allow-downgrades ./konzendi_OLD_amd64.deb`, and restore the backup.
   Restoring a backup loses the events recorded after it was made.
-- Workflows and package removal never delete user data. `apt remove konzendi` leaves the data
-  directory in place.
+- On Windows, remove the current package through **Installed apps**, install the older NSIS
+  package, and restore the backup only when its release notes allow it. On macOS, delete the
+  current `Konzendi.app`, copy the older one from its DMG, and apply the same compatibility rule.
+- Workflows and package removal never delete user data. `apt remove konzendi`, the NSIS
+  uninstaller, and deletion of `Konzendi.app` leave the platform data directory in place.
 
 ## Artifacts and retention
 
 | Item | Where | Kept |
 | --- | --- | --- |
-| `package` (CI package build) | Actions artifact | 7 days |
-| `smoke-evidence` | Actions artifact | 7 days |
+| Platform package inputs and combined `package` artifact | Actions artifact | 7 days |
+| Linux, Windows, and macOS smoke evidence | Actions artifact | 7 days |
 | `release-assets` (handoff from `checks` to `draft release`) | Actions artifact | 30 days |
 | Release assets | GitHub release | Until the maintainer removes them |
 
@@ -246,7 +264,7 @@ Pinned versions and where they live:
 | Node.js, npm, Rust, cargo-about version and SHA-256 | `env` in `.github/workflows/ci.yml`; Node.js also in `release.yml` |
 | Third-party actions (full commit SHA, version in a comment) | `uses:` lines in both workflows |
 | Ubuntu image for the smoke test (index digest) | `IMAGE_BASE` in `scripts/package-smoke.sh` |
-| Runner image | `runs-on: ubuntu-24.04` in both workflows |
+| Runner images | `runs-on: ubuntu-24.04`, `windows-2025`, and `macos-15` in `ci.yml` |
 | Native build packages | `NATIVE_PACKAGES` in `ci.yml` and the README setup command |
 
 To move an action to a new release, resolve its tag to a commit and replace the SHA and comment

@@ -1,6 +1,7 @@
 import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
 import { useCallback, useEffect, useState } from "react";
 import { toggleQuick, windowSystem } from "./desktop";
+import { supportsGlobalShortcut } from "./platform";
 import {
   type Accelerator,
   describeAccelerator,
@@ -15,8 +16,8 @@ import {
  * as the application does.
  *
  * Registration is never assumed to have worked. The combination can be held by another
- * application, and on a window system that is not X11 the grab cannot exist at all, so
- * the state below is reported on screen instead of being taken on trust.
+ * application. Linux needs X11; Windows and macOS use the plugin's native backends. The
+ * state below reports a missing backend or a refused registration instead of hiding it.
  */
 
 export type ShortcutState =
@@ -93,8 +94,7 @@ export function useQuickAccess(): QuickAccess {
     void (async () => {
       const system = await windowSystem();
       if (!live) return;
-      if (system !== "x11") {
-        // The grab is an X11 grab. Saying so beats a shortcut that never fires.
+      if (!supportsGlobalShortcut(system)) {
         setShortcut({ status: "unsupported", shown, windowSystem: system });
         return;
       }
