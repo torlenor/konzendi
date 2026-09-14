@@ -1,6 +1,6 @@
 # Phase 19 — A scrollbar that is always visible
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 18](phase-18-window-content-fit.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 18](phase-18-window-content-fit.md) · next: [Phase 20](phase-20-add-topics-in-topics.md)
 
 **Depends on:** [Phase 6](phase-6-application-theme.md), [Phase 18](phase-18-window-content-fit.md)  
 **Effort:** L  
