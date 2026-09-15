@@ -208,10 +208,11 @@ inside() {
   fixture_hash="$(sha256sum "$fixture")"
   start_app 3
   shot 06-with-prototype-log
-  xdotool windowfocus "$WINDOW"
-  sleep 1
-  # The fixture topic was created first, so it holds key 1.
-  xdotool key 1
+  # Neither topic has a quick key, so both are listed under Other topics. The fixture
+  # topic was created first, so it is the first row.
+  click 124 311 # ▸ Other topics (2)
+  shot 06b-other-topics
+  click 160 345 # Fixture topic
   wait_events 6
   expect "event 6" "$(event 6 .kind)" "focus.started"
   expect "switched to fixture topic" "$(event 6 .payload.topicId)" "3c7e9f2a-5b1d-4e8c-a6f0-000000000001"
