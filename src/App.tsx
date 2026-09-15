@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnalyticsView } from "./AnalyticsView";
 import { trackingActions } from "./actions";
+import { showMain } from "./desktop";
 import { EntriesView } from "./EntriesView";
 import { useFramePreference } from "./frame";
 import { QuickAccessBand } from "./QuickAccessBand";
@@ -31,6 +32,16 @@ function App() {
   const { frame, setFrame } = useFramePreference();
   const { maximized, toggleMaximized } = useWindowMaximized();
 
+  // A tray action can fail while the tracking window is hidden. Bring the warning into
+  // view so a failed write never looks like a successful background action.
+  useEffect(() => {
+    if (tracking.error !== null) {
+      void showMain().catch((failure) =>
+        console.error(`Could not show the storage warning: ${String(failure)}`),
+      );
+    }
+  }, [tracking.error]);
+
   // The running state colours the readout, so it is resolved once for the whole window.
   const current = tracking.state.current;
   const trackingState =
@@ -60,16 +71,10 @@ function App() {
       <div className="app-scroll">
         <div className="app-content">
           {tracking.error && (
-            <p role="alert">
-              {tracking.error}
-              <button
-                type="button"
-                className="link"
-                onClick={tracking.dismissError}
-              >
-                dismiss
-              </button>
-            </p>
+            <section className="storage-alert" role="alert">
+              <strong>Konzendi cannot safely store your data</strong>
+              <span>{tracking.error}</span>
+            </section>
           )}
 
           {tracking.loading ? (

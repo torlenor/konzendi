@@ -173,6 +173,13 @@ the roadmap status to `Done`.
   dependency metadata and the Phase 10 → 11 → 12 navigation chain matched the roadmap.
 - Hosted Windows and macOS builds: not run yet.
 - Windows 11 x64 installed-application walkthrough: not run yet.
+- 15 September 2026, owner Windows trial: the installed application reported that `Store` was
+  not managed when `read_events` ran. The screen was empty after each restart. The cause was a
+  startup race between the webview command and setup-time state registration. The fix registers
+  a lazy store holder on the Tauri builder before webview creation. Native retest is pending.
+- 15 September 2026, local Linux regression check: the standalone debug application used an
+  isolated data directory on Xvfb. It created two synthetic events and read them after restart.
+  This check does not replace the Windows native retest.
 - macOS 15 Apple-silicon installed-application walkthrough: not run yet.
 - Combined tagged draft rehearsal: not run yet.
 

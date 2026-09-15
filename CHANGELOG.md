@@ -26,6 +26,13 @@ while it was being built, and a pushed tag is never moved. The first release is 
 - The title bar stays at the top of the window, and only the content below it scrolls. In a
   narrow window the bar uses two rows, so no control is cut off. The window cannot be made
   smaller than 480×320.
+- A storage failure now shows a persistent warning that tells the user to stop tracking and
+  preserve the application data directory.
+
+### Fixed
+
+- Windows now registers the event store before a webview can read it. The application reads
+  saved data on start and keeps new records after a restart.
 
 ### Compatibility
 
