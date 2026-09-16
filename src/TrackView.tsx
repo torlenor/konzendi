@@ -2,11 +2,16 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { AdjustPanel } from "./AdjustPanel";
 import {
   type Actions,
+  colorOf,
   nameOf,
   subjectLabel,
   subjectMark,
   TOPIC_MARK,
 } from "./actions";
+import type { Topic } from "./core/fold";
+import { topicChoices, topicForKey } from "./core/topics";
+import { quickKeyPressed, watchSuperKey } from "./quickKeys";
+import { Swatch } from "./Swatch";
 import { formatElapsedParts, formatStamp } from "./time";
 import { type Tracking, useNow } from "./useTracking";
 
@@ -46,6 +51,49 @@ function NewTopic({
   );
 }
 
+/** One switch row. A row under Other topics has no key, so it has no key badge. */
+function TopicPick({
+  topic,
+  numbered,
+  running,
+  disabled,
+  onPick,
+}: {
+  topic: Topic;
+  numbered: boolean;
+  running: boolean;
+  disabled: boolean;
+  onPick: () => void;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        className="pick"
+        disabled={disabled}
+        aria-current={running || undefined}
+        onClick={onPick}
+      >
+        {numbered ? (
+          <span className="key">{topic.quickKey}</span>
+        ) : (
+          <span className="gap" />
+        )}
+        <Swatch color={topic.color} />
+        <span className="label">{topic.name}</span>
+        {/* The running row says so with the mark and the word, never by position
+            alone, because it does not leave the list. */}
+        {running && (
+          <span className="mark">
+            {TOPIC_MARK}
+            <span className="hidden"> running</span>
+          </span>
+        )}
+      </button>
+    </li>
+  );
+}
+
 export function TrackView({
   tracking,
   actions,
@@ -72,32 +120,35 @@ export function TrackView({
   const activeTopicId =
     current?.subject.type === "topic" ? current.subject.topicId : null;
   /**
-   * Every topic keeps its number, the running one and the one offered for resume
-   * included, exactly as the quick switcher lists them: the number is muscle memory and
-   * must not move because a topic happens to be running or because tracking stopped.
-   * The running row is marked and selecting it is coalesced by the fold, so it is
-   * harmless as well as stable.
+   * A numbered row carries the key the user gave the topic in Topics, so the key does
+   * not move when a topic starts, stops, is renamed, or is added. The running topic
+   * stays in its list and is marked; selecting it again is coalesced by the fold.
    */
-  const choices = useMemo(
-    () => state.topics.filter((topic) => !topic.archived),
+  const { assigned, unassigned } = useMemo(
+    () => topicChoices(state.topics),
     [state.topics],
   );
+  const [othersOpen, setOthersOpen] = useState(false);
+  const othersId = useId();
+  const blocked = busy || tracking.loading;
 
-  // A switch is one key in the focused window; the same numbers Phase 3 will reuse.
+  // A switch is one key in the focused window: the same keys as the quick switcher.
   useEffect(() => {
+    const superKey = watchSuperKey(window);
     function onKey(event: KeyboardEvent) {
-      if (event.ctrlKey || event.altKey || event.metaKey) return;
-      const target = event.target as HTMLElement | null;
-      if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA") return;
-      const index = Number(event.key) - 1;
-      if (Number.isInteger(index) && index >= 0 && index < choices.length) {
-        event.preventDefault();
-        void actions.switchTo(choices[index].id);
-      }
+      const pressed = quickKeyPressed(event, superKey.held());
+      if (pressed === null || blocked) return;
+      const topic = topicForKey(state.topics, pressed);
+      if (topic === null) return;
+      event.preventDefault();
+      void actions.switchTo(topic.id);
     }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [choices, actions]);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      superKey.stop();
+    };
+  }, [state.topics, actions, blocked]);
 
   return (
     <>
@@ -112,6 +163,7 @@ export function TrackView({
         <section className="card" key={current.eventId}>
           <p className="active">
             <span className="mark">{subjectMark(current.subject)}</span>
+            <Swatch color={colorOf(state.topics, current.subject)} />
             <span className="subject">
               {subjectLabel(state.topics, current.subject)}
             </span>
@@ -147,30 +199,61 @@ export function TrackView({
       )}
 
       <section className="picks">
-        <ol>
-          {choices.map((topic, index) => (
-            <li key={topic.id}>
-              <button
-                type="button"
-                className="pick"
+        {assigned.length > 0 && (
+          <ol>
+            {assigned.map((topic) => (
+              <TopicPick
+                key={topic.id}
+                topic={topic}
+                numbered
+                running={topic.id === activeTopicId}
                 disabled={busy}
-                aria-current={topic.id === activeTopicId || undefined}
-                onClick={() => void actions.switchTo(topic.id)}
-              >
-                <span className="key">{index < 9 ? index + 1 : ""}</span>
-                <span className="label">{topic.name}</span>
-                {/* The running row says so with the mark and the word, never by
-                    position alone, because it no longer leaves the list. */}
-                {topic.id === activeTopicId && (
-                  <span className="mark">
-                    {TOPIC_MARK}
-                    <span className="hidden"> running</span>
-                  </span>
-                )}
-              </button>
-            </li>
-          ))}
-        </ol>
+                onPick={() => void actions.switchTo(topic.id)}
+              />
+            ))}
+          </ol>
+        )}
+        {assigned.length === 0 && unassigned.length > 0 && (
+          <p className="note">Set quick keys in Topics</p>
+        )}
+        {current !== null &&
+          assigned.length === 0 &&
+          unassigned.length === 0 && (
+            <p className="note">
+              Every topic is archived. Restore one in Topics, or add a new
+              topic.
+            </p>
+          )}
+        {unassigned.length > 0 && (
+          <div className="others">
+            <button
+              type="button"
+              className="disclosure"
+              aria-expanded={othersOpen}
+              aria-controls={othersId}
+              onClick={() => setOthersOpen((open) => !open)}
+            >
+              <span className="disclosure-mark" aria-hidden="true">
+                {othersOpen ? "▾" : "▸"}
+              </span>
+              Other topics ({unassigned.length})
+            </button>
+            {othersOpen && (
+              <ul id={othersId}>
+                {unassigned.map((topic) => (
+                  <TopicPick
+                    key={topic.id}
+                    topic={topic}
+                    numbered={false}
+                    running={topic.id === activeTopicId}
+                    disabled={busy}
+                    onPick={() => void actions.switchTo(topic.id)}
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
         {current !== null &&
           (naming ? (
             <NewTopic

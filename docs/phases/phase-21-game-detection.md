@@ -74,6 +74,20 @@ evidence and the decisions in this document. Then change the readiness.
    needs a start at login. Confirm that no Konzendi window opens over a full-screen game.
 10. **Other platforms.** Confirm that the Windows code compiles only for Windows, and that the
     Linux/X11 build and its checks do not change.
+11. **Game submission.** The owner decided that the user can submit a game that the application
+    does not detect (see "Decided by the owner, 15 September 2026"). Decide these points:
+    - How does the user select a window? Which Windows interface identifies the window below the
+      pointer, and how does the user cancel the selection?
+    - Which data does the application extract from the window and its process? Which fields does
+      the JSON contain, and does its format agree with the identification source from question 2?
+    - Which data can identify the user or the computer, for example a user name in the executable
+      path? How does the application remove or show this data before the user submits?
+    - How does the application post the issue? Examine a prefilled issue URL that opens in the
+      browser, and the GitHub API with a user token. Record whether the user needs a GitHub
+      account, and how the user sees and changes the text before it is sent.
+    - Which repository receives the issues? How does a maintainer check a submission and add it
+      to the list of known games?
+    - What does the application do while no network connection is available?
 
 ### Evidence to gather
 
@@ -90,9 +104,10 @@ evidence and the decisions in this document. Then change the readiness.
 
 ### Decisions to record
 
-The owner decides the questions 2, 4, 5, and 6, and the use of a network source. The
-investigation proposes answers with evidence. The questions 1, 3, 7, 8, 9, and 10 are technical
-decisions. Record them with their evidence, and the owner can change them.
+The owner decides the questions 2, 4, 5, and 6, the use of a network source, and the data and
+the target repository of a game submission in question 11. The investigation proposes answers
+with evidence. The questions 1, 3, 7, 8, 9, and 10, and the other points of question 11, are
+technical decisions. Record them with their evidence, and the owner can change them.
 
 ## Outcome and scope
 
@@ -104,6 +119,7 @@ In scope for discovery:
 
 - the questions, the spike, and the decisions of the investigation gate;
 - the design of consent, detection, topic mapping, and the relation to manual tracking;
+- the design of the game submission: window selection, the generated JSON, and the GitHub issue;
 - implementation work packages, acceptance checks, rollout, and rollback for the chosen design.
 
 Out of scope:
@@ -111,7 +127,8 @@ Out of scope:
 - game detection on Linux or macOS;
 - an in-game overlay, code injection, or hooks into a game process;
 - Discord Rich Presence, the Discord SDK, or other data exchange with Discord;
-- data that the application sends to a service or shows to other people;
+- data that the application sends to a service or shows to other people, except a game
+  submission that the user starts and posts as a GitHub issue;
 - details inside a game, for example a level, a match, or achievements;
 - a score or an assessment of gaming habits or health;
 - a change to the product vision before the owner accepts the result of the experiment.
@@ -127,6 +144,19 @@ Out of scope:
 | Model | Detection works similar to game detection in Discord, and tracks the game as a topic. | The owner's request. |
 | Platform | Windows is the first target platform. | The owner's request. |
 | Readiness | The phase starts as `Discovery required`. | The detection method is not known yet. |
+
+### Decided by the owner, 15 September 2026
+
+The owner requested: "Submitting a new, previously undetected, game, let's you click a window
+(which extracts all the required info), it then automatically generates a json and allows you to
+posts this on Github as an issue."
+
+| Area | Decision | Rationale |
+| --- | --- | --- |
+| Game submission | The user can submit a game that the application does not detect. The user clicks the window of the game. The application extracts the necessary data from the window, generates a JSON description, and lets the user post it as a GitHub issue. | The owner's request. Submissions help to extend the list of known games. |
+| Network use | The game submission is the only function of this phase that sends data to a service. The user starts each submission. | Konzendi is local-first. Detection itself stays local. |
+
+Question 11 contains the open points of this decision.
 
 ### Verified facts from the repository, 14 September 2026
 
@@ -175,6 +205,9 @@ gate is complete.
   owner accepts the rules, and each rule has an example sequence of events.
 - [ ] **Design the event representation.** Answer question 7. Complete when this document
   describes the events, the compatibility with older builds, and the effect on sync.
+- [ ] **Design the game submission.** Answer question 11. Complete when this document describes
+  the window selection, the JSON fields, the removal of personal data, the posting method, and the
+  review of submissions, and the owner accepts the design.
 - [ ] **Align with Phase 11.** Record which Windows versions, architectures, and builds this
   phase needs from [Phase 11](phase-11-windows-macos.md). Complete when the two documents agree.
 - [ ] **Complete discovery.** Replace the discovery outline with implementation work packages,
@@ -191,8 +224,11 @@ The phase makes no claim about game detection yet. Before the readiness changes 
 - the owner-accepted consent design, and the rules for automatic and manual switches;
 - the event design, with compatibility for older builds and for sync;
 - the confirmation that detection does not interfere with game processes;
+- the owner-accepted design of the game submission, with the JSON fields and the removal of
+  personal data;
 - acceptance checks that include false detections, launchers, a game that stops unexpectedly,
-  detection turned off, and an unchanged Linux/X11 build.
+  detection turned off, a game submission without a network connection, and an unchanged
+  Linux/X11 build.
 
 Record the actual result of each spike test, including failures.
 

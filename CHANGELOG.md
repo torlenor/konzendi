@@ -19,9 +19,17 @@ while it was being built, and a pushed tag is never moved. The first release is 
 - Quick access now has `K` to open the Konzendi tracking window.
 - Private trial packages are prepared for Windows 11 x64 and macOS 15 on Apple silicon. The
   release remains a prototype and needs native installed-application verification.
+- In Topics, you can give a topic a quick key from 1 to 9. The key selects the topic in the
+  tracking window and in quick access, and it stays the same when you switch, rename, or add
+  topics.
+- In Topics, you can give a topic a color. It shows next to the topic name and fills the
+  topic's bars in Analytics.
 
 ### Changed
 
+- The number keys no longer follow the order of the topics. Only topics with a quick key have a
+  number; all other topics are under **Other topics** in the tracking window and in quick
+  access. Existing topics start without a key.
 - The tray, window, and application package icons now show the Konzendi logo.
 - The title bar stays at the top of the window, and only the content below it scrolls. In a
   narrow window the bar uses two rows, so no control is cut off. The window cannot be made
@@ -36,7 +44,9 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ### Compatibility
 
-- No event or stored-data format changes.
+- The log has two new event kinds, `topic.quick-key-set` and `topic.color-set`. No existing
+  records are changed. An older build ignores these events, so it shows its old number keys
+  and no topic colors.
 
 ### Known limitations
 
@@ -45,6 +55,7 @@ while it was being built, and a pushed tag is never moved. The first release is 
 - Windows and macOS shortcut, tray, focus, and persistence behavior still needs native
   installed-application verification before those packages are supported trial downloads.
 - On Linux, the global shortcut and quick switcher remain X11-only.
+- The tray menu and the topic list in **Add a missed switch** do not show topic colors.
 - On some desktops the scrollbar shows only while you scroll, so it is not always visible that
   a view continues below the window.
 

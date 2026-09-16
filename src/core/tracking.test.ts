@@ -8,7 +8,9 @@ import {
   isTrackingEvent,
   readEvent,
   topicArchived,
+  topicColorSet,
   topicCreated,
+  topicQuickKeySet,
   topicRenamed,
   topicRestored,
 } from "./tracking";
@@ -28,6 +30,8 @@ describe("event drafts", () => {
       topicRenamed("t1", "Login flow"),
       topicArchived("t1"),
       topicRestored("t1"),
+      topicQuickKeySet("t1", 3),
+      topicColorSet("t1", "#A1B2C3"),
       focusStarted("t1", "2026-09-06T09:00:00Z"),
       focusPaused("2026-09-06T11:30:00Z"),
       entryRevoked("e1"),
@@ -37,6 +41,8 @@ describe("event drafts", () => {
       { kind: "topic.renamed", payload: { topicId: "t1", name: "Login flow" } },
       { kind: "topic.archived", payload: { topicId: "t1" } },
       { kind: "topic.restored", payload: { topicId: "t1" } },
+      { kind: "topic.quick-key-set", payload: { topicId: "t1", key: 3 } },
+      { kind: "topic.color-set", payload: { topicId: "t1", color: "#a1b2c3" } },
       {
         kind: "focus.started",
         payload: { topicId: "t1", effectiveAt: "2026-09-06T09:00:00Z" },
@@ -56,6 +62,10 @@ describe("event drafts", () => {
   it("round-trip through the reader", () => {
     for (const draft of [
       topicCreated("t1", "Login"),
+      topicQuickKeySet("t1", 9),
+      topicQuickKeySet("t1", null),
+      topicColorSet("t1", "#00aa11"),
+      topicColorSet("t1", null),
       focusStarted("t1", "2026-09-06T09:00:00Z"),
       focusPaused("2026-09-06T11:30:00Z"),
       entryRetimed("e1", "2026-09-06T11:00:00Z"),
@@ -82,6 +92,42 @@ describe("readEvent", () => {
     ).toBeNull();
     expect(readEvent(stored("topic.created", { topicId: "" }))).toBeNull();
     expect(readEvent(stored("entry.revoked", {}))).toBeNull();
+  });
+
+  it("accepts only integer quick keys from 1 to 9 or an explicit null", () => {
+    const key = (value: unknown) =>
+      readEvent(stored("topic.quick-key-set", { topicId: "t1", key: value }));
+    for (const valid of [1, 5, 9, null]) expect(key(valid)).not.toBeNull();
+    for (const invalid of [0, 10, -1, 2.5, "3", Number.NaN, undefined, true]) {
+      expect(key(invalid)).toBeNull();
+    }
+    expect(
+      readEvent(stored("topic.quick-key-set", { topicId: "t1" })),
+    ).toBeNull();
+    expect(readEvent(stored("topic.quick-key-set", { key: 1 }))).toBeNull();
+  });
+
+  it("accepts only #rrggbb colors in either case or an explicit null", () => {
+    const color = (value: unknown) =>
+      readEvent(stored("topic.color-set", { topicId: "t1", color: value }));
+    for (const valid of ["#a1b2c3", "#A1B2C3", null]) {
+      expect(color(valid)).not.toBeNull();
+    }
+    for (const invalid of [
+      "#abc",
+      "a1b2c3",
+      "red",
+      "rgb(1, 2, 3)",
+      "#a1b2c3ff",
+      "#g1b2c3",
+      "",
+      " ",
+      undefined,
+      7,
+    ]) {
+      expect(color(invalid)).toBeNull();
+    }
+    expect(readEvent(stored("topic.color-set", { topicId: "t1" }))).toBeNull();
   });
 
   it("ignores a payload that is not an object", () => {
