@@ -34,6 +34,7 @@ async function buildMenu(
   state: TrackingState,
   actions: Actions,
   now: number,
+  storageAvailable: boolean,
 ): Promise<Menu> {
   const current = state.current;
   const stopped = current !== null && current.subject.type === "pause";
@@ -60,6 +61,7 @@ async function buildMenu(
       ...switchable.map((topic) => ({
         id: `switch:${topic.id}`,
         text: topic.name,
+        enabled: storageAvailable,
         action: () => void actions.switchTo(topic.id),
       })),
       { item: "Separator" },
@@ -67,12 +69,13 @@ async function buildMenu(
         ? {
             id: "resume",
             text: `${TOPIC_MARK} Resume ${nameOf(state.topics, resumeTopicId)}`,
+            enabled: storageAvailable,
             action: () => void actions.switchTo(resumeTopicId),
           }
         : {
             id: "stop",
             text: `${STOP_MARK} Stop`,
-            enabled: current !== null && !stopped,
+            enabled: storageAvailable && current !== null && !stopped,
             action: () => void actions.stop(),
           },
       {
@@ -81,7 +84,7 @@ async function buildMenu(
           current === null
             ? "Nothing to undo yet"
             : `Undo last entry (${subjectLabel(state.topics, current.subject)})`,
-        enabled: current !== null,
+        enabled: storageAvailable && current !== null,
         action: () => {
           if (current !== null) void actions.undo(current.eventId);
         },
@@ -150,13 +153,13 @@ export function useTray(tracking: Tracking, actions: Actions): void {
     };
   }, []);
 
-  const { state } = tracking;
+  const { state, error } = tracking;
   useEffect(() => {
     if (tray === null) return;
     let live = true;
     void (async () => {
       // The start time is read once per rebuild; a menu holds no ticking clock.
-      const menu = await buildMenu(state, actions, Date.now());
+      const menu = await buildMenu(state, actions, Date.now(), error === null);
       if (!live) {
         await menu.close();
         return;
@@ -170,5 +173,5 @@ export function useTray(tracking: Tracking, actions: Actions): void {
     return () => {
       live = false;
     };
-  }, [tray, state, actions]);
+  }, [tray, state, actions, error]);
 }

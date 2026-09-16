@@ -3,8 +3,8 @@
  * application rather than tracking data, so it never enters the event log.
  *
  * An accelerator is Tauri's own string form: modifiers then one key, joined by `+`.
- * Only the four modifiers the X11 grab reports are accepted, because a combination
- * using any other one would register and then never fire.
+ * Only the four modifiers supported by the desktop plugin are accepted. A combination
+ * with another modifier could be recorded but could never become active.
  */
 
 const KEY = "konzendi.shortcut";

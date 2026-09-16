@@ -93,7 +93,8 @@ const locations = [
   {
     file: "package-lock.json",
     name: 'package-lock.json packages[""].version',
-    pattern: /^( {4}"": \{\n(?: {6}.*\n)*? {6}"version": ")([^"]*)(",?)$/m,
+    pattern:
+      /^( {4}"": \{\r?\n(?: {6}.*\r?\n)*? {6}"version": ")([^"]*)(",?)$/m,
     parsed: (text) => JSON.parse(text).packages?.[""]?.version,
   },
   {
@@ -105,12 +106,13 @@ const locations = [
   {
     file: "src-tauri/Cargo.toml",
     name: "Cargo.toml [package] version",
-    pattern: /^(\[package\]\n(?:(?!\[).*\n)*?version = ")([^"]*)(")$/m,
+    pattern: /^(\[package\]\r?\n(?:(?!\[).*\r?\n)*?version = ")([^"]*)(")$/m,
   },
   {
     file: "src-tauri/Cargo.lock",
     name: "Cargo.lock konzendi entry",
-    pattern: /^(\[\[package\]\]\nname = "konzendi"\nversion = ")([^"]*)(")$/m,
+    pattern:
+      /^(\[\[package\]\]\r?\nname = "konzendi"\r?\nversion = ")([^"]*)(")$/m,
     unique: /^name = "konzendi"$/gm,
   },
 ];

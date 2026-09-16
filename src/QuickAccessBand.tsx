@@ -59,7 +59,7 @@ export function QuickAccessBand({ quick }: { quick: QuickAccess }) {
       : shortcut.status === "registered"
         ? `Quick switch ${describeAccelerator(shortcut.accelerator)}`
         : shortcut.status === "unsupported"
-          ? `Quick switch needs an X11 session; this one is ${shortcut.windowSystem}. The tray still works.`
+          ? `Quick switch is not available on ${shortcut.windowSystem}. Linux needs an X11 session. The tray still works.`
           : `Quick switch ${shortcut.shown} is not active: ${shortcut.detail}.`;
 
   const failed = shortcut.status === "taken" || shortcut.status === "rejected";
