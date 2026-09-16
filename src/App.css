@@ -732,6 +732,12 @@ input.color-hex {
   padding: 0.625rem 0.75rem;
   margin: 0 0 1rem;
 }
+.storage-alert {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  border: 2px solid var(--alarm);
+}
 
 /* ---- The one moment of motion: a new interval draws its own status bar ---- */
 

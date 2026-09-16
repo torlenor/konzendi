@@ -14,6 +14,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { after, describe, test } from "node:test";
 import {
+  agreedVersion,
   CHANGELOG,
   check,
   compareVersions,
@@ -164,6 +165,22 @@ describe("versions", () => {
 
   test("the repository's own version files agree", () => {
     assert.ok(parseVersion(versions(root)));
+  });
+
+  test("reads and writes version files after a Windows CRLF checkout", () => {
+    const contents = Object.fromEntries(
+      VERSION_FILES.map((file) => [
+        file,
+        readFileSync(join(root, file), "utf8").replaceAll("\n", "\r\n"),
+      ]),
+    );
+
+    assert.equal(agreedVersion(contents), "0.1.1");
+    const updated = setVersions(contents, "0.2.0");
+    assert.equal(agreedVersion(updated), "0.2.0");
+    for (const text of Object.values(updated)) {
+      assert.doesNotMatch(text, /(?<!\r)\n/);
+    }
   });
 
   test("a mismatch names every file and value", () => {

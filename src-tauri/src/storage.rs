@@ -32,6 +32,23 @@ fn invalid_data(error: impl ToString) -> io::Error {
     io::Error::new(io::ErrorKind::InvalidData, error.to_string())
 }
 
+/// Flush a directory entry where the operating system permits directory handles.
+///
+/// Windows flushes each file before the rename or append completes, but it does not let
+/// `std::fs::File` open a directory. Keep the stronger directory flush on Unix and do not
+/// turn a successful Windows write into an error only because the directory cannot open.
+fn sync_directory(path: &Path) -> io::Result<()> {
+    #[cfg(unix)]
+    {
+        File::open(path)?.sync_all()
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = path;
+        Ok(())
+    }
+}
+
 impl Store {
     // An OS file lock coordinates separate application processes as well as IPC calls.
     fn lock(root: &Path) -> io::Result<File> {
@@ -63,7 +80,7 @@ impl Store {
                 file.write_all(&serde_json::to_vec(&device)?)?;
                 file.sync_all()?;
                 fs::rename(temporary, identity)?;
-                File::open(&root)?.sync_all()?;
+                sync_directory(&root)?;
                 device.id
             }
             Err(error) => return Err(error),
@@ -104,7 +121,7 @@ impl Store {
         file.write_all(&bytes)?;
         file.flush()?;
         file.sync_all()?;
-        File::open(self.root.join("events"))?.sync_all()?;
+        sync_directory(&self.root.join("events"))?;
         Ok(event)
     }
 

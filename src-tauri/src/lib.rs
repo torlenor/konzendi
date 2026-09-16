@@ -3,6 +3,7 @@ mod storage;
 mod x11;
 
 use serde_json::Value;
+use std::{path::Path, sync::OnceLock};
 use storage::{Event, Store};
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -13,14 +14,53 @@ const APPENDED: &str = "event-appended";
 const MAIN: &str = "main";
 const QUICK: &str = "quick";
 
+/// The event store, created on the first command that needs it.
+///
+/// Builder-managed state exists before a webview can call a command. This is important on
+/// Windows, where a webview can load before the application setup hook runs.
+#[derive(Default)]
+struct StoreState {
+    store: OnceLock<Store>,
+}
+
+impl StoreState {
+    fn open_at(&self, root: &Path) -> std::io::Result<&Store> {
+        if let Some(store) = self.store.get() {
+            return Ok(store);
+        }
+
+        let candidate = Store::open(root.to_path_buf())?;
+        // A concurrent command can win this race. Both candidates use the same locked
+        // identity, so use the value that the state accepted.
+        let _ = self.store.set(candidate);
+        Ok(self
+            .store
+            .get()
+            .expect("the event store was set by this command or a concurrent command"))
+    }
+
+    fn for_app<'a>(&'a self, app: &AppHandle) -> Result<&'a Store, String> {
+        let root = app.path().app_data_dir().map_err(|error| {
+            format!("could not resolve the application data directory: {error}")
+        })?;
+        self.open_at(&root).map_err(|error| {
+            format!(
+                "could not open the event store at {}: {error}",
+                root.display()
+            )
+        })
+    }
+}
+
 #[tauri::command]
 fn append_event(
     app: AppHandle,
-    store: State<'_, Store>,
+    store: State<'_, StoreState>,
     kind: String,
     payload: Value,
 ) -> Result<Event, String> {
     let event = store
+        .for_app(&app)?
         .append(kind, payload)
         .map_err(|error| error.to_string())?;
     // Two windows fold the same log, so a write from either has to reach the other.
@@ -30,24 +70,31 @@ fn append_event(
 }
 
 #[tauri::command]
-fn read_events(store: State<'_, Store>) -> Result<Vec<Event>, String> {
-    store.read().map_err(|error| error.to_string())
+fn read_events(app: AppHandle, store: State<'_, StoreState>) -> Result<Vec<Event>, String> {
+    store
+        .for_app(&app)?
+        .read()
+        .map_err(|error| error.to_string())
 }
 
-/// The window system actually in use, which decides whether a global shortcut can work.
-/// `global-hotkey` grabs keys through X11 and nothing else, so the answer is reported
-/// rather than assumed.
+/// The desktop integration in use, which decides whether a global shortcut can work.
+/// Linux needs X11. The global-shortcut plugin also has native Windows and macOS backends.
+/// Report the detected integration instead of treating a successful build as runtime proof.
 #[tauri::command]
 fn window_system() -> String {
+    #[cfg(target_os = "windows")]
+    return "windows".to_string();
+    #[cfg(target_os = "macos")]
+    return "macos".to_string();
+    #[cfg(target_os = "linux")]
     if std::env::var_os("WAYLAND_DISPLAY").is_some()
         || std::env::var("XDG_SESSION_TYPE").is_ok_and(|value| value == "wayland")
     {
-        "wayland".to_string()
+        return "wayland".to_string();
     } else if std::env::var_os("DISPLAY").is_some() {
-        "x11".to_string()
-    } else {
-        "unknown".to_string()
+        return "x11".to_string();
     }
+    "unknown".to_string()
 }
 
 fn window_of(app: &AppHandle, label: &str) -> Result<tauri::WebviewWindow, String> {
@@ -157,9 +204,11 @@ fn hide_quick(app: AppHandle) -> Result<(), String> {
 
 pub fn run() {
     tauri::Builder::default()
+        // Register the holder before Tauri creates a webview. Store creation itself stays
+        // lazy because the platform data path is available through the command AppHandle.
+        .manage(StoreState::default())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
-            app.manage(Store::open(app.path().app_data_dir()?)?);
             // Without a display the quick switcher is unavailable anyway, and the
             // tracking window says so; it is not a reason to refuse to start.
             #[cfg(target_os = "linux")]
@@ -192,4 +241,26 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running Konzendi");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn managed_store_opens_once_and_keeps_events() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = StoreState::default();
+        let event = state
+            .open_at(dir.path())
+            .unwrap()
+            .append("foundation.check".into(), json!({}))
+            .unwrap();
+
+        assert_eq!(
+            state.open_at(dir.path()).unwrap().read().unwrap(),
+            vec![event]
+        );
+    }
 }

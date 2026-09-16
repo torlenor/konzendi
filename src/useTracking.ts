@@ -22,7 +22,6 @@ export interface Tracking {
   loading: boolean;
   busy: boolean;
   error: string | null;
-  dismissError: () => void;
   /** Append events in order and fold again. False when nothing further was recorded. */
   record: (...drafts: EventDraft[]) => Promise<boolean>;
 }
@@ -48,7 +47,12 @@ export function useTracking(): Tracking {
     readLog()
       .then((records) => setLog((current) => mergeEvents(current, records)))
       .catch((failure: unknown) =>
-        setError(`Could not read the stored log: ${String(failure)}.`),
+        setError(
+          "Your data is not available. Konzendi could not read the local event log. " +
+            "Do not record work until this is fixed because Konzendi might not save new changes. " +
+            "Close and reopen Konzendi. If this message returns, preserve the application data " +
+            `directory and report this error. Technical details: ${String(failure)}.`,
+        ),
       )
       .finally(() => setLoading(false));
   }, []);
@@ -68,23 +72,26 @@ export function useTracking(): Tracking {
     try {
       for (const draft of drafts) written.push(await appendEvent(draft));
       setLog((current) => mergeEvents(current, written));
-      // A recorded action clears a message about an earlier one that was not.
-      setError(null);
       return true;
     } catch (failure) {
       const failed = drafts[written.length];
       const partial = written
         .map((event) => naming[event.kind as EventKind])
         .join(" and ");
-      let message = `Could not record ${naming[failed.kind]}: ${String(failure)}.`;
+      let message =
+        `Your latest change was not saved. Konzendi could not record ${naming[failed.kind]}. ` +
+        "Do not continue tracking until storage works again. ";
       if (partial) message += ` ${partial} was recorded and stands.`;
       try {
         setLog(await readLog());
         message +=
           " The stored log was read again, so the screen shows what is recorded.";
-      } catch (secondary) {
-        message += ` The log could not be read either (${String(secondary)}); restart the application.`;
+      } catch {
+        message +=
+          " The stored log could not be read either. Close and reopen Konzendi. " +
+          "If this message returns, preserve the application data directory and report the error.";
       }
+      message += ` Technical details: ${String(failure)}.`;
       setError(message);
       return false;
     } finally {
@@ -95,9 +102,10 @@ export function useTracking(): Tracking {
   return {
     state,
     loading,
-    busy,
+    // Do not let the interface accept more tracking actions after a storage failure.
+    // A restart performs a new read and is the safe recovery attempt.
+    busy: busy || error !== null,
     error,
-    dismissError: useCallback(() => setError(null), []),
     record,
   };
 }
