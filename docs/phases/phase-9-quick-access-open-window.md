@@ -68,7 +68,7 @@ global shortcut, which is the wrong destination after `K`.
   Konzendi tracking window from quick access. Complete when the documented key list matches the
   rendered command list.
 
-- [ ] **Run and record verification.** Complete when every acceptance row below has an actual
+- [x] **Run and record verification.** Complete when every acceptance row below has an actual
   result, including any platform limitation.
 
 ## Acceptance and verification
