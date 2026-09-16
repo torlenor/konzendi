@@ -1,6 +1,6 @@
 # Phase 21 — Game detection on Windows
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 20](phase-20-add-topics-in-topics.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 20](phase-20-add-topics-in-topics.md) · next: [Phase 22](phase-22-achievements.md)
 
 **Depends on:** [Phase 2](phase-2-tracking-implementation.md), [Phase 11](phase-11-windows-macos.md)  
 **Effort:** H  

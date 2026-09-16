@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last updated:** 14 September 2026
+**Last updated:** 16 September 2026
 
 ## Vision
 
@@ -30,7 +30,7 @@ Their checkboxes track individual work items only.
 | **11** | [Windows and macOS trial support](phases/phase-11-windows-macos.md) | Verified private trial builds for the selected Windows and macOS targets, without weakening Linux support | 7 | Not started |
 | **12** | [Logo design](phases/phase-12-logo-design.md) | A documented, accessible Konzendi logo system for the tray, application icons, favicon, and README | 6 | Done |
 | **13** | [Stop replaces pause](phases/phase-13-stop-replaces-pause.md) | One state for not working, named Stop on every surface, and analytics that measure topics only | 2, 4 | Done |
-| **14** | [Further statistics](phases/phase-14-further-statistics.md) | The second set of readings, chosen against real logged data | 4, 5 | Not started |
+| **14** | [Further statistics](phases/phase-14-further-statistics.md) | Session statistics and weekly readings, chosen against real logged data | 4, 5 | In progress |
 | **15** | [Stable topic numbering](phases/phase-15-stable-topic-numbering.md) | One numbering in both surfaces: the window lists every topic, marking the running one | 2, 3 | Done |
 | **16** | [Stable topic quick keys and topic colors](phases/phase-16-topic-quick-keys.md) | Optional topic keys 1–9 shared by both views, compact sparse assignments, access to unassigned topics, and an optional topic color shown on every topic surface | 2, 3 | In progress |
 | **17** | [Storage location in an overflow menu](phases/phase-17-storage-location-menu.md) | A `…` menu in the bar that opens the data directory in the file manager, and holds the appearance override and About | 0, 6 | Not started |
@@ -38,8 +38,13 @@ Their checkboxes track individual work items only.
 | **19** | [A scrollbar that is always visible](phases/phase-19-visible-scrollbar.md) | A theme-styled scrollbar on the tracking window's content area that stays visible, so a view that continues below the window shows it | 6, 18 | Not started |
 | **20** | [Add topics in Topics](phases/phase-20-add-topics-in-topics.md) | A form in Topics that adds a topic without starting to track it | 2, 16 | Not started |
 | **21** | [Game detection on Windows](phases/phase-21-game-detection.md) | An experimental, opt-in game tracker on Windows that detects the game the user plays, similar to Discord, and tracks it as a topic | 2, 11 | Not started |
+| **22** | [Achievements](phases/phase-22-achievements.md) | Achievement and streak recognition, subject to discovery of rules and presentation | 14 | Not started |
+| **23** | [Statistics v2](phases/phase-23-statistics-v2.md) | Follow-up discovery for gaps between sessions and comparisons against the weekly session target | 14 | Not started |
 
 Phase 16 can proceed independently of Phases 5 and 14. Navigation order does not imply a dependency.
+
+Phases 22 and 23 each depend on Phase 14, but not on each other. Phase 14 delivers the weekly
+session list and four-hour count; recognition and additional comparisons are separate work.
 
 Phase 21 discovery can use disposable Windows spikes before Phase 11 is done. Its implementation
 needs the Windows build from Phase 11.
