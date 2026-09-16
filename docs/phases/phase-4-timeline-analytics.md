@@ -16,6 +16,11 @@
 
 ## Investigation gate
 
+The owner changed the possibly forgotten threshold from more than eight hours to more
+than 12 hours on 16 September 2026 during [Phase 14 discovery](phase-14-further-statistics.md).
+Exactly 12 hours is not flagged. This applies to the current day view. The original
+eight-hour decisions and verification below remain a historical record.
+
 Resolved. The user decided the four questions on 12 September 2026, against the log recorded on
 the development machine by Phase 2 and Phase 3. [Q07](../OPEN_QUESTIONS.md) stays open: no score
 and no effort level is decided or implemented here.

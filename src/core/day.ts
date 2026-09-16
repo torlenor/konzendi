@@ -19,7 +19,7 @@ import { sameSubject } from "./fold";
  * A display mark only: nothing stored depends on it, and a marked segment is still
  * drawn and still counted.
  */
-export const POSSIBLY_FORGOTTEN_MS = 8 * 60 * 60 * 1000;
+export const POSSIBLY_FORGOTTEN_MS = 12 * 60 * 60 * 1000;
 
 export interface DaySegment {
   /** The entry that opened the interval; the entry list can correct it. */

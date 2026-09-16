@@ -30,7 +30,7 @@ function describe(segment: DaySegment, name: string): string {
   if (segment.intoLater) parts.push("continues into the next day");
   if (segment.open) parts.push("still running");
   if (segment.possiblyForgotten)
-    parts.push("longer than 8 hours, possibly forgotten");
+    parts.push("longer than 12 hours, possibly forgotten");
   return `${parts.join(", ")}.`;
 }
 
@@ -186,8 +186,8 @@ export function AnalyticsView({ tracking }: { tracking: Tracking }) {
 
           {day.hasPossiblyForgotten && (
             <p className="note" data-forgotten="true">
-              One stretch or more is longer than 8 hours. Nothing ended it, so a
-              switch was possibly not logged. It is drawn hatched and is
+              One stretch or more is longer than 12 hours. Nothing ended it, so
+              a switch was possibly not logged. It is drawn hatched and is
               included in the sums above. Correct it in Entries.
             </p>
           )}

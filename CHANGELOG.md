@@ -25,6 +25,7 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ### Changed
 
+- Analytics flags a stretch as possibly forgotten only when it exceeds 12 hours.
 - The number keys no longer follow the order of the topics. Only topics with a quick key have a
   number; all other topics are under **Other topics** in the tracking window and in quick
   access. Existing topics start without a key.

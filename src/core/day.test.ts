@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { POSSIBLY_FORGOTTEN_MS, sliceDay } from "./day";
+import { sliceDay } from "./day";
 import type { EventRecord } from "./events";
 import { foldLog, type Subject } from "./fold";
 
@@ -109,31 +109,34 @@ describe("possibly forgotten intervals", () => {
     paused(new Date(Date.parse("2026-09-08T00:00:00Z") + ms).toISOString()),
   ];
 
-  it("marks an interval longer than the threshold, and not one exactly at it", () => {
-    const at = slice(runFor(POSSIBLY_FORGOTTEN_MS), "2026-09-08");
+  it("marks only intervals longer than twelve hours", () => {
+    const below = slice(runFor(9 * HOUR), "2026-09-08");
+    expect(below.hasPossiblyForgotten).toBe(false);
+
+    const at = slice(runFor(12 * HOUR), "2026-09-08");
     expect(at.lanes[0].segments[0].possiblyForgotten).toBe(false);
     expect(at.hasPossiblyForgotten).toBe(false);
 
-    const over = slice(runFor(POSSIBLY_FORGOTTEN_MS + 1), "2026-09-08");
+    const over = slice(runFor(12 * HOUR + 1), "2026-09-08");
     expect(over.lanes[0].segments[0].possiblyForgotten).toBe(true);
     expect(over.hasPossiblyForgotten).toBe(true);
   });
 
   it("marks on the whole interval, not on the part inside the day", () => {
     const log = [
-      created("t1", "Login flow", "2026-09-07T20:00:00Z"),
-      started("t1", "2026-09-07T20:00:00Z"),
+      created("t1", "Login flow", "2026-09-07T17:00:00Z"),
+      started("t1", "2026-09-07T17:00:00Z"),
       paused("2026-09-08T06:00:00Z"),
     ];
-    // Ten hours in total; four of them fall inside the second day.
+    // Thirteen hours in total; six fall inside the second day.
     const segment = slice(log, "2026-09-08").lanes[0].segments[0];
     expect(segment.ms).toBe(6 * HOUR);
     expect(segment.possiblyForgotten).toBe(true);
   });
 
   it("still counts a marked stretch in the readings", () => {
-    const { readings } = slice(runFor(9 * HOUR), "2026-09-08");
-    expect(readings.trackedMs).toBe(9 * HOUR);
+    const { readings } = slice(runFor(13 * HOUR), "2026-09-08");
+    expect(readings.trackedMs).toBe(13 * HOUR);
     expect(readings.longest?.possiblyForgotten).toBe(true);
   });
 });

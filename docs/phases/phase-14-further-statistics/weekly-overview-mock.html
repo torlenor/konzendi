@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Konzendi · Weekly overview mock</title>
+<style>
+:root{--ground:#dae1e3;--band:#f1f4f5;--ink:#12222a;--soft:#4a5c66;--rule:#a5b3b9;--edge:#6e7d84;--live:#0f4c81;--accent-text:#fff;--alarm:#9a2318;color-scheme:light}
+:root[data-theme=dark]{--ground:#0d151a;--band:#152229;--ink:#dbe5ea;--soft:#93a8b2;--rule:#2c3c45;--edge:#657883;--live:#6fb2e8;--accent-text:#08131c;--alarm:#f0897c;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.5 "Fira Sans",system-ui,sans-serif}button,select{font:inherit;color:inherit;background:var(--band);border:1px solid var(--edge);border-radius:5px;padding:7px 12px;cursor:pointer}button:disabled{opacity:.45;cursor:default}button:hover:not(:disabled){border-color:var(--ink)}:focus-visible{outline:3px solid var(--live);outline-offset:3px}button[aria-pressed=true]{background:var(--live);color:var(--accent-text);border-color:var(--live)}.mock-bar{max-width:1080px;margin:20px auto 12px;padding:0 20px;display:flex;gap:16px;justify-content:space-between;align-items:center;color:var(--soft);font-size:13px}.app{max-width:1040px;margin:0 auto 40px;border:1px solid var(--edge);border-radius:9px;background:var(--band);overflow:hidden}.app-head{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--rule)}.brand{font-weight:600;letter-spacing:.04em}.location{color:var(--soft);font-size:14px}main{padding:28px 32px}h1{font-size:27px;letter-spacing:-.03em;margin:0}h2{font-size:18px;margin:0}p{margin:8px 0}.intro{display:flex;justify-content:space-between;align-items:center;gap:12px}.tabs{display:flex;gap:5px}.nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:22px 0}.nav strong{margin-right:auto}.note,.muted{color:var(--soft);font-size:13px}.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}.graph-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:26px}.legend{display:flex;gap:20px;flex-wrap:wrap;margin:12px 0 20px;font-size:12px;color:var(--soft)}.key{display:inline-block;width:17px;height:11px;background:var(--live);vertical-align:middle;margin-right:6px}.key.short{background:transparent;border:1px solid var(--live)}.chart-scroll{overflow-x:auto;padding:4px}.chart{min-width:560px;display:grid;grid-template-columns:44px repeat(7,minmax(0,1fr));gap:0}.day-name{text-align:center;padding-bottom:12px;font-size:12px;color:var(--soft)}.day-name.today{color:var(--ink);font-weight:700}.axis,.day{height:360px;position:relative}.axis span{position:absolute;right:9px;transform:translateY(-50%);font:11px ui-monospace,monospace;color:var(--soft)}.day{border-left:1px solid var(--rule);background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(25% - 1px),var(--rule) calc(25% - 1px),var(--rule) 25%)}.day:last-child{border-right:1px solid var(--rule)}.day.future{background-color:var(--ground)}.session{position:absolute;left:7%;width:86%;min-height:7px;padding:0;border:1px solid var(--live);border-radius:3px;background:var(--band);color:var(--ink);font:11px/1.25 ui-monospace,monospace;overflow:hidden}.session.long{background:var(--live);color:var(--accent-text)}.session.warn{background-image:repeating-linear-gradient(135deg,transparent 0,transparent 5px,var(--band) 5px,var(--band) 7px)}.session.warn span{background:var(--live);color:var(--accent-text);padding:2px}.session.selected{outline:2px solid var(--ink);outline-offset:2px}.now{position:absolute;left:0;right:0;border-top:2px dotted var(--ink);pointer-events:none}.detail{margin:18px 0 25px;padding:12px 16px;border-left:3px solid var(--live);background:var(--ground);min-height:66px;font-size:14px}.topic{border-top:1px solid var(--rule);padding:20px 0 8px}.topic-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:12px}.count{font-size:13px}.session-row{width:100%;display:grid;grid-template-columns:1fr auto;gap:12px;text-align:left;padding:10px 12px;margin:4px 0;border:1px solid transparent;background:transparent}.session-row.selected{border-color:var(--live);background:var(--ground)}.session-row small{display:block;color:var(--soft)}.duration{font-family:ui-monospace,monospace;text-align:right}.warning{color:var(--alarm)}footer{border-top:1px solid var(--rule);margin-top:24px;padding-top:15px}.empty{padding:50px 0;text-align:center;color:var(--soft)}[hidden]{display:none}@media(max-width:640px){.app{border-radius:0;margin-bottom:0}.mock-bar{margin-top:10px}.app-head{padding:12px 16px}main{padding:20px 16px}.topic-head{display:block}.count{display:block;margin-top:5px}.graph-head{align-items:flex-start;flex-direction:column}.intro{align-items:flex-start}.location{display:none}h1{font-size:23px}}
+/* Topic fills carry identity. Neutral label backgrounds keep text readable for any fill. */
+.key{background:var(--topic-color,var(--live));border:1px solid var(--edge);border-radius:2px}
+.session,.session.long,.session[aria-pressed=true]{background-color:var(--topic-color,var(--live));border-color:var(--edge);color:var(--ink)}
+.session .block-label,.session.warn .block-label{display:inline-block;max-width:95%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--band);color:var(--ink);padding:1px 4px;border-radius:2px;font:11px/1.3 system-ui,sans-serif}
+.session .block-meta{display:block;margin-top:4px}.badge{display:inline-block;background:var(--band);color:var(--ink);padding:1px 3px;border:1px solid var(--edge);border-radius:3px;font:10px/1.2 ui-monospace,monospace}
+.session .block-time{background:var(--band);color:var(--ink);padding:1px 3px;font:10px/1.2 ui-monospace,monospace}
+.session-row[aria-pressed=true]{background:var(--ground);color:var(--ink)}
+.topic-head .key{width:12px;height:12px;margin-right:9px}
+</style>
+</head>
+<body>
+<div class="mock-bar"><span>Discovery mock · synthetic records · frozen at Wed, Sep 16, 12:45</span><button type="button" id="theme">Dark appearance</button></div>
+<div class="app">
+<header class="app-head"><span class="brand">Konzendi</span><span class="location">Analytics / Weekly sessions</span></header>
+<main>
+<div class="intro"><div class="eyebrow">Analytics</div><nav class="tabs" aria-label="Analytics view"><button type="button" id="day-tab" aria-pressed="false">Day</button><button type="button" id="week-tab" aria-pressed="true">Week</button></nav></div>
+<div id="day-preview" hidden><p class="detail">The existing daily timeline stays here. This mock explores the new weekly view.</p><button type="button" id="return-week">Return to Week</button></div>
+<div id="week-view">
+<nav class="nav" aria-label="Week navigation"><button type="button" id="previous" aria-label="Previous week">‹</button><strong id="week-label"></strong><button type="button" id="next" aria-label="Next week">›</button><button type="button" id="this-week">This week</button></nav>
+<p id="week-status" class="note"></p>
+<div class="graph-head"><h2>Sessions across the week</h2><label class="note">Topic <select id="topic"><option value="all">All topics</option><option value="Complex topic">Complex topic</option><option value="Other work">Other work</option></select></label></div>
+<section id="legend" class="legend" aria-label="Topic colors"></section>
+<p class="note"><span class="badge" aria-hidden="true">◆</span> Session of 4 hours or longer · height shows session length. Select a block for its full topic name and details.</p>
+<div class="chart-scroll"><section id="chart" class="chart" aria-label="Weekly session chart, midnight to midnight"></section></div>
+<div id="detail" class="detail" role="status" aria-live="polite">Select a session in the chart or list to see its details.</div>
+<div id="list"></div>
+<footer class="note">Session lengths include stops of up to 15 minutes when the same topic resumes. Switching to another topic starts a separate session. Only recorded sessions are shown; missing entries are not estimated.</footer>
+</div>
+</main>
+</div>
+<script>
+// Synthetic fixtures for layout review. This is not the production session calculation.
+const current = [
+ {id:'a',topic:'Complex topic',day:0,start:9,end:13.25,breakMinutes:15},
+ {id:'b',topic:'Other work',day:0,start:14,end:15.5},
+ {id:'c',topic:'Complex topic',day:1,start:10,end:10.667},
+ {id:'d',topic:'Other work',day:1,start:11,end:12.5},
+ {id:'e',topic:'Complex topic',day:1,start:14,end:15.25},
+ {id:'f',topic:'Complex topic',day:2,start:8.5,end:12.75,breakMinutes:10,state:'In progress'}
+];
+const past = [
+ {id:'g',topic:'Complex topic',day:0,start:9,end:13.5,breakMinutes:15},
+ {id:'h',topic:'Other work',day:1,start:8,end:20},
+ {id:'i',topic:'Complex topic',day:2,start:10,end:11.5},
+ {id:'j',topic:'Complex topic',day:3,start:8,end:21.25,warning:true},
+ {id:'k',topic:'Other work',day:4,start:9,end:13.25}
+];
+const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+// These colors represent user-assigned topic colors, not automatic topic assignments.
+const topicStyles={'Complex topic':{color:'#3584e4',short:'Complex'},'Other work':{color:'#d9a64e',short:'Other'}};
+let offset=0, selected=null;
+const $=id=>document.getElementById(id);
+const clock=h=>{const m=Math.round(h*60);return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`};
+const duration=h=>{const m=Math.round(h*60);return `${Math.floor(m/60)}h${m%60?` ${m%60}m`:''}`};
+function sessions(){return (offset===0?current:offset===-1?past:[]).filter(s=>$('topic').value==='all'||s.topic===$('topic').value)}
+function description(s){return `${s.topic} · ${days[s.day]} ${clock(s.start)}–${clock(s.end)} · ${duration(s.end-s.start)}${s.end-s.start>=4?' · Session of 4 hours or longer':''}${s.state?` · ${s.state}`:''}${s.warning?' · Possibly forgotten':''}`}
+function choose(id){const fromChart=document.activeElement?.classList.contains('session');selected=id;render();document.querySelector(fromChart?'.session.selected':'.session-row.selected')?.focus({preventScroll:true})}
+function render(){
+ const start=new Date(Date.UTC(2026,8,14+offset*7));
+ const end=new Date(start);end.setUTCDate(start.getUTCDate()+6);
+ const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
+ $('week-label').textContent=`${fmt(start)}–${fmt(end)}, 2026`;
+ $('week-status').textContent=offset===0?'Week so far · through Wednesday, 12:45':'Recorded sessions for this week';
+ $('next').disabled=offset===0;$('this-week').disabled=offset===0;
+ const data=sessions();
+ $('legend').innerHTML=[...new Set(data.map(s=>s.topic))].map(topic=>`<span><i class="key" style="--topic-color:${topicStyles[topic].color}" aria-hidden="true"></i>${topic}</span>`).join('');
+ $('chart').innerHTML=`<div></div>${days.map((d,i)=>`<div class="day-name ${offset===0&&i===2?'today':''}">${d} ${new Date(start.getTime()+i*86400000).getUTCDate()}</div>`).join('')}<div class="axis">${[0,6,12,18,24].map(h=>`<span style="top:${h/24*100}%">${String(h).padStart(2,'0')}:00</span>`).join('')}</div>`;
+ for(let i=0;i<7;i++){
+  const col=document.createElement('div');col.className=`day${offset===0&&i>2?' future':''}`;
+  for(const s of data.filter(s=>s.day===i)){
+   const b=document.createElement('button');b.className=`session ${s.end-s.start>=4?'long':''} ${s.warning?'warn':''} ${s.id===selected?'selected':''}`;
+   b.style.top=`${s.start/24*100}%`;b.style.height=`${(s.end-s.start)/24*100}%`;
+   b.style.setProperty('--topic-color',topicStyles[s.topic].color);
+   b.setAttribute('aria-label',description(s));b.setAttribute('aria-pressed',String(s.id===selected));b.title=description(s);
+   if(s.end-s.start>=1)b.innerHTML=`<span class="block-label">${topicStyles[s.topic].short}</span>`;
+   if(s.end-s.start>=4)b.innerHTML+=`<span class="block-meta"><span class="block-time">${duration(s.end-s.start)}</span> <span class="badge" aria-hidden="true">◆</span></span>`;
+   b.onclick=()=>choose(s.id);col.append(b);
+  }
+  if(offset===0&&i===2){const line=document.createElement('div');line.className='now';line.style.top=`${12.75/24*100}%`;col.append(line)}
+  $('chart').append(col);
+ }
+ const active=data.find(s=>s.id===selected);
+ $('detail').textContent=active?description(active)+(active.breakMinutes?` · Includes ${active.breakMinutes} minutes of short stops.`:'')+(active.warning?' · A recorded interval exceeds 12 hours. Included in the count. Review the recorded entries to correct a possible missed stop.':''): 'Select a session in the chart or list to see its details.';
+ $('list').innerHTML='';
+ for(const topic of [...new Set(data.map(s=>s.topic))]){
+  const own=data.filter(s=>s.topic===topic), count=own.filter(s=>s.end-s.start>=4).length;
+  const section=document.createElement('section');section.className='topic';
+  section.innerHTML=`<div class="topic-head"><h2><i class="key" style="--topic-color:${topicStyles[topic].color}" aria-hidden="true"></i>${topic}</h2><span class="count">${count} ${count===1?'session':'sessions'} of 4 hours or longer${own.some(s=>s.warning&&s.end-s.start>=4)?' <span class="warning">· Includes possibly forgotten</span>':''}</span></div>`;
+  for(const s of own){const row=document.createElement('button');row.className=`session-row${s.id===selected?' selected':''}`;row.setAttribute('aria-pressed',String(s.id===selected));row.innerHTML=`<span>${days[s.day]} · ${clock(s.start)}–${clock(s.end)}${s.breakMinutes?`<small>Includes ${s.breakMinutes} min of short stops</small>`:''}</span><span class="duration">${duration(s.end-s.start)}${s.state?`<small>${s.state}</small>`:''}${s.warning?'<small class="warning">Possibly forgotten</small>':''}</span>`;row.onclick=()=>choose(s.id);section.append(row)}
+  $('list').append(section);
+ }
+ if(!data.length)$('list').innerHTML='<p class="empty">No sessions recorded for this selection.</p>';
+}
+$('previous').onclick=()=>{offset--;selected=null;render()};$('next').onclick=()=>{if(offset<0)offset++;selected=null;render()};$('this-week').onclick=()=>{offset=0;selected=null;render()};$('topic').onchange=()=>{selected=null;render()};
+$('theme').onclick=()=>{const dark=document.documentElement.dataset.theme!=='dark';document.documentElement.dataset.theme=dark?'dark':'light';$('theme').textContent=dark?'Light appearance':'Dark appearance'};
+function showWeek(week){$('week-view').hidden=!week;$('day-preview').hidden=week;$('day-tab').setAttribute('aria-pressed',String(!week));$('week-tab').setAttribute('aria-pressed',String(week))}
+$('day-tab').onclick=()=>showWeek(false);$('week-tab').onclick=()=>showWeek(true);$('return-week').onclick=()=>showWeek(true);
+render();
+</script>
+</body>
+</html>

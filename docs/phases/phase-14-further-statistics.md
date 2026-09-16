@@ -107,8 +107,10 @@ another topic starts, end the session at the original stop time and remove the b
 label. A pending stop cannot by itself make the session reach four hours. This display
 rule applies to the weekly overview; it does not change the tracking controls.
 
-Keep possibly forgotten sessions in the readings and qualifying counts. Reuse the existing
-warning for a recorded topic interval longer than eight hours: mark the session that contains
+Keep possibly forgotten sessions in the readings and qualifying counts. The owner changed
+the warning threshold to strictly more than 12 hours on 16 September 2026, for both the
+existing day view and the planned weekly overview. Exactly 12 hours is not flagged.
+For a recorded topic interval longer than 12 hours, mark the session that contains
 it as "possibly forgotten", and mark a weekly qualifying count that includes such a session.
 The warning lets the user review and correct the entries. It does not cap a duration, exclude
 a session, or require confirmation before counting. The owner chose this rule to keep the
@@ -119,6 +121,50 @@ count as the first version, without gap statistics or a comparison against the t
 weekly target. This keeps the first view focused on the recorded sessions.
 
 The exact layout and the handling of missing records remain open.
+
+### Weekly overview mock
+
+The mock is a discussion aid, not a production style specification. The owner requires
+implementation to use the real application's fonts, theme tokens, spacing, controls,
+and window layout conventions. Reuse the existing Fira Sans and Fira Mono fonts and
+application components where applicable. Do not copy the standalone page shell or its
+CSS as a separate visual system. Verify the integrated view at supported window sizes
+and in both appearance modes.
+
+The owner requested a graphical representation alongside the list. The
+[standalone HTML mock](phase-14-further-statistics/weekly-overview-mock.html) proposes
+a seven-column calendar with a full-day time scale, a topic filter, and linked session
+details. The owner requested clearer topic identification and accepted using assigned
+topic colors, short topic labels where space permits, and a topic legend. The owner then
+requested a symbol instead of the "4h+" label because the duration is already shown.
+The revised mock uses a diamond (◆) for qualifying sessions, with its meaning in the
+legend and accessible description. The symbol choice remains subject to owner review.
+The owner removed the heading "Room for a longer session" as unnecessary.
+Labels use a neutral background so text contrast does not depend on the topic color.
+Small blocks keep their full topic name in selection details and accessible descriptions.
+The mock shows two assigned colors; shared colors and topics without a color still need
+layout review. The revised mock remains subject to owner review.
+
+The mock uses synthetic records and a fixed clock. It includes the current week, a past
+week with a possibly forgotten session, and empty earlier weeks. Appearance, filtering,
+week navigation, and session selection work locally without a server. The Day button
+shows a placeholder for the existing view. The mock does not calculate sessions from
+tracking events or demonstrate all boundary cases.
+
+The past-week fixture includes a 12-hour session without a warning and a 13-hour,
+15-minute session with a warning. Both remain in the qualifying counts.
+
+Browser checks passed for navigation, filtering, linked selection, the flagged count,
+empty weeks, and appearance controls. Light, dark, and narrow screenshots were inspected.
+The narrow chart scrolls horizontally; the page fits the viewport. These are mock checks,
+not application acceptance or a physical-display readability check.
+
+The revised mock also passed browser checks for topic colors, the legend, short labels,
+the original "4h+" marks, and the 12-hour boundary examples. The separate day-view threshold change
+passed all 18 tests in `src/core/day.test.ts`, type checking, lint, and the frontend build.
+Tests cover nine hours, exactly 12 hours, 12 hours plus one millisecond, a marked interval
+across midnight, and inclusion in the readings. This implements only the requested
+threshold change in the existing application; the weekly overview remains a mock.
 
 ### Separate achievement scope
 
@@ -131,7 +177,15 @@ independent of decisions about recognition.
 
 Open decisions:
 
-- What layout, navigation, empty states, and wording make missing records clear?
+- Complete the integration design: Day/Week navigation, the initial view, topic order,
+  empty states, and access to entry correction. The mock is a candidate, not a complete
+  interaction contract.
+- Specify how the chart draws sessions across midnight or the week boundary while
+  retaining the accepted start-week assignment and counting each session once.
+- Review shared topic colors, topics without a color, long names, many sessions, and
+  short blocks at supported window sizes. Confirm the qualifying-session symbol.
+- Decide the wording for missing records. The view must not imply that an empty period
+  proves no work occurred.
 - What evidence from Phase 5 supports the selected readings?
 
 The owner assigned gap statistics and comparisons against the two-session weekly target
