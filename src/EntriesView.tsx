@@ -1,7 +1,8 @@
 import { useId, useState } from "react";
 import { AdjustPanel } from "./AdjustPanel";
-import { type Actions, subjectLabel, subjectMark } from "./actions";
+import { type Actions, colorOf, subjectLabel, subjectMark } from "./actions";
 import type { Subject } from "./core/fold";
+import { Swatch } from "./Swatch";
 import { formatLocalInput, formatStamp, nowIso, parseLocalInput } from "./time";
 import { type Tracking, useNow } from "./useTracking";
 
@@ -40,20 +41,22 @@ function MissedSwitch({
     >
       <div className="row">
         <label htmlFor={subjectId}>Switched to</label>
-        <select
-          id={subjectId}
-          value={choice}
-          onChange={(event) => setChoice(event.target.value)}
-        >
-          <option value={STOP}>A stop</option>
-          {tracking.state.topics
-            .filter((topic) => !topic.archived)
-            .map((topic) => (
-              <option key={topic.id} value={topic.id}>
-                {topic.name}
-              </option>
-            ))}
-        </select>
+        <span className="select-field">
+          <select
+            id={subjectId}
+            value={choice}
+            onChange={(event) => setChoice(event.target.value)}
+          >
+            <option value={STOP}>A stop</option>
+            {tracking.state.topics
+              .filter((topic) => !topic.archived)
+              .map((topic) => (
+                <option key={topic.id} value={topic.id}>
+                  {topic.name}
+                </option>
+              ))}
+          </select>
+        </span>
       </div>
       <div className="row">
         <label htmlFor={timeId}>At</label>
@@ -106,6 +109,7 @@ export function EntriesView({
                 {formatStamp(entry.effectiveAt, now)}
               </span>
               <span className="mark">{subjectMark(entry.subject)}</span>
+              <Swatch color={colorOf(state.topics, entry.subject)} />
               <span className="subject">
                 {subjectLabel(state.topics, entry.subject)}
               </span>

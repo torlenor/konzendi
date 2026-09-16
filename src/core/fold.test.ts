@@ -16,6 +16,9 @@ function record(
   return { id, device, recordedAt: at(recordedAt), kind, payload };
 }
 
+/** A topic with no archive, key, or color. */
+const plain = { archived: false, quickKey: null, color: null };
+
 const label = (subject: Subject) =>
   subject.type === "pause" ? "pause" : `topic ${subject.topicId}`;
 
@@ -89,8 +92,8 @@ describe("foldLog", () => {
   it("folds the worked example to the stated timeline and current state", () => {
     const state = foldLog(example);
     expect(state.topics).toEqual([
-      { id: "t1", name: "Login flow", archived: false },
-      { id: "t2", name: "Email", archived: false },
+      { id: "t1", name: "Login flow", ...plain },
+      { id: "t2", name: "Email", ...plain },
     ]);
     expect(timelineOf(state)).toEqual([
       "09:00:00 - 11:30:00  topic t1",
@@ -221,8 +224,8 @@ describe("foldLog", () => {
       record("a5", "A", "14:04:00", "topic.archived", { topicId: "t9" }),
     ]);
     expect(state.topics).toEqual([
-      { id: "t1", name: "Login flow", archived: false },
-      { id: "t2", name: "Email", archived: false },
+      { id: "t1", name: "Login flow", ...plain },
+      { id: "t2", name: "Email", ...plain },
     ]);
   });
 
@@ -256,5 +259,225 @@ describe("foldLog", () => {
       true,
       false,
     ]);
+  });
+});
+
+describe("foldLog: quick keys and colors", () => {
+  const created = (id: string, recordedAt: string, topicId: string) =>
+    record(id, "A", recordedAt, "topic.created", { topicId, name: topicId });
+  const keySet = (
+    id: string,
+    recordedAt: string,
+    topicId: string,
+    key: unknown,
+    device = "A",
+  ) => record(id, device, recordedAt, "topic.quick-key-set", { topicId, key });
+  const colorSet = (
+    id: string,
+    recordedAt: string,
+    topicId: string,
+    color: unknown,
+  ) => record(id, "A", recordedAt, "topic.color-set", { topicId, color });
+  const archived = (id: string, recordedAt: string, topicId: string) =>
+    record(id, "A", recordedAt, "topic.archived", { topicId });
+  const restored = (id: string, recordedAt: string, topicId: string) =>
+    record(id, "A", recordedAt, "topic.restored", { topicId });
+  const revoked = (id: string, recordedAt: string, targetId: string) =>
+    record(id, "A", recordedAt, "entry.revoked", { targetId });
+
+  const base = [
+    created("c1", "08:00:00", "a"),
+    created("c2", "08:00:01", "b"),
+    created("c3", "08:00:02", "c"),
+    created("c4", "08:00:03", "d"),
+  ];
+  const keys = (state: TrackingState) =>
+    Object.fromEntries(state.topics.map((topic) => [topic.id, topic.quickKey]));
+  const colors = (state: TrackingState) =>
+    Object.fromEntries(state.topics.map((topic) => [topic.id, topic.color]));
+
+  it("folds an old log with no keys and no colors", () => {
+    for (const topic of foldLog(example).topics) {
+      expect(topic).toMatchObject({ quickKey: null, color: null });
+    }
+  });
+
+  it("assigns sparse keys without filling the gaps", () => {
+    const state = foldLog([
+      ...base,
+      keySet("k1", "09:00:00", "a", 1),
+      keySet("k2", "09:00:01", "b", 3),
+      keySet("k3", "09:00:02", "c", 9),
+    ]);
+    expect(keys(state)).toEqual({ a: 1, b: 3, c: 9, d: null });
+  });
+
+  it("ignores invalid key payloads", () => {
+    const state = foldLog([
+      ...base,
+      keySet("k1", "09:00:00", "a", 0),
+      keySet("k2", "09:00:01", "a", 10),
+      keySet("k3", "09:00:02", "a", "3"),
+      keySet("k4", "09:00:03", "a", 2.5),
+      record("k5", "A", "09:00:04", "topic.quick-key-set", { topicId: "a" }),
+      keySet("k6", "09:00:05", "a", Number.NaN),
+    ]);
+    expect(keys(state).a).toBeNull();
+  });
+
+  it("ignores assignments to unknown and archived topics", () => {
+    const state = foldLog([
+      ...base,
+      keySet("k1", "09:00:00", "zz", 4),
+      archived("x1", "09:00:01", "a"),
+      keySet("k2", "09:00:02", "a", 5),
+      colorSet("p1", "09:00:03", "a", "#112233"),
+      colorSet("p2", "09:00:04", "zz", "#112233"),
+    ]);
+    expect(state.topics.map((topic) => topic.id)).toEqual(["a", "b", "c", "d"]);
+    expect(keys(state)).toEqual({ a: null, b: null, c: null, d: null });
+    expect(colors(state).a).toBeNull();
+  });
+
+  it("moves a key in one event and frees the new owner's old key", () => {
+    const state = foldLog([
+      ...base,
+      keySet("k1", "09:00:00", "b", 3),
+      keySet("k2", "09:00:01", "d", 7),
+      keySet("k3", "09:00:02", "d", 3),
+    ]);
+    expect(keys(state)).toEqual({ a: null, b: null, c: null, d: 3 });
+  });
+
+  it("clears only the target, and nothing takes the cleared key", () => {
+    const state = foldLog([
+      ...base,
+      keySet("k1", "09:00:00", "a", 1),
+      keySet("k2", "09:00:01", "b", 2),
+      keySet("k3", "09:00:02", "b", null),
+    ]);
+    expect(keys(state)).toEqual({ a: 1, b: null, c: null, d: null });
+  });
+
+  it("clears the key on archive and does not recover it on restore", () => {
+    const log = [
+      ...base,
+      keySet("k1", "09:00:00", "a", 1),
+      keySet("k2", "09:00:01", "b", 3),
+      colorSet("p1", "09:00:02", "a", "#AABBCC"),
+      archived("x1", "09:00:03", "a"),
+    ];
+    expect(keys(foldLog(log))).toEqual({ a: null, b: 3, c: null, d: null });
+    const back = foldLog([...log, restored("x2", "09:00:04", "a")]);
+    expect(keys(back)).toEqual({ a: null, b: 3, c: null, d: null });
+    expect(back.topics[0]).toMatchObject({ archived: false, color: "#aabbcc" });
+  });
+
+  it("lets the last effective assignment win, and a revoked winner revives no loser", () => {
+    const log = [
+      ...base,
+      keySet("k1", "09:00:00", "a", 4),
+      keySet("k2", "09:00:01", "b", 4, "B"),
+    ];
+    expect(keys(foldLog(log))).toMatchObject({ a: null, b: 4 });
+    // Revoking the winner removes its assignment; the displaced topic stays displaced
+    // only while the displacement is effective, because each fold starts from the log.
+    const revokedWinner = foldLog([...log, revoked("r1", "09:00:02", "k2")]);
+    expect(keys(revokedWinner)).toMatchObject({ a: 4, b: null });
+    // Clearing the winner with a null event does not revive the loser.
+    const clearedWinner = foldLog([
+      ...log,
+      keySet("k3", "09:00:03", "b", null),
+    ]);
+    expect(keys(clearedWinner)).toMatchObject({ a: null, b: null });
+  });
+
+  it("breaks equal timestamps by event id, whatever the device or log order", () => {
+    const one = keySet("k-1", "09:00:00", "a", 6, "A");
+    const two = keySet("k-2", "09:00:00", "b", 6, "B");
+    const onA = foldLog([...base, one], [two]);
+    const onB = foldLog([two], [one, ...base]);
+    expect(onA).toEqual(onB);
+    expect(keys(onA)).toMatchObject({ a: null, b: 6 });
+  });
+
+  it("is unchanged by duplicate broadcasts and permuted logs", () => {
+    const log = [
+      ...base,
+      keySet("k1", "09:00:00", "a", 1),
+      keySet("k2", "09:00:01", "b", 1),
+      colorSet("p1", "09:00:02", "c", "#00ff00"),
+      archived("x1", "09:00:03", "b"),
+      restored("x2", "09:00:04", "b"),
+      keySet("k3", "09:00:05", "b", 2),
+      revoked("r1", "09:00:06", "k1"),
+    ];
+    const expected = foldLog(log);
+    expect(keys(expected)).toEqual({ a: null, b: 2, c: null, d: null });
+    const permuted = [8, 2, 10, 0, 5, 7, 1, 9, 3, 6, 4].map((i) => log[i]);
+    expect(foldLog(permuted)).toEqual(expected);
+    expect(foldLog(permuted, log, [log[4], log[9]])).toEqual(expected);
+  });
+
+  it("stores colors in lower case, shares them, and ignores invalid forms", () => {
+    const state = foldLog([
+      ...base,
+      colorSet("p1", "09:00:00", "a", "#A1B2C3"),
+      colorSet("p2", "09:00:01", "b", "#a1b2c3"),
+      colorSet("p3", "09:00:02", "c", "#abc"),
+      colorSet("p4", "09:00:03", "c", "red"),
+      colorSet("p5", "09:00:04", "c", "rgb(1, 2, 3)"),
+      colorSet("p6", "09:00:05", "c", "#a1b2c3ff"),
+      colorSet("p7", "09:00:06", "c", ""),
+      record("p8", "A", "09:00:07", "topic.color-set", { topicId: "c" }),
+      colorSet("p9", "09:00:08", "d", "#123456"),
+      colorSet("p10", "09:00:09", "d", null),
+    ]);
+    expect(colors(state)).toEqual({
+      a: "#a1b2c3",
+      b: "#a1b2c3",
+      c: null,
+      d: null,
+    });
+  });
+
+  it("keeps keys through switches, stops, renames, and new topics", () => {
+    const log = [
+      ...base,
+      keySet("k1", "09:00:00", "a", 1),
+      keySet("k2", "09:00:01", "b", 3),
+      keySet("k3", "09:00:02", "c", 9),
+    ];
+    const later = [
+      started("s1", "10:00:00", "b"),
+      paused("s2", "10:30:00"),
+      started("s3", "11:00:00", "a"),
+      record("n1", "A", "11:10:00", "topic.renamed", {
+        topicId: "c",
+        name: "renamed",
+      }),
+      created("c5", "11:20:00", "e"),
+    ];
+    expect(keys(foldLog([...log, ...later]))).toEqual({
+      a: 1,
+      b: 3,
+      c: 9,
+      d: null,
+      e: null,
+    });
+  });
+
+  it("leaves entries, intervals, and the current state unchanged", () => {
+    const plainState = foldLog(example);
+    const withMetadata = foldLog([
+      ...example,
+      keySet("k1", "11:00:00", "t1", 2),
+      colorSet("p1", "11:00:01", "t2", "#336699"),
+      keySet("k2", "13:10:00", "t2", 2),
+    ]);
+    expect(withMetadata.entries).toEqual(plainState.entries);
+    expect(withMetadata.timeline).toEqual(plainState.timeline);
+    expect(withMetadata.current).toEqual(plainState.current);
+    expect(keys(withMetadata)).toEqual({ t1: null, t2: 2 });
   });
 });

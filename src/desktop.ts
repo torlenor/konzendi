@@ -1,6 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { UnlistenFn } from "@tauri-apps/api/event";
-import { getCurrentWindow, LogicalSize, Window } from "@tauri-apps/api/window";
+import {
+  currentMonitor,
+  getCurrentWindow,
+  LogicalSize,
+  type Monitor,
+  PhysicalPosition,
+  primaryMonitor,
+  Window,
+} from "@tauri-apps/api/window";
 
 /**
  * Desktop integration: which window this script runs in, and how the quick switcher
@@ -10,6 +18,8 @@ import { getCurrentWindow, LogicalSize, Window } from "@tauri-apps/api/window";
 export const QUICK = "quick";
 const QUICK_WIDTH = 360;
 const QUICK_EDGE = 2;
+/** Space kept free above and below the surface when it is as tall as the work area. */
+const QUICK_MARGIN = 48;
 
 export const windowLabel: string = getCurrentWindow().label;
 
@@ -102,15 +112,55 @@ export async function hideQuick(): Promise<void> {
 }
 
 /**
- * The surface is as tall as its rows, so it sizes itself while hidden and centres
- * itself again afterwards. Showing it then needs no resize the user could watch.
+ * The surface is as tall as its rows, so it sizes itself while hidden and centers
+ * itself again afterward. Showing it then needs no resize the user could watch. It
+ * also resizes while open, when Other topics opens or closes.
  */
 export async function fitQuick(contentHeight: number): Promise<void> {
   const self = getCurrentWindow();
-  await self.setSize(
-    new LogicalSize(QUICK_WIDTH, Math.round(contentHeight + QUICK_EDGE)),
+  const height = Math.round(contentHeight + QUICK_EDGE);
+  await self.setSize(new LogicalSize(QUICK_WIDTH, height));
+  // X11 applies a size later than the call returns, and `center` reads the size that
+  // was applied. When the surface resizes while it is open, or just after it closed,
+  // `center` uses the old height. So the position is calculated from the new size.
+  const monitor = await quickMonitor();
+  if (monitor === null) {
+    await self.center();
+    return;
+  }
+  const scale = monitor.scaleFactor;
+  await self.setPosition(
+    new PhysicalPosition(
+      Math.round(
+        monitor.position.x + (monitor.size.width - QUICK_WIDTH * scale) / 2,
+      ),
+      Math.round(
+        monitor.position.y + (monitor.size.height - height * scale) / 2,
+      ),
+    ),
   );
-  await self.center();
+}
+
+/** A hidden window can have no current monitor, so the primary one is used then. */
+async function quickMonitor(): Promise<Monitor | null> {
+  try {
+    return (await currentMonitor()) ?? (await primaryMonitor());
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The tallest the surface can be, in logical pixels: the work area of its monitor, less a
+ * margin. When no monitor is known, the screen that the webview reports is used.
+ */
+export async function quickMaxHeight(): Promise<number> {
+  const monitor = await quickMonitor();
+  const available =
+    monitor === null
+      ? window.screen.availHeight
+      : monitor.workArea.size.toLogical(monitor.scaleFactor).height;
+  return Math.max(120, Math.floor(available - QUICK_MARGIN - QUICK_EDGE));
 }
 
 /** Whether this window has the keyboard right now. */

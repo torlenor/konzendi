@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { flushSync } from "react-dom";
 import {
   type Actions,
   STOP_MARK,
@@ -7,13 +15,17 @@ import {
   TOPIC_MARK,
   trackingActions,
 } from "./actions";
+import { topicChoices, topicForKey } from "./core/topics";
 import {
   fitQuick,
   hideQuick,
   isQuickFocused,
   onQuickFocusChanged,
+  quickMaxHeight,
   showMain,
 } from "./desktop";
+import { quickKeyPressed, watchSuperKey } from "./quickKeys";
+import { Swatch } from "./Swatch";
 import { formatElapsedParts } from "./time";
 import { type Tracking, useNow, useTracking } from "./useTracking";
 import "./App.css";
@@ -32,13 +44,16 @@ const OPEN_MAIN_KEY = "k";
 function Row({
   hint,
   label,
+  color = null,
   mark,
   trailing,
   disabled,
   onPick,
 }: {
-  hint: string;
+  /** Null for a row that no key selects, such as a row under Other topics. */
+  hint: string | null;
   label: string;
+  color?: string | null;
   mark?: string;
   trailing?: string;
   disabled: boolean;
@@ -52,7 +67,12 @@ function Row({
         disabled={disabled}
         onClick={onPick}
       >
-        <span className="key">{hint}</span>
+        {hint === null ? (
+          <span className="gap" />
+        ) : (
+          <span className="key">{hint}</span>
+        )}
+        <Swatch color={color} />
         <span className="label">{label}</span>
         <span className="mark">{mark ?? ""}</span>
         <span className="trailing">{trailing ?? ""}</span>
@@ -90,20 +110,55 @@ function QuickSurface({
       : null;
 
   /**
-   * Every topic keeps its number, the active one included: the number is muscle memory
-   * and must not move because a topic happens to be running. Selecting the active topic
-   * is coalesced by the fold, so that row is harmless as well as stable.
+   * A numbered row carries the key the user gave the topic in Topics, so the key does
+   * not move when a topic starts or stops. The active topic stays in its list; selecting
+   * it again is coalesced by the fold, so that row is harmless as well as stable.
    */
-  const choices = useMemo(
-    () => state.topics.filter((topic) => !topic.archived).slice(0, 9),
+  const { assigned, unassigned } = useMemo(
+    () => topicChoices(state.topics),
     [state.topics],
   );
+  const hasTopics = state.topics.length > 0;
+  // Other topics starts closed each time the surface opens, so the surface stays small.
+  const [othersOpen, setOthersOpen] = useState(false);
+  const othersId = useId();
+  const [maxHeight, setMaxHeight] = useState<number | null>(null);
+  const blocked = busy || tracking.loading;
+
+  // The surface is exactly as tall as its rows, so it is measured after every render
+  // and resized only when the measurement moved: the window must not chase its own
+  // resize, and the elapsed reading re-renders it every second.
+  const applied = useRef(0);
+  useEffect(() => {
+    const height = surface.current?.scrollHeight ?? 0;
+    if (height > 0 && height !== applied.current) {
+      applied.current = height;
+      void fitQuick(height);
+    }
+  });
+
+  // Other topics closes before the surface hides. X11 gives a hidden window its new size
+  // only when it is shown again, and then at its old position, so a surface that shrank
+  // while hidden would open off center.
+  const dismiss = useCallback(async () => {
+    const before = applied.current;
+    // The update is flushed together with the effect above, which starts a fit of its
+    // own. The fit is awaited here, so the surface does not hide before it has moved.
+    flushSync(() => setOthersOpen(false));
+    const height = surface.current?.scrollHeight ?? 0;
+    if (height > 0 && height !== before) await fitQuick(height);
+    await hideQuick();
+  }, []);
 
   // Nothing counts as recorded until the store confirms it, so the surface closes on the
   // confirmation and stays open, with the reason, when the append failed.
-  const run = useCallback(async (appending: Promise<boolean>) => {
-    if (await appending) await hideQuick();
-  }, []);
+
+  const run = useCallback(
+    async (appending: Promise<boolean>) => {
+      if (await appending) await dismiss();
+    },
+    [dismiss],
+  );
 
   const stop = useCallback(() => {
     if (!busy && current !== null && stopped === null) void run(actions.stop());
@@ -124,16 +179,20 @@ function QuickSurface({
   }, [busy]);
 
   useEffect(() => {
+    const superKey = watchSuperKey(window);
     function onKey(event: KeyboardEvent) {
-      if (event.ctrlKey || event.altKey || event.metaKey) return;
-      if (event.key === "Escape") {
-        void hideQuick();
+      const pressed = quickKeyPressed(event, superKey.held());
+      if (pressed !== null) {
+        const topic = blocked ? null : topicForKey(state.topics, pressed);
+        if (topic !== null) {
+          event.preventDefault();
+          void run(actions.switchTo(topic.id));
+        }
         return;
       }
-      const index = Number(event.key) - 1;
-      if (Number.isInteger(index) && index >= 0 && index < choices.length) {
-        event.preventDefault();
-        void run(actions.switchTo(choices[index].id));
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      if (event.key === "Escape") {
+        void dismiss();
         return;
       }
       if (event.key === STOP_KEY) {
@@ -152,8 +211,11 @@ function QuickSurface({
       }
     }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [choices, actions, run, stop, undo, openMain]);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      superKey.stop();
+    };
+  }, [state.topics, blocked, actions, run, dismiss, stop, undo, openMain]);
 
   // Losing focus dismisses the surface, so the working window keeps it no longer than
   // the interaction takes however the interaction ends. The shortcut's own key grab
@@ -161,26 +223,31 @@ function QuickSurface({
   // a real dismissal is still unfocused a moment later, a grab is not.
   useEffect(() => {
     const subscription = onQuickFocusChanged(async (focused) => {
-      if (focused) return;
+      // The rows can change while the surface is hidden, for example when a key is set
+      // in Topics. The new size then arrives at the old position, so it is placed again.
+      if (focused) {
+        if (applied.current > 0) await fitQuick(applied.current);
+        return;
+      }
       await new Promise((resume) => setTimeout(resume, 200));
-      if (!(await isQuickFocused())) await hideQuick();
+      if (!(await isQuickFocused())) await dismiss();
     });
     return () => {
       void subscription.then((unlisten) => unlisten());
     };
-  }, []);
+  }, [dismiss]);
 
-  // The surface is exactly as tall as its rows, so it is measured after every render
-  // and resized only when the measurement moved: the window must not chase its own
-  // resize, and the elapsed reading re-renders it every second.
-  const applied = useRef(0);
+  // The expanded Other topics list must not push the commands off the screen, so the
+  // surface is capped to the work area of its monitor, and that list scrolls.
   useEffect(() => {
-    const height = surface.current?.scrollHeight ?? 0;
-    if (height > 0 && height !== applied.current) {
-      applied.current = height;
-      void fitQuick(height);
-    }
-  });
+    let live = true;
+    void quickMaxHeight().then((height) => {
+      if (live) setMaxHeight(height);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
 
   const elapsed =
     current === null ? null : formatElapsedParts(current.start, now).hm;
@@ -189,25 +256,77 @@ function QuickSurface({
     .join(" ");
 
   return (
-    <div className="quick" ref={surface}>
-      <ol>
-        {choices.map((topic, index) => (
-          <Row
-            key={topic.id}
-            hint={String(index + 1)}
-            label={topic.name}
-            disabled={busy}
-            mark={topic.id === activeTopicId ? TOPIC_MARK : ""}
-            trailing={
-              topic.id === activeTopicId && elapsed !== null ? elapsed : ""
-            }
-            onPick={() => void run(actions.switchTo(topic.id))}
-          />
-        ))}
-        {choices.length === 0 && (
-          <li className="empty">No topics yet. The window creates them.</li>
-        )}
-      </ol>
+    <div
+      className="quick"
+      ref={surface}
+      style={maxHeight === null ? undefined : { maxHeight: `${maxHeight}px` }}
+    >
+      {assigned.length > 0 && (
+        <ol>
+          {assigned.map((topic) => (
+            <Row
+              key={topic.id}
+              hint={String(topic.quickKey)}
+              label={topic.name}
+              color={topic.color}
+              disabled={blocked}
+              mark={topic.id === activeTopicId ? TOPIC_MARK : ""}
+              trailing={
+                topic.id === activeTopicId && elapsed !== null ? elapsed : ""
+              }
+              onPick={() => void run(actions.switchTo(topic.id))}
+            />
+          ))}
+        </ol>
+      )}
+      {!hasTopics && (
+        <p className="empty">No topics yet. The window creates them.</p>
+      )}
+      {hasTopics && assigned.length === 0 && unassigned.length === 0 && (
+        <p className="empty">
+          Every topic is archived. Restore one in the window.
+        </p>
+      )}
+      {assigned.length === 0 && unassigned.length > 0 && (
+        <p className="empty">Set quick keys in Topics</p>
+      )}
+
+      {unassigned.length > 0 && (
+        <div className="others">
+          <button
+            type="button"
+            className="pick disclosure"
+            aria-expanded={othersOpen}
+            aria-controls={othersId}
+            onClick={() => setOthersOpen((open) => !open)}
+          >
+            <span className="gap disclosure-mark" aria-hidden="true">
+              {othersOpen ? "▾" : "▸"}
+            </span>
+            <span className="label">Other topics ({unassigned.length})</span>
+          </button>
+          {othersOpen && (
+            <ul id={othersId}>
+              {unassigned.map((topic) => (
+                <Row
+                  key={topic.id}
+                  hint={null}
+                  label={topic.name}
+                  color={topic.color}
+                  disabled={blocked}
+                  mark={topic.id === activeTopicId ? TOPIC_MARK : ""}
+                  trailing={
+                    topic.id === activeTopicId && elapsed !== null
+                      ? elapsed
+                      : ""
+                  }
+                  onPick={() => void run(actions.switchTo(topic.id))}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <ol className="commands">
         {stopped !== null ? (
