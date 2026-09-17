@@ -180,7 +180,38 @@ main {
 .app-scroll {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow-y: scroll;
+}
+
+/*
+ * The content area has a scrollbar that stays visible, so the user can see that a view
+ * continues below the window. Without these rules WebKitGTK shows an overlay scrollbar
+ * only during a scroll; scrollbar-color and scrollbar-width have no effect there.
+ *
+ * The content area uses overflow-y: scroll, so the gutter is kept when a view fits and the
+ * content does not move sideways. scrollbar-gutter: stable did not keep it. In a view that
+ * fits, WebKit draws no thumb, and the track has the ground color, so nothing shows.
+ *
+ * The bar is 16px. The east resize zone covers the right 4px of it, so the thumb has a
+ * transparent border on that side and the visible thumb is fully outside the zone.
+ */
+.app-scroll::-webkit-scrollbar {
+  width: 16px;
+}
+.app-scroll::-webkit-scrollbar-track {
+  background: var(--ground);
+}
+.app-scroll::-webkit-scrollbar-thumb {
+  background: var(--edge);
+  background-clip: padding-box;
+  border: solid transparent;
+  border-width: 0 4px 0 2px;
+  border-radius: 7px;
+}
+.app-scroll::-webkit-scrollbar-thumb:hover,
+.app-scroll::-webkit-scrollbar-thumb:active {
+  background: var(--ink-soft);
+  background-clip: padding-box;
 }
 
 /* The tracking state resolves to one color, read by the mark and the state bar. */

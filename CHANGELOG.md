@@ -35,6 +35,8 @@ while it was being built, and a pushed tag is never moved. The first release is 
 - The title bar stays at the top of the window, and only the content below it scrolls. In a
   narrow window the bar uses two rows, so no control is cut off. The window cannot be made
   smaller than 480×320.
+- The tracking window now always shows a scrollbar when a view continues below the window. You
+  can drag it or click it, and it matches the light and dark appearance.
 - A storage failure now shows a persistent warning that tells the user to stop tracking and
   preserve the application data directory.
 
@@ -57,8 +59,6 @@ while it was being built, and a pushed tag is never moved. The first release is 
   installed-application verification before those packages are supported trial downloads.
 - On Linux, the global shortcut and quick switcher remain X11-only.
 - The tray menu and the topic list in **Add a missed switch** do not show topic colors.
-- On some desktops the scrollbar shows only while you scroll, so it is not always visible that
-  a view continues below the window.
 
 ## [0.1.1] - 2026-09-13
 

@@ -5,13 +5,14 @@
 **Depends on:** [Phase 6](phase-6-application-theme.md), [Phase 18](phase-18-window-content-fit.md)  
 **Effort:** L  
 **Complexity:** L  
-**Readiness:** Discovery required
+**Readiness:** Implementation-ready
 
 ## Investigation gate
 
 The owner accepted the target behaviour on 13 September 2026 (see
-[Decisions and evidence](#decisions-and-evidence)). The platform behaviour is not measured. Do
-not write production code until questions 1 and 2 have answers.
+[Decisions and evidence](#decisions-and-evidence)). Questions 1 and 2 were answered on
+16 September 2026. The answers are in [Findings, 16 September 2026](#findings-16-september-2026),
+and the gate is closed.
 
 ### Questions that must be answered
 
@@ -88,30 +89,78 @@ These facts come from the tree and the Phase 18 measurements on 13 September 202
 - [Phase 8](phase-8-window-frame.md#acceptance-and-verification) measured the `edge` token
   against `ground` at 3.22:1 in light and 4.01:1 in dark appearance.
 
-### Proposal to confirm in the gate
+### Findings, 16 September 2026
 
-These values are a starting point, not decisions:
+**Method.** The development build ran on a private `Xvfb :99` screen of 1024×768 with
+`metacity`. `XDG_DATA_HOME` pointed to a temporary directory with a seeded log: 12 topics, nine
+quick keys, 12 switches, and a stop. The owner's application-data directory was not opened. A
+temporary probe, which is not in the tree, read the geometry of `.app-scroll` and
+`.app-content` and sent it to a file through the Vite development server. Input used `xdotool`
+through XTEST, sizes used `xdotool windowsize`, and maximize used `wmctrl`. The screenshots are
+outside the repository.
 
-- the track uses `ground` and the thumb uses `edge`; the thumb under the pointer uses `ink-soft`;
-- the thumb has a radius, because in this theme a radius means that an element can be pressed;
-- the width is about 12px, so that the thumb stays usable next to the 5px resize zone;
-- `scrollbar-gutter: stable` keeps the content from moving sideways when a view change adds or
-  removes the scrollbar.
+**Question 1 — styled scrollbar.** WebKitGTK is 2.52.6 (`libwebkit2gtk-4.1-0`
+2.52.6-0ubuntu0.24.04.1).
+
+- Without rules, `offsetWidth` and `clientWidth` of `.app-scroll` are both 798px at 800×600.
+  The scrollbar is an overlay, and no scrollbar shows at rest.
+- `CSS.supports` returns true for `scrollbar-width`, `scrollbar-color`, and `scrollbar-gutter`,
+  and the computed values change. But `scrollbar-color: var(--edge) var(--ground)` with
+  `scrollbar-gutter: stable` has no effect: the right 60px of the window were identical to the
+  screenshot without rules (0 different pixels), and `clientWidth` stayed 798px.
+- The `::-webkit-scrollbar` pseudo-elements have an effect. WebKitGTK then draws a scrollbar
+  that takes space (`clientWidth` 786px with a 12px width) and that stays visible at rest. The
+  rules take effect only when the page loads. A change through hot module replacement did not
+  change the scrollbar until the page was loaded again. A change of the theme tokens, from dark
+  to light, changed the scrollbar colors immediately.
+- `scrollbar-gutter: stable` does not keep the gutter of a styled scrollbar. Maximized, the
+  tracking view scrolls and Analytics fits. With `overflow-y: auto` and
+  `scrollbar-gutter: stable`, `clientWidth` changed from 1006px to 1022px, and the left edge
+  of the content moved from 124px to 132px. With `overflow-y: scroll`, `clientWidth` stayed
+  1006px and the content stayed at 124px. In the view that fits, WebKit draws no thumb, and
+  the 18px at the right edge have only the `ground` color.
+
+**Question 2 — the east resize zone.** At 800×600 with the application frame, `.app-scroll`
+ends at 799px, inside the 1px window edge. The east zone covers 795px to 799px.
+`document.elementFromPoint` returns the zone at 1, 3, and 5px from the right edge, and
+`.app-scroll` at 6px and more.
+
+- With a 12px scrollbar and a thumb without a border, the thumb is 787px to 798px. A 100px
+  drag down at 788, 792, and 794px scrolled the content to 169px. A drag at 795, 796, 798, and
+  799px did not scroll. A track click below the thumb at 790 and 794px scrolled to 376px, and
+  at 796px it did nothing. A horizontal drag at 796 and 799px resized the window from 800 to
+  840px, and at 790px it did not. Thus the right 4px of the visible thumb start a resize.
+- With the selected rules, the scrollbar is 16px (783px to 798px). The thumb has a transparent
+  border of 2px on the left and 4px on the right. The visible thumb is 785px to 794px (10px)
+  in the `edge` color, and 795px to 798px has the `ground` color. The full visible thumb is
+  outside the zone.
+
+**Selected rules.** In `src/App.css`:
+
+- `.app-scroll` has `overflow-y: scroll`, so the gutter stays when a view fits;
+- `::-webkit-scrollbar` has a width of 16px;
+- `::-webkit-scrollbar-track` uses `ground`;
+- `::-webkit-scrollbar-thumb` uses `edge`, `background-clip: padding-box`, a transparent
+  border of `0 4px 0 2px`, and a 7px radius;
+- the thumb under the pointer and during a drag uses `ink-soft`.
+
+The width of 16px is different from the proposal of about 12px, because the east zone covers
+4px of the scrollbar. `scrollbar-gutter: stable` is not used, because it had no effect.
 
 ## Work packages
 
 Complete these packages after the gate. They can change with its findings.
 
-- [ ] Record the answers to questions 1 and 2 and the selected rules, and make this document
+- [x] Record the answers to questions 1 and 2 and the selected rules, and make this document
   `Implementation-ready`.
-- [ ] Style the scrollbar of `.app-scroll` in `src/App.css` with theme tokens only. Complete
+- [x] Style the scrollbar of `.app-scroll` in `src/App.css` with theme tokens only. Complete
   when the scrollbar is visible at rest in every view that is taller than its area, and no
   scrollbar shows in a view that fits.
-- [ ] Keep the content in place when the scrollbar comes and goes. Complete when a change
+- [x] Keep the content in place when the scrollbar comes and goes. Complete when a change
   between a view that scrolls and a view that fits does not move the content sideways.
-- [ ] Make the thumb usable next to the east resize zone. Complete when a drag on the thumb
+- [x] Make the thumb usable next to the east resize zone. Complete when a drag on the thumb
   scrolls the content, and a drag on the east edge still resizes the window.
-- [ ] Remove the scrollbar limitation from `CHANGELOG.md` and add a brief entry for the change.
+- [x] Remove the scrollbar limitation from `CHANGELOG.md` and add a brief entry for the change.
 
 ## Acceptance and verification
 
@@ -119,24 +168,33 @@ Checks are done on Linux/X11 with the
 [desktop-testing](../../.claude/skills/desktop-testing/SKILL.md) procedure and `metacity`. Use
 isolated data. Complete this table after the gate.
 
-| # | Criterion | How it is checked | Actual result |
+| # | Criterion | How it is checked | Actual result — 16 September 2026 |
 | --- | --- | --- | --- |
-| 1 | The scrollbar is visible at rest | Open the tracking view with many topics at 800×600. Wait without input, then take a screenshot | Not run |
-| 2 | No scrollbar shows when a view fits | Open Analytics maximised, then take a screenshot | Not run |
-| 3 | The track and the thumb can be used | Click the track below the thumb, and drag the thumb to the end. Read the scroll position after each action | Not run |
-| 4 | The content does not move sideways | Change between the tracking view and a view that fits. Compare the left edge of the content | Not run |
-| 5 | The resize edges still work | Drag the east edge, the north-east corner, and the south-east corner. Compare the window sizes. Read the cursor in each zone | Not run |
-| 6 | Contrast meets WCAG 2.2 AA for non-text elements | Measure the thumb against the track in light and dark appearance, as Phase 6 did | Not run |
-| 7 | The desktop frame, a narrow window, and a maximised window give the same result | Repeat checks 1 to 4 with the desktop frame, at 480×600, and maximised | Not run |
-| 8 | Phase 18 behaviour is unchanged | Repeat checks 2, 3, and 8 of [Phase 18](phase-18-window-content-fit.md#acceptance-and-verification) | Not run |
-| 9 | No event kind is added and the log is not changed | Compare `src/core/` and the stored log across the session | Not run |
-| 10 | The project checks pass | `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, then `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/` | Not run |
+| 1 | The scrollbar is visible at rest | Open the tracking view with many topics at 800×600. Wait without input, then take a screenshot | Passed. With 12 topics, the tracking view has 926px of content in a 550px area. After the page loaded, with the pointer outside the window, the thumb showed at 785px to 794px from 49px down, in `edge` (101, 120, 131) on `ground` (13, 21, 26). |
+| 2 | No scrollbar shows when a view fits | Open Analytics maximised, then take a screenshot | Passed. Maximized, Analytics has 718px of content in a 718px area. No thumb shows, and the 18px at the right edge have only the `ground` color. |
+| 3 | The track and the thumb can be used | Click the track below the thumb, and drag the thumb to the end. Read the scroll position after each action | Passed. A 100px drag down on the thumb at 783, 785, 790, and 794px scrolled to 169px. A click on the track below the thumb scrolled to 376px, the end. A 500px drag on the thumb scrolled to 376px. A drag at 795 and 797px did not scroll. The thumb under the pointer changed to `ink-soft`. |
+| 4 | The content does not move sideways | Change between the tracking view and a view that fits. Compare the left edge of the content | Passed. Maximized, the content starts at 124px and `clientWidth` is 1006px in the tracking view, in Analytics (fits), and after the return to the tracking view. With the desktop frame, maximized, the content starts at 124px in all four views. |
+| 5 | The resize edges still work | Drag the east edge, the north-east corner, and the south-east corner. Compare the window sizes. Read the cursor in each zone | Passed. From 800×600, a drag on the east edge at 797px gave 840×600, on the north-east corner 840×640, and on the south-east corner 840×640 from 840×600. The cursor, read with XFixes, had a different shape in the east zone (hotspot 17,10), the north-east corner (18,2), the south-east corner (18,19), and the south edge (11,18). On the thumb it was the normal pointer. |
+| 6 | Contrast meets WCAG 2.2 AA for non-text elements | Measure the thumb against the track in light and dark appearance, as Phase 6 did | Passed. Measured in the screenshots: in light appearance the thumb is #6e7d84 on #dae1e3, 3.22:1, and under the pointer #4a5c66, 5.26:1. In dark appearance the thumb is #657883 on #0d151a, 4.01:1, and under the pointer #93a8b2, 7.45:1. All are at least 3:1. |
+| 7 | The desktop frame, a narrow window, and a maximised window give the same result | Repeat checks 1 to 4 with the desktop frame, at 480×600, and maximised | Passed. Desktop frame at 800×600: the thumb is 786px to 795px, a drag at 786, 795, and 798px scrolled to 168px, and a track click scrolled to 374px. Desktop frame, maximized: see check 5, and Analytics shows no thumb. Application frame at 480×600: the thumb is 465px to 474px, a drag scrolled to the end (404px), a drag at 477px did not scroll, and the east edge resized to 520×600. Application frame, maximized: see checks 2 and 5. |
+| 8 | Phase 18 behaviour is unchanged | Repeat checks 2, 3, and 8 of [Phase 18](phase-18-window-content-fit.md#acceptance-and-verification) | Passed. 2: at 480×600, in all four views, a scroll to the end reached the last line, and the bar, the window controls, and the edges stayed visible. The area stayed 510px high, so no horizontal scrollbar showed. 3: in Metacity's 512×768 tile, the area was 678px high in all four views, and the content started at 1px. At 800×400, all four views scrolled to the end in a 350px area. 8: a 300×200 request gave 480×320. |
+| 9 | No event kind is added and the log is not changed | Compare `src/core/` and the stored log across the session | Passed. `src/core/` has no diff. The seeded log had the same SHA-256 at the start and the end. The owner's application-data directory was not opened. Only local preferences for the appearance and the frame were changed. |
+| 10 | The project checks pass | `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, then `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/` | Passed. TypeScript and Biome gave no diagnostics. The 91 Vitest tests, the 64 script tests, and the 6 Rust tests passed. The build, Rust formatting, and Clippy with warnings denied passed. |
 
 Record the actual result of each row when you do the check, including failures. Record what was
 not verified.
 
+Not verified: the standalone build, the desktop frame at 480×600, the scrollbar with keyboard
+scrolling, other window managers, other desktops, Wayland, scaled displays, and the Windows and
+macOS trial builds, which also read these rules. The checks
+used the development build. A press on the application name in the tracking view starts a
+window move. One test run moved the window into Metacity's right tile by mistake. That run
+was used for the 512×768 tile in check 9, and the other runs were done again after a drag out
+of the tile.
+
 ## Rollout and rollback
 
-Local delivery. Nothing is published. To roll back, remove the scrollbar rules from
-`src/App.css`. WebKitGTK then shows its overlay scrollbar again. This change is only
+Local delivery. Nothing is published. To roll back, remove the `::-webkit-scrollbar` rules
+from `src/App.css` and set `overflow-y: auto` on `.app-scroll` again. WebKitGTK then shows its
+overlay scrollbar again. This change is only
 presentation. It adds no event and no record shape, so there is no data compatibility concern.
