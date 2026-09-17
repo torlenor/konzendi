@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { Actions } from "./actions";
 import type { Topic } from "./core/fold";
 import { keyOwner } from "./core/topics";
@@ -268,10 +268,50 @@ function ColorEditor({
   );
 }
 
+/** Adds a topic without tracking it. The field keeps the focus for the next name. */
+function AddTopic({
+  disabled,
+  onCreate,
+}: {
+  disabled: boolean;
+  onCreate: (name: string) => Promise<boolean>;
+}) {
+  const [name, setName] = useState("");
+  const field = useRef<HTMLInputElement>(null);
+  const fieldId = useId();
+  const trimmed = name.trim();
+  return (
+    <form
+      className="row"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        if (disabled || trimmed === "") return;
+        // Nothing is shown as saved until the store confirms it.
+        if (await onCreate(trimmed)) setName("");
+        field.current?.focus();
+      }}
+    >
+      <label className="hidden" htmlFor={fieldId}>
+        New topic name
+      </label>
+      <input
+        id={fieldId}
+        ref={field}
+        value={name}
+        placeholder="New topic name"
+        onChange={(event) => setName(event.target.value)}
+      />
+      <button type="submit" disabled={disabled || trimmed === ""}>
+        Add topic
+      </button>
+    </form>
+  );
+}
+
 type Editing = { topicId: string; part: "name" | "key" | "color" } | null;
 
 /**
- * Renaming, quick keys, colors, and archiving. History keeps the topic id, so each of
+ * Adding, renaming, quick keys, colors, and archiving. History keeps the topic id, so each of
  * them is safe at any time.
  */
 export function TopicsView({
@@ -295,6 +335,7 @@ export function TopicsView({
   return (
     <section>
       <h2>Topics</h2>
+      <AddTopic disabled={busy} onCreate={actions.create} />
       {state.topics.length === 0 && <p>No topics yet.</p>}
       <ol className="entries">
         {state.topics.map((topic) => {

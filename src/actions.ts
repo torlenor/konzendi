@@ -31,6 +31,8 @@ export function trackingActions(record: Tracking["record"]) {
         focusStarted(topicId, nowIso()),
       );
     },
+    /** Topics prepares a topic without tracking it, so it appends the creation only. */
+    create: (name: string) => record(topicCreated(crypto.randomUUID(), name)),
     undo: (eventId: string) => record(entryRevoked(eventId)),
     /** Revoking the revocations is how an entry comes back. */
     restore: (revokedBy: readonly string[]) =>

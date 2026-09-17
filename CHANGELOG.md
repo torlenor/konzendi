@@ -22,6 +22,7 @@ while it was being built, and a pushed tag is never moved. The first release is 
 - In Topics, you can give a topic a quick key from 1 to 9. The key selects the topic in the
   tracking window and in quick access, and it stays the same when you switch, rename, or add
   topics.
+- In Topics, you can add a topic without starting to track it.
 - In Topics, you can give a topic a color. It shows next to the topic name and fills the
   topic's bars in Analytics.
 

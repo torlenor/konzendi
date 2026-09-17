@@ -196,6 +196,21 @@ describe("foldLog", () => {
     });
   });
 
+  it("registers a topic that has no tracking entry and stays idle", () => {
+    const state = foldLog([
+      record("p1", "A", "08:00:00", "topic.created", {
+        topicId: "t1",
+        name: "Prepared",
+      }),
+    ]);
+    expect(state).toEqual({
+      topics: [{ id: "t1", name: "Prepared", ...plain }],
+      entries: [],
+      timeline: [],
+      current: null,
+    });
+  });
+
   it("ignores a retime that does not target a tracking event", () => {
     const state = foldLog([
       ...example,

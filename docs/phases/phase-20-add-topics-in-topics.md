@@ -82,18 +82,18 @@ in `src/TopicsView.tsx`:
 
 ## Work packages
 
-- [ ] **Add the action.** Add `create(name)` to `trackingActions` in `src/actions.ts`. It
+- [x] **Add the action.** Add `create(name)` to `trackingActions` in `src/actions.ts`. It
   appends one `topic.created` event with a new id. Complete when a Vitest test shows that the
   action records exactly one `topic.created` draft and no `focus.started` draft.
-- [ ] **Confirm the fold.** Add a test to `src/core/fold.test.ts` for a log that contains a
+- [x] **Confirm the fold.** Add a test to `src/core/fold.test.ts` for a log that contains a
   `topic.created` event and no tracking event. Complete when the test shows the topic in the
   registry, not archived, with no key and no colour, and shows no current entry. Add the test
   only if no existing test covers this case.
-- [ ] **Add the form.** Add an add-topic form to `src/TopicsView.tsx` with a labelled name field
+- [x] **Add the form.** Add an add-topic form to `src/TopicsView.tsx` with a labelled name field
   and an `Add topic` button, placed as decided above. Disable the button while the name is empty
   or `busy` is true. Clear the field only when `record` returns `true`. Complete when the
   acceptance checks 1 to 5 pass.
-- [ ] **Record the change.** Add a brief entry under `### Added` in `CHANGELOG.md`. Complete when
+- [x] **Record the change.** Add a brief entry under `### Added` in `CHANGELOG.md`. Complete when
   the entry exists and `### Compatibility` still says that no event format changes.
 
 ## Acceptance and verification
@@ -104,19 +104,22 @@ Checks are done on Linux/X11 with the
 
 | # | Criterion | How it is checked | Actual result |
 | --- | --- | --- | --- |
-| 1 | A topic added in Topics shows at the end of the topic list | Open Topics, type a name, and press Enter. Take a screenshot | Not run |
-| 2 | The add does not start to track | Compare the stored log before and after check 1. It has exactly one new `topic.created` line and no `focus.started` line. The tracking view shows the same current entry as before | Not run |
-| 3 | An empty or blank name cannot be added | Type only spaces. Read the state of the `Add topic` button | Not run |
-| 4 | The field clears and keeps the focus after an add | After check 1, type a second name without a click, and press Enter. Both topics show | Not run |
-| 5 | A failed add keeps the name | Make the store reject the append, for example with a read-only data directory. Read the field and the error message | Not run |
-| 6 | The new topic can be tracked and maintained | Give the new topic a quick key and a colour in Topics. Select it by its key in the tracking view and in the quick switcher | Not run |
-| 7 | First run with prepared topics | Start with an empty log. Add two topics in Topics, then open the tracking view. Both topics can be selected, and no entry exists before the first selection | Not run |
-| 8 | Topic creation in the tracking view is unchanged | Create a topic with `+ New topic`. The log has `topic.created` then `focus.started` | Not run |
-| 9 | No event kind is added | Compare the event vocabulary in `src/core/tracking.ts` before and after | Not run |
-| 10 | The project checks pass | `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, then `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/` | Not run |
+| 1 | A topic added in Topics shows at the end of the topic list | Open Topics, type a name, and press Enter. Take a screenshot | Pass. `Alpha` and then `Beta` show at the end of the list, in creation order. |
+| 2 | The add does not start to track | Compare the stored log before and after check 1. It has exactly one new `topic.created` line and no `focus.started` line. The tracking view shows the same current entry as before | Pass. With `Alpha` tracked, the add of `Gamma` appended one `topic.created` line and no other line. The tracking view still showed `Alpha` as the current entry |
+| 3 | An empty or blank name cannot be added | Type only spaces. Read the state of the `Add topic` button | Pass. With only spaces, Enter and a click on `Add topic` appended no event. The button is dimmed: pixel (57, 92, 119) with spaces, (111, 178, 232) with a name |
+| 4 | The field clears and keeps the focus after an add | After check 1, type a second name without a click, and press Enter. Both topics show | Pass. After Enter on `Alpha`, `Beta` was typed with no click and Enter was pressed. Both topics show, and the field was empty with the focus |
+| 5 | A failed add keeps the name | Make the store reject the append, for example with a read-only data directory. Read the field and the error message | Pass. With the log file and its directory read-only, `Epsilon` stayed in the field. The log did not change. The message was "Your latest change was not saved. Konzendi could not record the new topic." with `Permission denied (os error 13)` |
+| 6 | The new topic can be tracked and maintained | Give the new topic a quick key and a colour in Topics. Select it by its key in the tracking view and in the quick switcher | Pass. `Alpha` got quick key 1 and the color `#2e7d32`. Key 1 in the tracking view and key 1 in the quick switcher each appended `focus.started` for `Alpha` |
+| 7 | First run with prepared topics | Start with an empty log. Add two topics in Topics, then open the tracking view. Both topics can be selected, and no entry exists before the first selection | Pass. With an empty log and `Alpha` and `Beta` added, the tracking view showed `Nothing tracked yet.` and `Other topics (2)` with both topics. No entry existed until key 1 was pressed |
+| 8 | Topic creation in the tracking view is unchanged | Create a topic with `+ New topic`. The log has `topic.created` then `focus.started` | Pass. `+ New topic` with `Delta` appended `topic.created` and then `focus.started` |
+| 9 | No event kind is added | Compare the event vocabulary in `src/core/tracking.ts` before and after | Pass. `git diff src/core/tracking.ts` is empty |
+| 10 | The project checks pass | `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, then `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/` | Pass. `npm run typecheck`, `npm run lint`, `npm test` (95 tests), `npm run build`, `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` all passed |
 
 Record the actual result of each row when you do the check, including failures. Record what was
 not verified.
+
+The checks ran on 17 September 2026 in `tauri dev` on Xvfb `:99`, with `XDG_DATA_HOME` set to a
+temporary directory. Not verified: the checks on Windows and macOS, and a packaged build.
 
 ## Rollout and rollback
 
