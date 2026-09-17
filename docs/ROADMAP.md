@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last updated:** 16 September 2026
+**Last updated:** 17 September 2026
 
 ## Vision
 
@@ -40,6 +40,7 @@ Their checkboxes track individual work items only.
 | **21** | [Game detection on Windows](phases/phase-21-game-detection.md) | An experimental, opt-in game tracker on Windows that detects the game the user plays, similar to Discord, and tracks it as a topic | 2, 11 | Not started |
 | **22** | [Achievements](phases/phase-22-achievements.md) | Achievement and streak recognition, subject to discovery of rules and presentation | 14 | Not started |
 | **23** | [Statistics v2](phases/phase-23-statistics-v2.md) | Follow-up discovery for gaps between sessions and comparisons against the weekly session target | 14 | Not started |
+| **24** | [Entry durations](phases/phase-24-entry-durations.md) | The duration of each entry in the entry list, next to its start, with the time so far for the running entry | 2, 4 | Not started |
 
 Phase 16 can proceed independently of Phases 5 and 14. Navigation order does not imply a dependency.
 

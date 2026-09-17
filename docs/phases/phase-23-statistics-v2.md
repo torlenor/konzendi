@@ -1,6 +1,6 @@
 # Phase 23 — Statistics v2
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 22](phase-22-achievements.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 22](phase-22-achievements.md) · next: [Phase 24](phase-24-entry-durations.md)
 
 **Depends on:** [Phase 14](phase-14-further-statistics.md)  
 **Effort:** M  
