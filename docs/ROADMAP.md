@@ -36,7 +36,7 @@ Their checkboxes track individual work items only.
 | **17** | [Storage location in an overflow menu](phases/phase-17-storage-location-menu.md) | A `…` menu in the bar that opens the data directory in the file manager, and holds the appearance override and About | 0, 6 | Not started |
 | **18** | [Window content that fits the window](phases/phase-18-window-content-fit.md) | Window content that adapts to the window size: the title bar and controls stay visible, and no content is cut off without a way to reach it | 8 | Done |
 | **19** | [A scrollbar that is always visible](phases/phase-19-visible-scrollbar.md) | A theme-styled scrollbar on the tracking window's content area that stays visible, so a view that continues below the window shows it | 6, 18 | Done |
-| **20** | [Add topics in Topics](phases/phase-20-add-topics-in-topics.md) | A form in Topics that adds a topic without starting to track it | 2, 16 | Not started |
+| **20** | [Add topics in Topics](phases/phase-20-add-topics-in-topics.md) | A form in Topics that adds a topic without starting to track it | 2, 16 | Done |
 | **21** | [Game detection on Windows](phases/phase-21-game-detection.md) | An experimental, opt-in game tracker on Windows that detects the game the user plays, similar to Discord, and tracks it as a topic | 2, 11 | Not started |
 | **22** | [Achievements](phases/phase-22-achievements.md) | Achievement and streak recognition, subject to discovery of rules and presentation | 14 | Not started |
 | **23** | [Statistics v2](phases/phase-23-statistics-v2.md) | Follow-up discovery for gaps between sessions and comparisons against the weekly session target | 14 | Not started |
