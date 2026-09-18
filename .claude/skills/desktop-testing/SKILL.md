@@ -120,10 +120,13 @@ up by `npm run lint` — and serve it with symlinks:
 
 ```bash
 mkdir -p "$SCRATCH/serve" && cd "$SCRATCH/serve"
-ln -sfn /home/hps/git/konzendi/node_modules node_modules
-ln -sfn /home/hps/git/konzendi/src src
+ln -sfn "$REPOSITORY_ROOT/node_modules" node_modules
+ln -sfn "$REPOSITORY_ROOT/src" src
 python3 -m http.server 8792 --bind 127.0.0.1 &
 ```
+
+Set `REPOSITORY_ROOT` to the absolute path of the Konzendi checkout before you run these
+commands.
 
 Chrome cannot open `file://` through the browser tools, so HTTP is required. This is a
 convenience for styling only; it proves nothing about the desktop shell.

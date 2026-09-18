@@ -14,6 +14,13 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ## [Unreleased]
 
+### Changed
+
+- The source code and documentation now use the MIT License. The Konzendi logo keeps its
+  separate rights notice.
+- GitHub releases are public prototype prereleases. Windows and macOS packages remain unsigned
+  experimental artifacts until their native walkthroughs pass.
+
 ## [0.2.0] - 2026-09-18
 
 ### Added

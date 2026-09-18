@@ -13,8 +13,13 @@ The owner selected private releases, unsigned x86_64 Debian packages for Ubuntu 
 SHA-256 checksums, and manual publication of an automatically prepared draft on 7 September
 2026. The owner subsequently chose local changelog/version preparation, with optional helper
 scripts, followed by a pushed Git tag triggering checks, packaging, and draft creation. This
-supersedes the earlier workflow-driven version updates and tagging. The technical contracts and
-verification limits are below.
+supersedes the earlier workflow-driven version updates and tagging.
+
+On 18 September 2026, the owner decided to make the repository and its prototype releases
+public and to license the source code and documentation under the MIT License. The Konzendi logo
+keeps its separate rights notice. This decision supersedes the private repository and release
+distribution boundary. It does not change the unsigned-package limitations or establish Windows
+or macOS support. The technical contracts and verification limits are below.
 
 On 11 September 2026, the owner decided that Windows and macOS trial support should be
 investigated only after this release pipeline is implemented. That work is deferred to
@@ -83,28 +88,24 @@ timeouts, seven-day diagnostic artifact retention, and lockfile/toolchain-keyed 
 Cache writes belong to trusted default-branch jobs; release candidates must not restore caches
 produced by untrusted contributions.
 
-Private hosted runners consume an account allowance and may incur charges beyond it
-([GitHub billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)).
-No plan upgrade, new paid runner, or budget increase is part of this phase. Before enabling
-hosted runs, the maintainer verifies allowance and a stop-usage budget in account settings
-([budget controls](https://docs.github.com/en/billing/how-tos/set-up-budgets)). An exhausted
-allowance stops delivery; it is not a reason to skip checks.
+The maintainer must review the current GitHub Actions usage policy and account limits before a
+release. A usage limit is not a reason to skip checks.
 
-Merge protection is unavailable in the inspected private-repository setup
-([GitHub availability](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)).
-Until that changes, passing checks before merge is a maintainer convention, not an enforced
-gate. Release jobs enforce their own check dependencies. Do not claim CI prevents an admin
-from merging or manually publishing outside this workflow. No paid upgrade is required to
-finish this phase under that documented limitation.
+The inspected private-repository setup did not provide merge protection. After the repository
+becomes public, configure a `main` branch ruleset as specified in the
+[public repository checklist](../PUBLIC_RELEASE.md). Until that rule is active, passing checks
+before merge is a maintainer convention, not an enforced gate. Release jobs enforce their own
+check dependencies. Do not claim CI prevents an administrator from merging or manually
+publishing outside this workflow.
 
 ### Local preparation and tag-triggered releases
 
 The maintainer writes/reviews the changelog and version changes locally, commits them to
 `main`, and pushes an annotated `vVERSION` tag. GitHub builds that exact commit and prepares
 a draft; the maintainer reviews it and clicks **Publish release**. Creating a tag locally
-does not trigger GitHub: the tag must be pushed. Publication remains private to repository
-readers. This approach keeps release preparation reviewable in Git and removes the need for
-CI to manufacture commits, update `main`, or create tags.
+does not trigger GitHub: the tag must be pushed. Published releases are public. This approach
+keeps release preparation reviewable in Git and removes the need for CI to manufacture commits,
+update `main`, or create tags.
 
 Use `.github/workflows/release.yml` with `push.tags: ['v*']`, then strictly validate the tag
 format in the workflow. GitHub supports tag filters on push events
@@ -188,13 +189,13 @@ infer compatibility with older systems from the file extension: native library b
 ([Tauri Debian packaging](https://v2.tauri.app/distribute/debian/)). AppImage, ARM, signing, and
 automatic updates can be planned later.
 
-Keep `com.konzendi.app` for this private Linux prototype because it determines the existing
+Keep `com.konzendi.app` for this prototype because it determines the existing
 data path. Tauri warns about `.app` on macOS; macOS is out of scope. Any future identity change
 needs an explicit data migration. Keep existing icons for prototype packages and set package
 publisher/maintainer to `torlenor`, with a concrete tracking description and Utility category.
-Do not add an open-source licence or grant public redistribution rights in this phase. Private
-repository access is the distribution boundary; [Q09](../OPEN_QUESTIONS.md) and
-[Q10](../OPEN_QUESTIONS.md) retain commercial and licensing policy.
+License the source code and documentation under MIT. Keep the Konzendi logo under its separate
+rights notice. [Q09](../OPEN_QUESTIONS.md) and [Q10](../OPEN_QUESTIONS.md) retain later
+commercial, channel, payment, and entitlement decisions.
 Inventory bundled third-party licences, include their required texts in `THIRD_PARTY_NOTICES.md`
 and `/usr/share/doc/konzendi/`, and verify packaged contents before distribution.
 
@@ -463,7 +464,7 @@ Cargo download caches were used; compilation outputs were fresh.
 
 | Check | Discovery result |
 | --- | --- |
-| `npm ci --offline --cache /home/hps/.npm --ignore-scripts --no-audit --no-fund` | Passed, 61 packages. |
+| `npm ci --offline --cache ~/.npm --ignore-scripts --no-audit --no-fund` | Passed, 61 packages. |
 | Root typecheck, lint, test, build | Passed; 24 Vitest tests, 26 files checked by Biome. |
 | `cargo fmt --check` | Passed. |
 | `cargo clippy --offline --locked -- -D warnings` | Passed; fresh check took 2m 23s. |
@@ -487,8 +488,8 @@ packaging experiment, not a full desktop distribution certification.
 
 Introduce CI first, then version/changelog checks and packaging, and rehearse release automation
 in a draft or staging destination. Enable the accepted publication trigger only after the
-artifact and failure-path checks pass. The maintainer reviews and publishes the draft inside
-the private repository; this planning change publishes nothing.
+artifact and failure-path checks pass. The maintainer reviews the draft before public
+publication.
 
 If delivery fails, stop publication and retain diagnostic evidence without credentials or
 personal data. Withdraw or mark an affected release according to the chosen host's verified

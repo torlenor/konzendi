@@ -428,10 +428,13 @@ describe("check", () => {
     repository(changelog("", `## [0.4.0] - 2026-09-12\n\n${NOTES}`));
     setAllVersions("0.4.0");
     check(dir, "0.4.0");
+    const releaseNotes = notes(dir, "0.4.0");
     assert.match(
-      notes(dir, "0.4.0"),
+      releaseNotes,
       /Something a user can see[\s\S]*prototype prerelease[\s\S]*konzendi_0\.4\.0_amd64\.deb/,
     );
+    assert.match(releaseNotes, /public release/);
+    assert.doesNotMatch(releaseNotes, /private repository/);
   });
 
   test("rejects a tag version that the files do not declare", () => {

@@ -478,7 +478,8 @@ export function notes(rootDir, version) {
 ### Installation
 
 Konzendi ${version} is ${stability}: an unsigned Debian package for x86_64 Ubuntu 24.04 and
-Linux Mint 22 under X11. It is distributed only to readers of this private repository.
+Linux Mint 22 under X11. This public release can also contain unsigned experimental Windows
+and macOS packages. Those packages are not supported until their native walkthroughs pass.
 
 1. Download the package and checksums:
    \`gh release download ${tag} --repo ${REPOSITORY} --pattern '${deb}' --pattern SHA256SUMS\`

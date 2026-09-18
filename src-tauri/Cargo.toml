@@ -3,6 +3,8 @@ name = "konzendi"
 version = "0.2.0"
 description = "Track work topics and context switches in a local event log"
 authors = ["torlenor"]
+license = "MIT"
+repository = "https://github.com/torlenor/konzendi"
 publish = false
 edition = "2021"
 

@@ -23,11 +23,11 @@ Their checkboxes track individual work items only.
 | **4** | [Timeline and first analytics](phases/phase-4-timeline-analytics.md) | A day timeline of topics, plus the smallest useful readings | 2 | Done |
 | **5** | [Validation trial](phases/phase-5-validation-trial.md) | A recorded answer to whether switches get logged and whether the result is useful | 3, 4 | In progress |
 | **6** | [Application theme](phases/phase-6-application-theme.md) | A deliberate visual theme for the application, expressed as a documented token set | 2 | Done |
-| **7** | [Releases and CI/CD](phases/phase-7-releases-ci-cd.md) | Local version/changelog helpers and tag-triggered private Linux release builds, with checksums, manual draft publication, and recovery | 2 | Done |
+| **7** | [Releases and CI/CD](phases/phase-7-releases-ci-cd.md) | Local version/changelog helpers and tag-triggered public prototype releases, with checksums, manual draft publication, and recovery | 2 | Done |
 | **8** | [Application window frame](phases/phase-8-window-frame.md) | The application's own title bar and window edge, absorbing the header and carrying the window commands, with a fallback to the desktop's decorations | 3, 6 | Done |
 | **9** | [Quick access: open window](phases/phase-9-quick-access-open-window.md) | A `K` command in the quick switcher that opens the Konzendi tracking window | 3 | Done |
 | **10** | [Server-supported encrypted sync](phases/phase-10-encrypted-sync.md) | Opt-in, local-first multi-device sync in which the service stores opaque client-encrypted tracking data | 2 | Not started |
-| **11** | [Windows and macOS trial support](phases/phase-11-windows-macos.md) | Private Windows 11 x64 and macOS 15 Apple-silicon trial builds, without weakening Linux support | 7 | In progress |
+| **11** | [Windows and macOS trial support](phases/phase-11-windows-macos.md) | Public experimental Windows 11 x64 and macOS 15 Apple-silicon builds, without weakening Linux support | 7 | In progress |
 | **12** | [Logo design](phases/phase-12-logo-design.md) | A documented, accessible Konzendi logo system for the tray, application icons, favicon, and README | 6 | Done |
 | **13** | [Stop replaces pause](phases/phase-13-stop-replaces-pause.md) | One state for not working, named Stop on every surface, and analytics that measure topics only | 2, 4 | Done |
 | **14** | [Further statistics](phases/phase-14-further-statistics.md) | Session statistics and weekly readings, chosen against real logged data | 4, 5 | In progress |

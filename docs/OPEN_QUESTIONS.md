@@ -13,7 +13,7 @@ Question IDs stay stable. Do not renumber the remaining rows after a question is
 | --- | --- | --- | --- |
 | Q07 | Should the first scope include a score or effort levels? If so, what do they mean and how are they explained and tested? | Before score or effort implementation | No formula or validated interpretation exists. |
 | Q09 | Should the product be commercial, and what are the free/paid boundary, price, and update entitlement? | Before commercial implementation | One-time Pro purchase is a proposal. |
-| Q10 | Which distribution and payment channels, device limits, and offline entitlement rules should apply? | Before release or licensing implementation | Direct licensing and an app store are alternatives, dependent on platform and Q09. |
+| Q10 | Which later distribution and payment channels, device limits, and offline entitlement rules should apply? | Before commercial distribution or entitlement implementation | Public GitHub prereleases are selected for the prototype. Direct licensing and an app store remain alternatives that depend on platform and Q09. |
 
 Only decisions needed by the next work should block it. Commercial decisions need not delay
 an initial tracking experiment unless the chosen scope depends on them.

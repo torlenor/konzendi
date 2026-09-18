@@ -2,6 +2,8 @@
   "name": "konzendi",
   "private": true,
   "version": "0.2.0",
+  "license": "MIT",
+  "repository": "github:torlenor/konzendi",
   "type": "module",
   "scripts": {
     "dev": "vite",

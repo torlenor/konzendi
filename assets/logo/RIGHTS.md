@@ -8,8 +8,10 @@ owner accepts for this repository.
 
 This notice applies to the selected **F1. Balanced Threaded Mind** mark: the SVG sources in this
 directory, any one-colour variants, and exports derived from those sources, such as the tray
-icon and the application icons. It does not change the licensing status of other files in
-the repository.
+icon and the application icons. It does not change the MIT licensing status of other files in
+the repository. The generated tray icon in `src/assets/konzendi-tray-32.png`, the generated
+application icons in `src-tauri/icons/`, and the favicon derived from the selected logo are also
+excluded from the MIT License and use this notice.
 
 This notice does not state or imply that `Konzendi`, the wordmark, or the logo is a registered
 trademark. Do not use the registered trademark symbol (`®`) unless a relevant registration is

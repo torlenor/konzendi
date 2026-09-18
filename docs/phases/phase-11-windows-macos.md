@@ -11,12 +11,13 @@
 
 The owner selected the first non-Linux trial matrix on 14 September 2026. It contains Windows
 11 x64 and macOS 15 on Apple silicon. Both packages are unsigned prototype packages in the
-private GitHub release. Trial users accept the operating-system warning and use the documented
-override. This policy is for a small, known trial group. It is not suitable for public release.
+GitHub release. Trial users accept the operating-system warning and use the documented
+override. The packages become public experimental artifacts with the public repository. Public
+availability does not make them supported packages or replace the pending native walkthroughs.
 
 The selected matrix is the smallest matrix that gives one current target for each operating
 system and that GitHub-hosted native runners can build. GitHub documents `windows-2025` as an
-x64 runner and `macos-15` as an Apple-silicon runner for private repositories in its
+x64 runner and `macos-15` as an Apple-silicon runner in its
 [hosted-runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
 Tauri builds NSIS on Windows and DMG on macOS. It does not use cross-compilation for these
 packages.
@@ -30,7 +31,7 @@ and [Tauri's Windows signing guide](https://v2.tauri.app/distribute/sign/windows
 
 ## Outcome and scope
 
-This phase adds private, versioned trial builds for:
+This phase adds versioned experimental builds for:
 
 | Trial target | Architecture | Package | Native build runner | Installation |
 | --- | --- | --- | --- | --- |
@@ -39,12 +40,13 @@ This phase adds private, versioned trial builds for:
 
 The Linux x86_64 Debian package remains supported and unchanged. The three packages come from
 one reviewed tag and one release workflow run. `SHA256SUMS` covers every package, the manifest,
-and the third-party notices. The release stays a private draft until the maintainer reviews it.
+and the third-party notices. The release stays a draft until the maintainer reviews it. After
+publication in the public repository, the release and all assets are public.
 
 The phase includes desktop behavior, packaging, CI builds, installed-package checks,
 documentation, withdrawal, and data recovery. It does not include Intel macOS, Windows on ARM,
 Windows 10, older macOS versions, app stores, signing, notarization, payments, automatic
-updates, synchronization, or public distribution.
+updates, or synchronization.
 
 ## Decisions and evidence
 
@@ -118,7 +120,7 @@ provide the interactive evidence needed for shortcut, tray, focus, or warning-di
       all packages before the draft can become ready.
 - [x] **Document trial operation and recovery.** Document installation warnings, paths,
       backups, downgrade limits, per-platform removal, artifact review, and support boundaries.
-- [ ] **Verify hosted native builds.** Run CI for the implementation commit. Record the runner
+- [x] **Verify hosted native builds.** Run CI for the implementation commit. Record the runner
       images, package hashes, smoke evidence, and result below. Fix build or lifecycle failures
       before trial distribution.
 - [ ] **Complete installed-application walkthroughs.** Use a Windows 11 x64 machine and a
@@ -171,7 +173,15 @@ the roadmap status to `Done`.
   configuration and Linux compilation only. They are not native package builds.
 - 14 September 2026, documentation check: 31 Markdown files had valid local link targets. Phase
   dependency metadata and the Phase 10 → 11 → 12 navigation chain matched the roadmap.
-- Hosted Windows and macOS builds: not run yet.
+- 18 September 2026, release workflow run `35338608210` for commit
+  `8dcfc98f356944c3f132e45af94bc50158263531`: Windows, macOS, Linux, frontend, Rust, combined
+  assets, and draft-release jobs passed. The published `v0.2.0` prerelease contains all six
+  assets. The runner images were `ubuntu24` `20260907.300.1`, `win25-vs2026`
+  `20260907.229.1`, and `macos15` `20260907.0337.1`. The Linux, Windows, and macOS package
+  SHA-256 values were `a752d98188653e10c36ed22936b1b2312570546115eb820093b2faeb7120a43a`,
+  `21812e39e3dcd99f946a1018b487793e0be1d20dacb9cd40ab0696bcf9c7706c`, and
+  `45e6fbb1b62a6ffd2ccb447c9b0013a35ac8561356bb14772c2c256f088e8122`. This is hosted
+  lifecycle evidence, not a native interactive walkthrough.
 - Windows 11 x64 installed-application walkthrough: not run yet.
 - 15 September 2026, owner Windows trial: the installed application reported that `Store` was
   not managed when `read_events` ran. The screen was empty after each restart. The cause was a
@@ -181,14 +191,16 @@ the roadmap status to `Done`.
   isolated data directory on Xvfb. It created two synthetic events and read them after restart.
   This check does not replace the Windows native retest.
 - macOS 15 Apple-silicon installed-application walkthrough: not run yet.
-- Combined tagged draft rehearsal: not run yet.
+- 18 September 2026, the combined `v0.2.0` draft was created by the successful release run and
+  published after review. The fault-injection and selective-withdrawal rehearsal is still
+  pending, so the combined-draft work package remains open.
 
 ## Rollout and rollback
 
-Keep every Windows and macOS artifact in a private draft until its hosted check and matching
-native walkthrough pass. Start with one known tester per platform. Give the tester the package
-hash, unsigned-package warning, backup path, removal steps, and support boundary. Publish the
-draft only after all three platform assets pass. Do not publish a partial multi-platform draft.
+Publish Windows and macOS artifacts only as unsigned experimental packages until their matching
+native walkthroughs pass. Give each tester the package hash, unsigned-package warning, backup
+path, removal steps, and support boundary. Do not claim platform support before the walkthrough
+passes. Do not publish a partial multi-platform draft.
 
 If one trial target fails before publication, keep the draft incomplete or remove the whole
 incomplete draft and rerun the same tag after a transient failure. Source defects require a new

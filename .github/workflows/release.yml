@@ -1,4 +1,4 @@
-# Builds a pushed vMAJOR.MINOR.PATCH tag into a private draft release. It never commits,
+# Builds a pushed vMAJOR.MINOR.PATCH tag into a draft public prerelease. It never commits,
 # tags, pushes, or publishes: the maintainer reviews the draft and clicks Publish.
 # See docs/RELEASING.md.
 name: Release

@@ -8,13 +8,13 @@ The Windows and macOS extension is in
 
 ## Policy in brief
 
-- Releases are private GitHub releases of `torlenor/konzendi`. Only repository readers can
-  download them.
+- Releases are public GitHub prereleases of `torlenor/konzendi`.
 - Each release has six assets: `konzendi_VERSION_amd64.deb`,
   `Konzendi_VERSION_x64-setup.exe`, `Konzendi_VERSION_aarch64.dmg`, `SHA256SUMS`,
   `release-manifest.json`, and `THIRD_PARTY_NOTICES.md`. All packages are unsigned. The Linux
   package targets x86_64 Ubuntu 24.04 and Linux Mint 22 under X11. The other packages target
-  Windows 11 x64 and macOS 15 on Apple silicon for the private Phase 11 trial.
+  Windows 11 x64 and macOS 15 on Apple silicon as experimental Phase 11 artifacts. Their native
+  interactive acceptance is not complete.
 - Versions are `MAJOR.MINOR.PATCH` with no prefix or suffix. Tags are `vMAJOR.MINOR.PATCH`,
   annotated. Every `0.x` release is a GitHub prerelease.
 - The maintainer prepares the version and changelog locally and pushes a tag. GitHub builds a
@@ -51,20 +51,17 @@ commit that is not on `main`, belongs to a published release, or is not higher t
 published version. It then runs `npm run release:check` for the tag's version on the tagged
 commit. Only the `draft release` job has `contents: write`, and it checks the actors again.
 
-GitHub does not enforce these checks before a merge: branch protection and rulesets are not
-available for this private repository on the current plan. Merging only with green checks is a
-maintainer convention. The release workflow enforces its own checks.
+The `main` branch ruleset must require these checks after the repository becomes public. Until
+the rule is active, merging only with green checks is a maintainer convention. The release
+workflow enforces its own checks.
 
-## Before the first release
+## Repository and release settings
 
 1. Install and sign in to the GitHub CLI: `gh auth login`.
-2. In the GitHub account settings, confirm the remaining Actions minutes for private
-   repositories and set a budget that stops usage at the limit
-   ([budgets](https://docs.github.com/en/billing/how-tos/set-up-budgets)). A full release run
-   now uses Linux, Windows, and macOS runner minutes. Check the actual duration after the first
-   run. If the allowance is exhausted, delivery stops; do not skip checks to save minutes.
-3. Confirm Actions are enabled for the repository and the default workflow token is read-only
+2. Confirm Actions are enabled for the repository and the default workflow token is read-only
    (Settings → Actions → General). The workflows request the permissions they need.
+3. Complete the [public repository checklist](PUBLIC_RELEASE.md), including the branch ruleset
+   and security settings.
 
 No personal access token, signing key, or repository secret is used.
 
