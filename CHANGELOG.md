@@ -14,6 +14,8 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-18
+
 ### Added
 
 - Quick access now has `K` to open the Konzendi tracking window.
