@@ -1,6 +1,6 @@
 # Phase 24 — Entry durations
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 23](phase-23-statistics-v2.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 23](phase-23-statistics-v2.md) · next: [Phase 25](phase-25-brief-topic-selection-correction.md)
 
 **Depends on:** [Phase 2](phase-2-tracking-implementation.md), [Phase 4](phase-4-timeline-analytics.md)  
 **Effort:** L  

@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last updated:** 17 September 2026
+**Last updated:** 18 September 2026
 
 ## Vision
 
@@ -41,6 +41,7 @@ Their checkboxes track individual work items only.
 | **22** | [Achievements](phases/phase-22-achievements.md) | Achievement and streak recognition, subject to discovery of rules and presentation | 14 | Not started |
 | **23** | [Statistics v2](phases/phase-23-statistics-v2.md) | Follow-up discovery for gaps between sessions and comparisons against the weekly session target | 14 | Not started |
 | **24** | [Entry durations](phases/phase-24-entry-durations.md) | The duration of each entry in the entry list, next to its start, with the time so far for the running entry | 2, 4 | Not started |
+| **25** | [Brief topic selection correction](phases/phase-25-brief-topic-selection-correction.md) | Automatic correction of a topic selection that another topic selection replaces in less than three seconds, with visible confirmation and a restorable audit entry | 2, 3 | Not started |
 
 Phase 16 can proceed independently of Phases 5 and 14. Navigation order does not imply a dependency.
 
