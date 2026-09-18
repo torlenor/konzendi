@@ -175,9 +175,11 @@ describe("versions", () => {
       ]),
     );
 
-    assert.equal(agreedVersion(contents), "0.1.1");
-    const updated = setVersions(contents, "0.2.0");
-    assert.equal(agreedVersion(updated), "0.2.0");
+    // The repository's own version changes with each release, so the test reads it
+    // instead of a literal and writes a version that is always different.
+    assert.equal(agreedVersion(contents), versions(root));
+    const updated = setVersions(contents, "9.9.9");
+    assert.equal(agreedVersion(updated), "9.9.9");
     for (const text of Object.values(updated)) {
       assert.doesNotMatch(text, /(?<!\r)\n/);
     }
