@@ -9,6 +9,7 @@ import {
 import { flushSync } from "react-dom";
 import {
   type Actions,
+  briefCorrectionMessage,
   STOP_MARK,
   subjectLabel,
   subjectMark,
@@ -27,8 +28,12 @@ import {
 import { quickKeyPressed, watchSuperKey } from "./quickKeys";
 import { Swatch } from "./Swatch";
 import { formatElapsedParts } from "./time";
+import { useCorrectionFeedback } from "./useCorrectionFeedback";
 import { type Tracking, useNow, useTracking } from "./useTracking";
 import "./App.css";
+
+/** How long a correction keeps its rows in place before the surface dismisses. */
+const CORRECTION_VISIBLE_MS = 800;
 
 /**
  * The quick switcher: the surface Phase 1 drew, one keystroke per row and no text entry.
@@ -160,6 +165,29 @@ function QuickSurface({
     [dismiss],
   );
 
+  // A correction keeps the surface open for one short, visible confirmation before it
+  // dismisses as usual. The accessible text outlives that: it stays in the always-mounted
+  // live region for the full feedback period, including while the window is hidden.
+  const [rowsCorrection, setRowsCorrection] = useState<string | null>(null);
+  const correction = useCorrectionFeedback();
+  const runSwitch = useCallback(
+    async (switching: ReturnType<Actions["switchTo"]>) => {
+      const result = await switching;
+      if (result.status === "failed") return;
+      if (result.status === "corrected") {
+        const text = briefCorrectionMessage(state.topics, result.topicId);
+        correction.show(text);
+        setRowsCorrection(text);
+        await new Promise((resume) =>
+          setTimeout(resume, CORRECTION_VISIBLE_MS),
+        );
+        setRowsCorrection(null);
+      }
+      await dismiss();
+    },
+    [dismiss, correction, state.topics],
+  );
+
   const stop = useCallback(() => {
     if (!busy && current !== null && stopped === null) void run(actions.stop());
   }, [busy, current, stopped, run, actions]);
@@ -186,12 +214,13 @@ function QuickSurface({
         const topic = blocked ? null : topicForKey(state.topics, pressed);
         if (topic !== null) {
           event.preventDefault();
-          void run(actions.switchTo(topic.id));
+          void runSwitch(actions.switchTo(topic.id, state));
         }
         return;
       }
       if (event.ctrlKey || event.altKey || event.metaKey) return;
       if (event.key === "Escape") {
+        setRowsCorrection(null);
         void dismiss();
         return;
       }
@@ -215,7 +244,7 @@ function QuickSurface({
       window.removeEventListener("keydown", onKey);
       superKey.stop();
     };
-  }, [state.topics, blocked, actions, run, dismiss, stop, undo, openMain]);
+  }, [state, blocked, actions, runSwitch, dismiss, stop, undo, openMain]);
 
   // Losing focus dismisses the surface, so the working window keeps it no longer than
   // the interaction takes however the interaction ends. The shortcut's own key grab
@@ -261,56 +290,16 @@ function QuickSurface({
       ref={surface}
       style={maxHeight === null ? undefined : { maxHeight: `${maxHeight}px` }}
     >
-      {assigned.length > 0 && (
-        <ol>
-          {assigned.map((topic) => (
-            <Row
-              key={topic.id}
-              hint={String(topic.quickKey)}
-              label={topic.name}
-              color={topic.color}
-              disabled={blocked}
-              mark={topic.id === activeTopicId ? TOPIC_MARK : ""}
-              trailing={
-                topic.id === activeTopicId && elapsed !== null ? elapsed : ""
-              }
-              onPick={() => void run(actions.switchTo(topic.id))}
-            />
-          ))}
-        </ol>
-      )}
-      {!hasTopics && (
-        <p className="empty">No topics yet. The window creates them.</p>
-      )}
-      {hasTopics && assigned.length === 0 && unassigned.length === 0 && (
-        <p className="empty">
-          Every topic is archived. Restore one in the window.
-        </p>
-      )}
-      {assigned.length === 0 && unassigned.length > 0 && (
-        <p className="empty">Set quick keys in Topics</p>
-      )}
-
-      {unassigned.length > 0 && (
-        <div className="others">
-          <button
-            type="button"
-            className="pick disclosure"
-            aria-expanded={othersOpen}
-            aria-controls={othersId}
-            onClick={() => setOthersOpen((open) => !open)}
-          >
-            <span className="gap disclosure-mark" aria-hidden="true">
-              {othersOpen ? "▾" : "▸"}
-            </span>
-            <span className="label">Other topics ({unassigned.length})</span>
-          </button>
-          {othersOpen && (
-            <ul id={othersId}>
-              {unassigned.map((topic) => (
+      {rowsCorrection !== null ? (
+        <p className="quick-correction">{rowsCorrection}</p>
+      ) : (
+        <>
+          {assigned.length > 0 && (
+            <ol>
+              {assigned.map((topic) => (
                 <Row
                   key={topic.id}
-                  hint={null}
+                  hint={String(topic.quickKey)}
                   label={topic.name}
                   color={topic.color}
                   disabled={blocked}
@@ -320,50 +309,110 @@ function QuickSurface({
                       ? elapsed
                       : ""
                   }
-                  onPick={() => void run(actions.switchTo(topic.id))}
+                  onPick={() =>
+                    void runSwitch(actions.switchTo(topic.id, state))
+                  }
                 />
               ))}
-            </ul>
+            </ol>
           )}
-        </div>
+          {!hasTopics && (
+            <p className="empty">No topics yet. The window creates them.</p>
+          )}
+          {hasTopics && assigned.length === 0 && unassigned.length === 0 && (
+            <p className="empty">
+              Every topic is archived. Restore one in the window.
+            </p>
+          )}
+          {assigned.length === 0 && unassigned.length > 0 && (
+            <p className="empty">Set quick keys in Topics</p>
+          )}
+
+          {unassigned.length > 0 && (
+            <div className="others">
+              <button
+                type="button"
+                className="pick disclosure"
+                aria-expanded={othersOpen}
+                aria-controls={othersId}
+                onClick={() => setOthersOpen((open) => !open)}
+              >
+                <span className="gap disclosure-mark" aria-hidden="true">
+                  {othersOpen ? "▾" : "▸"}
+                </span>
+                <span className="label">
+                  Other topics ({unassigned.length})
+                </span>
+              </button>
+              {othersOpen && (
+                <ul id={othersId}>
+                  {unassigned.map((topic) => (
+                    <Row
+                      key={topic.id}
+                      hint={null}
+                      label={topic.name}
+                      color={topic.color}
+                      disabled={blocked}
+                      mark={topic.id === activeTopicId ? TOPIC_MARK : ""}
+                      trailing={
+                        topic.id === activeTopicId && elapsed !== null
+                          ? elapsed
+                          : ""
+                      }
+                      onPick={() =>
+                        void runSwitch(actions.switchTo(topic.id, state))
+                      }
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          <ol className="commands">
+            {stopped !== null ? (
+              <li className="state">
+                <span className="gap" />
+                <span className="label">
+                  {subjectMark(stopped.subject)}{" "}
+                  {subjectLabel(state.topics, stopped.subject)}
+                </span>
+                <span className="mark" />
+                <span className="trailing">{elapsed}</span>
+              </li>
+            ) : (
+              <Row
+                hint={STOP_KEY}
+                label={`${STOP_MARK} Stop`}
+                disabled={busy || current === null}
+                onPick={stop}
+              />
+            )}
+            <Row
+              hint={UNDO_KEY}
+              label={
+                current === null
+                  ? "Nothing to undo yet"
+                  : `Undo last entry (${subjectLabel(state.topics, current.subject)})`
+              }
+              disabled={busy || current === null}
+              onPick={undo}
+            />
+            <Row
+              hint={OPEN_MAIN_KEY.toUpperCase()}
+              label="Open Konzendi"
+              disabled={busy}
+              onPick={() => void openMain()}
+            />
+          </ol>
+        </>
       )}
 
-      <ol className="commands">
-        {stopped !== null ? (
-          <li className="state">
-            <span className="gap" />
-            <span className="label">
-              {subjectMark(stopped.subject)}{" "}
-              {subjectLabel(state.topics, stopped.subject)}
-            </span>
-            <span className="mark" />
-            <span className="trailing">{elapsed}</span>
-          </li>
-        ) : (
-          <Row
-            hint={STOP_KEY}
-            label={`${STOP_MARK} Stop`}
-            disabled={busy || current === null}
-            onPick={stop}
-          />
-        )}
-        <Row
-          hint={UNDO_KEY}
-          label={
-            current === null
-              ? "Nothing to undo yet"
-              : `Undo last entry (${subjectLabel(state.topics, current.subject)})`
-          }
-          disabled={busy || current === null}
-          onPick={undo}
-        />
-        <Row
-          hint={OPEN_MAIN_KEY.toUpperCase()}
-          label="Open Konzendi"
-          disabled={busy}
-          onPick={() => void openMain()}
-        />
-      </ol>
+      {/* Kept mounted for the full feedback period, including while the window is
+          hidden after a correction dismisses the surface. */}
+      <p className="hidden" role="status">
+        {correction.message}
+      </p>
 
       {surfaceError !== "" && <p role="alert">{surfaceError}</p>}
     </div>

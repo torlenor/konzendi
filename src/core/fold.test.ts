@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { EventRecord } from "./events";
-import { foldLog, type Subject, type TrackingState } from "./fold";
+import {
+  foldLog,
+  intervalOpenedBy,
+  type Subject,
+  type TrackingState,
+} from "./fold";
 
 // The worked example states times only and notes they are UTC on one day.
 const DAY = "2026-09-06";
@@ -274,6 +279,143 @@ describe("foldLog", () => {
       true,
       false,
     ]);
+  });
+});
+
+describe("intervalOpenedBy", () => {
+  it("finds the interval a closed entry opened", () => {
+    const state = foldLog(example);
+    expect(intervalOpenedBy(state.timeline, "e2")).toMatchObject({
+      eventId: "e2",
+      start: at("09:00:00"),
+      end: at("11:30:00"),
+    });
+  });
+
+  it("finds the open interval", () => {
+    const state = foldLog(example);
+    expect(intervalOpenedBy(state.timeline, "e8")).toMatchObject({
+      eventId: "e8",
+      start: at("13:00:00"),
+      end: null,
+    });
+  });
+
+  it("finds no interval for a revoked entry", () => {
+    const state = foldLog(example);
+    expect(intervalOpenedBy(state.timeline, "e4")).toBeNull();
+  });
+
+  it("finds no interval for an entry that repeats the previous subject", () => {
+    const again = started("e11", "13:00:02", "t1");
+    const state = foldLog([...example, again]);
+    expect(intervalOpenedBy(state.timeline, "e11")).toBeNull();
+  });
+
+  it("finds no interval for a zero-length entry", () => {
+    const state = foldLog([
+      started("a", "09:00:00", "t1"),
+      started("b", "09:30:00", "t2", "09:00:00"),
+    ]);
+    expect(intervalOpenedBy(state.timeline, "a")).toBeNull();
+  });
+
+  it("reflects a retimed start", () => {
+    const state = foldLog(example);
+    expect(intervalOpenedBy(state.timeline, "e6")).toMatchObject({
+      eventId: "e6",
+      start: at("11:30:00"),
+      end: at("13:00:00"),
+    });
+  });
+});
+
+describe("foldLog: direct selection and brief-selection correction", () => {
+  const directStarted = (
+    id: string,
+    recordedAt: string,
+    topicId: string,
+    effectiveAt = recordedAt,
+  ) =>
+    record(id, "A", recordedAt, "focus.started", {
+      topicId,
+      effectiveAt: at(effectiveAt),
+      origin: "direct-selection",
+    });
+  const briefRevoked = (id: string, recordedAt: string, targetId: string) =>
+    record(id, "A", recordedAt, "entry.revoked", {
+      targetId,
+      reason: "brief-topic-selection",
+    });
+  const manualRevoked = (id: string, recordedAt: string, targetId: string) =>
+    record(id, "A", recordedAt, "entry.revoked", { targetId });
+
+  const entryById = (state: TrackingState, id: string) =>
+    state.entries.find((entry) => entry.id === id);
+
+  it("marks a direct selection and leaves a missed switch unmarked", () => {
+    const state = foldLog([
+      started("m1", "09:00:00", "t1"),
+      directStarted("d1", "09:05:00", "t2"),
+    ]);
+    expect(entryById(state, "m1")?.directSelection).toBe(false);
+    expect(entryById(state, "d1")?.directSelection).toBe(true);
+  });
+
+  it("reports a brief-selection correction on the corrected entry only", () => {
+    const state = foldLog([
+      directStarted("d1", "09:00:00", "t1"),
+      directStarted("d2", "09:00:02", "t2"),
+      briefRevoked("r1", "09:00:02", "d1"),
+    ]);
+    const corrected = entryById(state, "d1");
+    expect(corrected).toMatchObject({
+      revoked: true,
+      correctedAsBriefSelection: true,
+    });
+    expect(entryById(state, "d2")).toMatchObject({
+      revoked: false,
+      correctedAsBriefSelection: false,
+    });
+  });
+
+  it("does not report a correction for a manual revocation", () => {
+    const state = foldLog([
+      directStarted("d1", "09:00:00", "t1"),
+      manualRevoked("r1", "09:00:05", "d1"),
+    ]);
+    expect(entryById(state, "d1")).toMatchObject({
+      revoked: true,
+      correctedAsBriefSelection: false,
+    });
+  });
+
+  it("clears the correction flag when the correction is restored", () => {
+    const log = [
+      directStarted("d1", "09:00:00", "t1"),
+      directStarted("d2", "09:00:02", "t2"),
+      briefRevoked("r1", "09:00:02", "d1"),
+    ];
+    const restored = foldLog([...log, manualRevoked("r2", "09:00:10", "r1")]);
+    expect(entryById(restored, "d1")).toMatchObject({
+      revoked: false,
+      correctedAsBriefSelection: false,
+    });
+  });
+
+  it("still reports the correction when a corrected entry also carries a manual revocation", () => {
+    const state = foldLog([
+      directStarted("d1", "09:00:00", "t1"),
+      directStarted("d2", "09:00:02", "t2"),
+      briefRevoked("r1", "09:00:02", "d1"),
+      manualRevoked("r2", "09:00:03", "d1"),
+    ]);
+    const entry = entryById(state, "d1");
+    expect(entry).toMatchObject({
+      revoked: true,
+      correctedAsBriefSelection: true,
+    });
+    expect(entry?.revokedBy).toEqual(["r1", "r2"]);
   });
 });
 

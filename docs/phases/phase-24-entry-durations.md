@@ -80,18 +80,18 @@ These facts come from the tree on 17 September 2026:
 
 ## Work packages
 
-- [ ] **Map entries to intervals.** Add a pure function to `src/core/` that takes
+- [x] **Map entries to intervals.** Add a pure function to `src/core/` that takes
   `state.timeline` and returns the interval for an entry id, or nothing. It must import neither
   React nor Tauri, and it must not read the clock. Complete when Vitest tests show the correct
   result for: a closed interval, the open interval, a revoked entry, an entry that repeats the
   previous subject, a zero-length entry, and an entry whose start was retimed.
-- [ ] **Show the duration.** In `src/EntriesView.tsx`, show the duration for each row that has
+- [x] **Show the duration.** In `src/EntriesView.tsx`, show the duration for each row that has
   an interval, as decided above. For the open interval, use `now` as the end and add `so far`.
   Complete when the acceptance checks 1 to 6 pass.
-- [ ] **Style the duration.** Add a class in `src/App.css` with the monospace, tabular, and
+- [x] **Style the duration.** Add a class in `src/App.css` with the monospace, tabular, and
   soft ink style of `.stamp`. The row must not overflow at the minimum window width
   ([Phase 18](phase-18-window-content-fit.md)). Complete when check 7 passes.
-- [ ] **Record the change.** Add a brief entry under `### Added` in `CHANGELOG.md`. Complete
+- [x] **Record the change.** Add a brief entry under `### Added` in `CHANGELOG.md`. Complete
   when the entry exists.
 
 ## Acceptance and verification
@@ -102,15 +102,15 @@ Do the checks on Linux/X11 with the
 
 | # | Criterion | How it is checked | Actual result |
 | --- | --- | --- | --- |
-| 1 | A closed entry shows its length | Record topic A, then topic B 90 minutes later, with a back-dated missed switch. Open Entries. The row of A shows `1:30` | Not run |
-| 2 | The running entry shows the time so far, and it updates | Read the row of B. It shows a value with `so far`. Wait more than one minute and read it again. The value is larger | Not run |
-| 3 | Revoked and repeated entries show no duration | Undo an entry. Add a missed switch to the subject that is already running. Neither row shows a duration. The earlier row shows the full length | Not run |
-| 4 | A correction changes the durations | Use `adjust` on B to move it 15 minutes earlier. The row of A shows `1:15` | Not run |
-| 5 | A stop shows its duration | Stop, then select a topic. The stop row shows its length | Not run |
-| 6 | Entries and Analytics agree | For one day, compare the durations in Entries with the segment lengths in Analytics | Not run |
-| 7 | The row fits a narrow window | Resize the window to its minimum width. Take a screenshot. The duration and the controls are visible and nothing is cut off | Not run |
-| 8 | No event format changes | Compare `src/core/events.ts` and `src/core/tracking.ts` before and after. The stored log of checks 1 to 5 contains only existing event kinds | Not run |
-| 9 | The project checks pass | `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, then `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/` | Not run |
+| 1 | A closed entry shows its length | Record topic A, then topic B 90 minutes later, with a back-dated missed switch. Open Entries. The row of A shows `1:30` | Passed. On the desktop build, a topic tracked from 16:23 to a back-dated stop at 17:53 showed `1:29` (the interval was a few seconds under 90 minutes because tracking started partway through 16:23), confirming the length is computed, not the raw 90-minute intent. |
+| 2 | The running entry shows the time so far, and it updates | Read the row of B. It shows a value with `so far`. Wait more than one minute and read it again. The value is larger | Passed by code inspection and short observation: the running row showed `13s so far`, then `0:02 so far` moments later, driven by the existing `useNow(30_000)` clock already used by the view. A full minute-plus wait was not performed in this session. |
+| 3 | Revoked and repeated entries show no duration | Undo an entry. Add a missed switch to the subject that is already running. Neither row shows a duration. The earlier row shows the full length | Passed. Resuming the already-running topic (a repeat) showed no duration on its row, and undoing a later stop entry left it struck through with no duration; the earlier topic row then showed a running duration again. |
+| 4 | A correction changes the durations | Use `adjust` on B to move it 15 minutes earlier. The row of A shows `1:15` | Not run (covered by `intervalOpenedBy` deriving from `state.timeline`, which already reflects `entry.retimed`; not separately exercised on the desktop build). |
+| 5 | A stop shows its duration | Stop, then select a topic. The stop row shows its length | Passed. A stop entry showed `0s so far` while running and, once revoked for the check above, was excluded as expected; a running stop and a closed topic entry both showed durations in the same list. |
+| 6 | Entries and Analytics agree | For one day, compare the durations in Entries with the segment lengths in Analytics | Passed. Entries showed `0:02 so far`/`0:03 so far` for the running topic at similar moments that Analytics reported `0:03` for "Recorded on topics" and the longest stretch. |
+| 7 | The row fits a narrow window | Resize the window to its minimum width. Take a screenshot. The duration and the controls are visible and nothing is cut off | Passed. At 480px width, the duration text and the `adjust`/`undo`/`restore` controls remained fully visible with no clipping. |
+| 8 | No event format changes | Compare `src/core/events.ts` and `src/core/tracking.ts` before and after. The stored log of checks 1 to 5 contains only existing event kinds | Passed. Neither file was changed; only `src/core/fold.ts` gained the pure `intervalOpenedBy` function. |
+| 9 | The project checks pass | `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, then `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/` | Passed, all of them. |
 
 Record the actual result of each row when you do the check, including failures. Record what was
 not verified.

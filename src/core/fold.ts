@@ -5,6 +5,7 @@ import {
   mergeEvents,
 } from "./events";
 import {
+  DIRECT_SELECTION,
   isTrackingEvent,
   type KnownEvent,
   type QuickKey,
@@ -37,6 +38,10 @@ export interface Entry {
   revoked: boolean;
   /** The effective revocations to revoke in turn to restore this entry. */
   revokedBy: readonly string[];
+  /** A `focus.started` recorded as a direct topic selection, eligible for the brief-selection correction. */
+  directSelection: boolean;
+  /** An effective revocation of this entry carries the brief-selection correction reason. */
+  correctedAsBriefSelection: boolean;
 }
 
 export interface Interval {
@@ -57,6 +62,14 @@ export interface TrackingState {
   timeline: readonly Interval[];
   /** The open interval, or null on first run. */
   current: Interval | null;
+}
+
+/** The interval that an entry opened, or null if it opened none. */
+export function intervalOpenedBy(
+  timeline: readonly Interval[],
+  entryId: string,
+): Interval | null {
+  return timeline.find((interval) => interval.eventId === entryId) ?? null;
 }
 
 export function sameSubject(a: Subject, b: Subject): boolean {
@@ -199,17 +212,35 @@ export function foldLog(
     }
   }
 
+  // A revocation carries the correction reason only when it is the automatic kind, so
+  // an entry reports the correction only through its own effective revocations.
+  const hasBriefCorrectionReason = (revocationId: string): boolean => {
+    const revocation = byId.get(revocationId);
+    return (
+      revocation !== undefined &&
+      revocation.kind === "entry.revoked" &&
+      revocation.payload.reason === "brief-topic-selection"
+    );
+  };
+
   const entries: Entry[] = known
     .filter(isTrackingEvent)
-    .map((event) => ({
-      id: event.id,
-      subject: subjectOf(event),
-      effectiveAt: retimed.get(event.id) ?? event.payload.effectiveAt,
-      recordedAt: event.recordedAt,
-      retimed: retimed.has(event.id),
-      revoked: !isEffective(event.id),
-      revokedBy: effectiveRevocationsOf(event.id),
-    }))
+    .map((event) => {
+      const revokedBy = effectiveRevocationsOf(event.id);
+      return {
+        id: event.id,
+        subject: subjectOf(event),
+        effectiveAt: retimed.get(event.id) ?? event.payload.effectiveAt,
+        recordedAt: event.recordedAt,
+        retimed: retimed.has(event.id),
+        revoked: !isEffective(event.id),
+        revokedBy,
+        directSelection:
+          event.kind === "focus.started" &&
+          event.payload.origin === DIRECT_SELECTION,
+        correctedAsBriefSelection: revokedBy.some(hasBriefCorrectionReason),
+      };
+    })
     .sort(compareTimeline);
 
   // Coalesce: an entry repeating the previous subject opens no interval, so a double

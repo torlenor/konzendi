@@ -13,9 +13,15 @@ export interface TrackingPayloads {
   "topic.quick-key-set": { topicId: string; key: QuickKey | null };
   /** A `#rrggbb` color, or null to clear the topic's color. */
   "topic.color-set": { topicId: string; color: string | null };
-  "focus.started": { topicId: string; effectiveAt: string };
+  /** `origin` is absent for a switch that is not a direct topic selection. */
+  "focus.started": {
+    topicId: string;
+    effectiveAt: string;
+    origin?: FocusOrigin;
+  };
   "focus.paused": { effectiveAt: string };
-  "entry.revoked": { targetId: string };
+  /** `reason` is absent for a plain, manual undo. */
+  "entry.revoked": { targetId: string; reason?: RevocationReason };
   "entry.retimed": { targetId: string; effectiveAt: string };
 }
 
@@ -28,6 +34,22 @@ export function isQuickKey(value: unknown): value is QuickKey {
   return (
     Number.isInteger(value) && (value as number) >= 1 && (value as number) <= 9
   );
+}
+
+/** Marks a `focus.started` that a direct topic selection recorded. */
+export const DIRECT_SELECTION: FocusOrigin = "direct-selection";
+export type FocusOrigin = "direct-selection";
+
+export function isFocusOrigin(value: unknown): value is FocusOrigin {
+  return value === DIRECT_SELECTION;
+}
+
+/** Marks an `entry.revoked` that automatically corrected a brief topic selection. */
+export const BRIEF_TOPIC_SELECTION: RevocationReason = "brief-topic-selection";
+export type RevocationReason = "brief-topic-selection";
+
+export function isRevocationReason(value: unknown): value is RevocationReason {
+  return value === BRIEF_TOPIC_SELECTION;
 }
 
 /** Six hexadecimal digits after `#`, in either case. No shorthand, name, or alpha. */
@@ -95,12 +117,25 @@ const readers: {
       : null,
   "focus.started": (fields) =>
     identifier(fields.topicId) && instant(fields.effectiveAt)
-      ? { topicId: fields.topicId, effectiveAt: fields.effectiveAt }
+      ? {
+          topicId: fields.topicId,
+          effectiveAt: fields.effectiveAt,
+          // An unrecognized origin is read as none, so a future kind of automatic
+          // switch is never mistaken for a direct selection by an older build.
+          ...(isFocusOrigin(fields.origin) ? { origin: fields.origin } : {}),
+        }
       : null,
   "focus.paused": (fields) =>
     instant(fields.effectiveAt) ? { effectiveAt: fields.effectiveAt } : null,
   "entry.revoked": (fields) =>
-    identifier(fields.targetId) ? { targetId: fields.targetId } : null,
+    identifier(fields.targetId)
+      ? {
+          targetId: fields.targetId,
+          ...(isRevocationReason(fields.reason)
+            ? { reason: fields.reason }
+            : {}),
+        }
+      : null,
   "entry.retimed": (fields) =>
     identifier(fields.targetId) && instant(fields.effectiveAt)
       ? { targetId: fields.targetId, effectiveAt: fields.effectiveAt }
@@ -168,16 +203,29 @@ export function topicColorSet(
 export function focusStarted(
   topicId: string,
   effectiveAt: string,
+  origin?: FocusOrigin,
 ): EventDraft<"focus.started"> {
-  return { kind: "focus.started", payload: { topicId, effectiveAt } };
+  return {
+    kind: "focus.started",
+    payload:
+      origin === undefined
+        ? { topicId, effectiveAt }
+        : { topicId, effectiveAt, origin },
+  };
 }
 
 export function focusPaused(effectiveAt: string): EventDraft<"focus.paused"> {
   return { kind: "focus.paused", payload: { effectiveAt } };
 }
 
-export function entryRevoked(targetId: string): EventDraft<"entry.revoked"> {
-  return { kind: "entry.revoked", payload: { targetId } };
+export function entryRevoked(
+  targetId: string,
+  reason?: RevocationReason,
+): EventDraft<"entry.revoked"> {
+  return {
+    kind: "entry.revoked",
+    payload: reason === undefined ? { targetId } : { targetId, reason },
+  };
 }
 
 export function entryRetimed(

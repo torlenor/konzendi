@@ -14,12 +14,26 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ## [Unreleased]
 
+### Added
+
+- Recent entries now shows how long each entry lasted, and how long the running entry has
+  gone so far.
+- Konzendi now ignores a topic selection that another topic selection replaces less than
+  three seconds later, treating it as a misclick. The tracking window, quick access, and the
+  tray each briefly confirm the correction, and Entries keeps a restorable audit row for it.
+
 ### Changed
 
 - The source code and documentation now use the MIT License. The Konzendi logo keeps its
   separate rights notice.
 - GitHub releases are public prototype prereleases. Windows and macOS packages remain unsigned
   experimental artifacts until their native walkthroughs pass.
+
+### Compatibility
+
+- `focus.started` has a new optional `origin` field, and `entry.revoked` has a new optional
+  `reason` field. No existing records are changed. An older build ignores both fields, so it
+  reads a direct selection as a normal switch and an automatic correction as a normal undo.
 
 ## [0.2.0] - 2026-09-18
 

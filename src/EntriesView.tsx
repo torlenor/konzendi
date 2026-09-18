@@ -1,12 +1,41 @@
 import { useId, useState } from "react";
 import { AdjustPanel } from "./AdjustPanel";
 import { type Actions, colorOf, subjectLabel, subjectMark } from "./actions";
-import type { Subject } from "./core/fold";
+import { intervalOpenedBy, type Subject } from "./core/fold";
 import { Swatch } from "./Swatch";
-import { formatLocalInput, formatStamp, nowIso, parseLocalInput } from "./time";
+import {
+  formatDuration,
+  formatLocalInput,
+  formatStamp,
+  nowIso,
+  parseLocalInput,
+} from "./time";
 import { type Tracking, useNow } from "./useTracking";
 
 const STOP = "stop";
+
+/** The length of the interval an entry opened, or the time so far when it is still open. */
+function EntryDuration({
+  interval,
+  now,
+}: {
+  interval: { start: string; end: string | null };
+  now: number;
+}) {
+  const running = interval.end === null;
+  const ms =
+    (running ? now : Date.parse(interval.end as string)) -
+    Date.parse(interval.start);
+  const text = formatDuration(ms);
+  return (
+    <span className="duration">
+      <span aria-hidden="true">{running ? `${text} so far` : text}</span>
+      <span className="hidden">
+        {running ? `running for ${text}` : `lasted ${text}`}
+      </span>
+    </span>
+  );
+}
 
 function MissedSwitch({
   tracking,
@@ -99,67 +128,74 @@ export function EntriesView({
       <h2>Recent entries</h2>
       {entries.length === 0 && <p>No entries yet.</p>}
       <ol className="entries">
-        {entries.map((entry) => (
-          <li
-            key={entry.id}
-            className={entry.revoked ? "entry revoked" : "entry"}
-          >
-            <div className="row">
-              <span className="stamp">
-                {formatStamp(entry.effectiveAt, now)}
-              </span>
-              <span className="mark">{subjectMark(entry.subject)}</span>
-              <Swatch color={colorOf(state.topics, entry.subject)} />
-              <span className="subject">
-                {subjectLabel(state.topics, entry.subject)}
-              </span>
-              {entry.retimed && <span className="note">corrected</span>}
-              {entry.revoked ? (
-                <button
-                  type="button"
-                  className="quiet"
-                  disabled={busy}
-                  onClick={() => void actions.restore(entry.revokedBy)}
-                >
-                  restore
-                </button>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className="quiet"
-                    onClick={() =>
-                      setAdjusting((open) =>
-                        open === entry.id ? null : entry.id,
-                      )
-                    }
-                  >
-                    adjust
-                  </button>
+        {entries.map((entry) => {
+          const interval = intervalOpenedBy(state.timeline, entry.id);
+          return (
+            <li
+              key={entry.id}
+              className={entry.revoked ? "entry revoked" : "entry"}
+            >
+              <div className="row">
+                <span className="stamp">
+                  {formatStamp(entry.effectiveAt, now)}
+                </span>
+                <span className="mark">{subjectMark(entry.subject)}</span>
+                <Swatch color={colorOf(state.topics, entry.subject)} />
+                <span className="subject">
+                  {subjectLabel(state.topics, entry.subject)}
+                </span>
+                {entry.retimed && <span className="note">corrected</span>}
+                {entry.correctedAsBriefSelection && (
+                  <span className="note">ignored as a brief selection</span>
+                )}
+                {interval && <EntryDuration interval={interval} now={now} />}
+                {entry.revoked ? (
                   <button
                     type="button"
                     className="quiet"
                     disabled={busy}
-                    onClick={() => void actions.undo(entry.id)}
+                    onClick={() => void actions.restore(entry.revokedBy)}
                   >
-                    undo
+                    restore
                   </button>
-                </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="quiet"
+                      onClick={() =>
+                        setAdjusting((open) =>
+                          open === entry.id ? null : entry.id,
+                        )
+                      }
+                    >
+                      adjust
+                    </button>
+                    <button
+                      type="button"
+                      className="quiet"
+                      disabled={busy}
+                      onClick={() => void actions.undo(entry.id)}
+                    >
+                      undo
+                    </button>
+                  </>
+                )}
+              </div>
+              {adjusting === entry.id && (
+                <AdjustPanel
+                  effectiveAt={entry.effectiveAt}
+                  disabled={busy}
+                  onRetime={(effectiveAt) => {
+                    setAdjusting(null);
+                    void actions.retime(entry.id, effectiveAt);
+                  }}
+                  onClose={() => setAdjusting(null)}
+                />
               )}
-            </div>
-            {adjusting === entry.id && (
-              <AdjustPanel
-                effectiveAt={entry.effectiveAt}
-                disabled={busy}
-                onRetime={(effectiveAt) => {
-                  setAdjusting(null);
-                  void actions.retime(entry.id, effectiveAt);
-                }}
-                onClose={() => setAdjusting(null)}
-              />
-            )}
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ol>
       {adding ? (
         <MissedSwitch

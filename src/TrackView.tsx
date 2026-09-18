@@ -1,7 +1,8 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { AdjustPanel } from "./AdjustPanel";
 import {
   type Actions,
+  briefCorrectionMessage,
   colorOf,
   nameOf,
   subjectLabel,
@@ -13,6 +14,7 @@ import { topicChoices, topicForKey } from "./core/topics";
 import { quickKeyPressed, watchSuperKey } from "./quickKeys";
 import { Swatch } from "./Swatch";
 import { formatElapsedParts, formatStamp } from "./time";
+import { useCorrectionFeedback } from "./useCorrectionFeedback";
 import { type Tracking, useNow } from "./useTracking";
 
 function NewTopic({
@@ -132,6 +134,26 @@ export function TrackView({
   const othersId = useId();
   const blocked = busy || tracking.loading;
 
+  const correction = useCorrectionFeedback();
+  const pick = useCallback(
+    async (topicId: string) => {
+      const result = await actions.switchTo(topicId, state);
+      if (result.status === "corrected") {
+        correction.show(briefCorrectionMessage(state.topics, result.topicId));
+      }
+    },
+    [actions, state, correction],
+  );
+  const createAndTrack = useCallback(
+    async (name: string) => {
+      const result = await actions.createAndTrack(name, state);
+      if (result.status === "corrected") {
+        correction.show(briefCorrectionMessage(state.topics, result.topicId));
+      }
+    },
+    [actions, state, correction],
+  );
+
   // A switch is one key in the focused window: the same keys as the quick switcher.
   useEffect(() => {
     const superKey = watchSuperKey(window);
@@ -141,14 +163,14 @@ export function TrackView({
       const topic = topicForKey(state.topics, pressed);
       if (topic === null) return;
       event.preventDefault();
-      void actions.switchTo(topic.id);
+      void pick(topic.id);
     }
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("keydown", onKey);
       superKey.stop();
     };
-  }, [state.topics, actions, blocked]);
+  }, [state.topics, pick, blocked]);
 
   return (
     <>
@@ -156,7 +178,10 @@ export function TrackView({
         <section className="card">
           <p className="lead">Nothing tracked yet.</p>
           <h2>What are you working on?</h2>
-          <NewTopic disabled={busy} onCreate={actions.createAndTrack} />
+          <NewTopic
+            disabled={busy}
+            onCreate={(name) => void createAndTrack(name)}
+          />
         </section>
       ) : (
         // Remounting on a new interval replays the status bar, confirming the record.
@@ -198,6 +223,14 @@ export function TrackView({
         </section>
       )}
 
+      <p className="correction-status" role="status">
+        {correction.message !== "" && (
+          <span key={correction.generation} className="correction-text">
+            {correction.message}
+          </span>
+        )}
+      </p>
+
       <section className="picks">
         {assigned.length > 0 && (
           <ol>
@@ -208,7 +241,7 @@ export function TrackView({
                 numbered
                 running={topic.id === activeTopicId}
                 disabled={busy}
-                onPick={() => void actions.switchTo(topic.id)}
+                onPick={() => void pick(topic.id)}
               />
             ))}
           </ol>
@@ -247,7 +280,7 @@ export function TrackView({
                     numbered={false}
                     running={topic.id === activeTopicId}
                     disabled={busy}
-                    onPick={() => void actions.switchTo(topic.id)}
+                    onPick={() => void pick(topic.id)}
                   />
                 ))}
               </ul>
@@ -260,7 +293,7 @@ export function TrackView({
               disabled={busy}
               onCreate={(name) => {
                 setNaming(false);
-                void actions.createAndTrack(name);
+                void createAndTrack(name);
               }}
             />
           ) : (
@@ -296,7 +329,7 @@ export function TrackView({
           <button
             type="button"
             disabled={busy}
-            onClick={() => void actions.switchTo(resumeTopicId)}
+            onClick={() => void pick(resumeTopicId)}
           >
             ▶ Resume {nameOf(state.topics, resumeTopicId)}
           </button>

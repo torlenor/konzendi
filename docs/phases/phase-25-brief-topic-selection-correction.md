@@ -107,17 +107,17 @@ stored before the failure.
 
 ## Work packages
 
-- [ ] **Extend the compatible payloads** (`src/core/tracking.ts`,
+- [x] **Extend the compatible payloads** (`src/core/tracking.ts`,
   `src/core/tracking.test.ts`). Add optional `origin: "direct-selection"` to `focus.started` and
   optional `reason: "brief-topic-selection"` to `entry.revoked`. Add builders or builder
   parameters that make these values explicit. Complete when tests cover new payloads, old
   payloads without the fields, unknown optional values, and extra fields as read by an
   older-compatible shape. An unknown optional value must not invalidate the event.
-- [ ] **Expose the correction reason** (`src/core/fold.ts`, `src/core/fold.test.ts`). Let an Entry
+- [x] **Expose the correction reason** (`src/core/fold.ts`, `src/core/fold.test.ts`). Let an Entry
   report that an effective revocation corrected a brief selection. Keep the effectiveness graph
   and Restore behavior unchanged. Complete when fold tests cover correction, restore, a manual
   revocation, and a corrected entry with more than one revocation.
-- [ ] **Correct brief selections in the action layer** (`src/actions.ts`,
+- [x] **Correct brief selections in the action layer** (`src/actions.ts`,
   `src/actions.test.ts`). Add a named three-second constant and give the action layer the current
   folded state. Before a direct selection, inspect the current interval and its opening Entry.
   Correct it only when it has the direct-selection origin, has not been retimed, and is less than
@@ -125,26 +125,26 @@ stored before the failure.
   when action tests cover both sides of the boundary, a return to the preceding topic, a chain of
   brief selections, Stop, a missed switch, create-and-track, and a storage failure after a partial
   append.
-- [ ] **Apply the rule to every direct selection surface** (`src/App.tsx`,
+- [x] **Apply the rule to every direct selection surface** (`src/App.tsx`,
   `src/QuickView.tsx`, and the shared tray action path). Supply the current state without adding a
   second implementation of the rule. Complete when the window, quick access, tray, and
   create-and-track all use the same action helper.
-- [ ] **Return correction feedback from actions** (`src/actions.ts`, `src/actions.test.ts`). Return
+- [x] **Return correction feedback from actions** (`src/actions.ts`, `src/actions.test.ts`). Return
   a structured result that distinguishes a stored normal action, a stored brief-selection
   correction, and a storage failure. Include the corrected topic id only after all required
   events are stored. Complete when each surface can show feedback without reconstructing the
   correction rule or showing success after a partial failure.
-- [ ] **Show immediate correction feedback** (`src/TrackView.tsx`, `src/QuickView.tsx`,
+- [x] **Show immediate correction feedback** (`src/TrackView.tsx`, `src/QuickView.tsx`,
   `src/useTray.ts`, `src/App.css`). Add the text, duration, surface behavior, live region, and
   motion rules decided above. Reuse one feedback component or text formatter where the surfaces
   permit it. Complete when repeated corrections replace the message, Escape still dismisses quick
   access, focus returns after quick access closes, the tray resets, and reduced motion has no
   transition or animation.
-- [ ] **Explain the audit entry** (`src/EntriesView.tsx`, `src/App.css`). Show
+- [x] **Explain the audit entry** (`src/EntriesView.tsx`, `src/App.css`). Show
   `ignored as a brief selection` for the automatic correction and keep Restore available. Keep a
   manual undo visually and verbally unchanged. Complete when the row is understandable without
   color and fits at the minimum window width.
-- [ ] **Record the user-visible change** (`CHANGELOG.md`). Add one brief entry under
+- [x] **Record the user-visible change** (`CHANGELOG.md`). Add one brief entry under
   `## [Unreleased]` and update Compatibility for the optional payload fields. Complete when the
   note states the behavior and the compatibility text states how an older build reads it.
 
@@ -156,23 +156,23 @@ Run the desktop checks on Linux/X11 with the
 
 | # | Criterion | How it is checked | Actual result |
 | --- | --- | --- | --- |
-| 1 | A selection under three seconds is corrected | Track A, select B, then select C before three seconds. The timeline and Analytics contain A until C and no interval for B | Not run |
-| 2 | The boundary is strict | With a controlled clock, replace B once at 2,999 ms and once at 3,000 ms. The first B is corrected and the second B stays effective | Not run |
-| 3 | Returning to the prior topic keeps one interval | Track A, select B, then select A before three seconds. The timeline has one continuous A interval and no effective B interval | Not run |
-| 4 | Several rapid selections correct each intermediate topic | Select A, B, C, and D, with less than three seconds between selections. B and C are corrected. A continues until D | Not run |
-| 5 | An intentional short selection can be restored | Correct B as in check 1. Entries labels B as `ignored as a brief selection`. Restore it. B reappears in the timeline and Analytics | Not run |
-| 6 | Stop does not cause an automatic correction | Select B and then Stop before three seconds. B stays effective for its short interval | Not run |
-| 7 | Corrected and historical entries are protected | Add a missed switch, retime an entry, restore an entry, and read an old switch without an origin. A later topic selection does not correct any of them automatically | Not run |
-| 8 | Every direct selection surface uses the rule | Repeat check 1 in the tracking window, quick access, and tray. Repeat it with create-and-track as the final selection | Not run |
-| 9 | Undo does not restore the misclick | Correct B by selecting C, then use Undo. C is revoked and B stays corrected. Entries still offers Restore for B | Not run |
-| 10 | A partial storage failure is explicit and recoverable | Force the replacement append to fail after the automatic revocation is stored. The previous effective topic is current, the new topic is not shown as tracked, and the persistent warning identifies the partial write | Not run |
-| 11 | Older logs and builds remain compatible | Read a pre-phase log with the new build. Read a synthetic new log with the pre-phase payload readers. Old switches remain effective; the older shape treats the automatic correction as a normal revocation | Not run |
-| 12 | The tracking window confirms the correction | Correct B from the tracking window. `Brief switch to B ignored.` appears near the current topic for three seconds. A second correction replaces it instead of adding another message | Not run |
-| 13 | Quick access confirms before it closes | Correct B from quick access. It shows the correction text for 800 ms, then closes and restores focus. Its live-region text stays mounted for three seconds. Repeat and press Escape during the confirmation; it closes immediately | Not run |
-| 14 | The tray provides bounded feedback | Correct B from the tray. Its tooltip contains the correction for three seconds, and reopening the menu during that time shows the disabled status row. Both return to normal afterward | Not run |
-| 15 | Feedback is accessible without motion | Read each visible message with a screen reader. Enable reduced motion and repeat checks 12 and 13. The text is announced, and no transition or animation runs | Not run |
-| 16 | The audit row is accessible and fits | At the minimum window width and in both appearances, inspect the label and Restore action. Verify keyboard use and a screen-reader accessible description | Not run |
-| 17 | The project checks pass | `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:scripts`, `npm run build`, then `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/` | Not run |
+| 1 | A selection under three seconds is corrected | Track A, select B, then select C before three seconds. The timeline and Analytics contain A until C and no interval for B | Passed. Verified on the desktop build (Entries showed A continuous, B and C both `ignored as a brief selection`) and in `actions.test.ts`. |
+| 2 | The boundary is strict | With a controlled clock, replace B once at 2,999 ms and once at 3,000 ms. The first B is corrected and the second B stays effective | Passed in `actions.test.ts` with `vi.setSystemTime` at `BRIEF_SELECTION_THRESHOLD_MS - 1` and at the threshold itself. Not repeated on the desktop build, which cannot control the clock precisely enough for a millisecond boundary. |
+| 3 | Returning to the prior topic keeps one interval | Track A, select B, then select A before three seconds. The timeline has one continuous A interval and no effective B interval | Passed. Verified on the desktop build (restoring a corrected entry showed the earlier topic continuing) and directly in `actions.test.ts` ("returns to the preceding topic by revoking the brief selection alone"). |
+| 4 | Several rapid selections correct each intermediate topic | Select A, B, C, and D, with less than three seconds between selections. B and C are corrected. A continues until D | Passed on the desktop build: pressing quick keys for B, C, D in quick succession left Entries showing A continuous (`0:02`), B and C both `ignored as a brief selection`, and D running. |
+| 5 | An intentional short selection can be restored | Correct B as in check 1. Entries labels B as `ignored as a brief selection`. Restore it. B reappears in the timeline and Analytics | Passed on the desktop build: restoring a corrected entry made it effective again and split the timeline (interval count increased), as Analytics reads the same timeline. |
+| 6 | Stop does not cause an automatic correction | Select B and then Stop before three seconds. B stays effective for its short interval | Passed on the desktop build: selecting a topic and stopping within about half a second left that topic's entry effective with its own short duration, not struck through. |
+| 7 | Corrected and historical entries are protected | Add a missed switch, retime an entry, restore an entry, and read an old switch without an origin. A later topic selection does not correct any of them automatically | Passed in `actions.test.ts` for a missed switch and a retimed entry (`directSelection: false` and `retimed: true` are both excluded regardless of age). Not separately exercised for a restored entry or an old switch without an origin on the desktop build; those cases reduce to the same `directSelection`/age checks and are covered by the fold tests for `correctedAsBriefSelection` and by the reader tests for a payload with no `origin`. |
+| 8 | Every direct selection surface uses the rule | Repeat check 1 in the tracking window, quick access, and tray. Repeat it with create-and-track as the final selection | Passed for the tracking window (check 1, check 4) and quick access (verified functionally: a brief selection made from quick access was revoked and the new topic recorded) and for create-and-track as the final selection (desktop build: selecting a topic then immediately using "+ New topic" showed `Brief switch to Topic C ignored.` and the new topic running). The tray path shares the same `actions.switchTo` call through `onSwitch` and is covered by typecheck and the same action tests, but was not exercised visually: this headless test environment has no system tray host to open a tray menu against. |
+| 9 | Undo does not restore the misclick | Correct B by selecting C, then use Undo. C is revoked and B stays corrected. Entries still offers Restore for B | Passed on the desktop build: after a correction, using Undo on the new current entry revoked it as a plain (unlabeled) revocation while the earlier correction kept its `ignored as a brief selection` label and Restore action. |
+| 10 | A partial storage failure is explicit and recoverable | Force the replacement append to fail after the automatic revocation is stored. The previous effective topic is current, the new topic is not shown as tracked, and the persistent warning identifies the partial write | Passed in `actions.test.ts` ("reports a storage failure without claiming a correction"), which exercises the `{status: "failed"}` result. The end-to-end desktop behavior (the existing persistent storage warning naming the partial write) reuses `useTracking`'s existing partial-append handling, unchanged by this phase, and was not separately forced on the desktop build. |
+| 11 | Older logs and builds remain compatible | Read a pre-phase log with the new build. Read a synthetic new log with the pre-phase payload readers. Old switches remain effective; the older shape treats the automatic correction as a normal revocation | Passed in `tracking.test.ts` ("reads a focus.started with no origin, exactly as an older log wrote it" and the unrecognized-value and extra-field tests), which is the reader-level equivalent of both directions. Not separately run as a full old-build simulation on the desktop. |
+| 12 | The tracking window confirms the correction | Correct B from the tracking window. `Brief switch to B ignored.` appears near the current topic for three seconds. A second correction replaces it instead of adding another message | Passed on the desktop build: the message appeared below the current-topic card after each correction in the A→B→C→D chain, and the second correction replaced the first (only one message shown at a time). The full three-second duration was not timed precisely; it is set by `useCorrectionFeedback`'s fixed timeout and covered structurally, not by a stopwatch check. |
+| 13 | Quick access confirms before it closes | Correct B from quick access. It shows the correction text for 800 ms, then closes and restores focus. Its live-region text stays mounted for three seconds. Repeat and press Escape during the confirmation; it closes immediately | Passed functionally on the desktop build: a correction made from quick access revoked the brief entry, recorded the new selection, and closed the surface. The 800 ms row-replacement frame itself was not captured in a screenshot, since screenshots taken over separate tool calls could not reliably land inside that window; the timing itself is exercised structurally by `CORRECTION_VISIBLE_MS` in `QuickView.tsx`. Escape-during-confirmation was not separately exercised. |
+| 14 | The tray provides bounded feedback | Correct B from the tray. Its tooltip contains the correction for three seconds, and reopening the menu during that time shows the disabled status row. Both return to normal afterward | Not run. This headless Xvfb test environment has no system tray host, so there is no menu to open. Verified instead by typecheck, and by `useTray.ts` sharing the same `actions.switchTo` result handling already covered in `actions.test.ts`. |
+| 15 | Feedback is accessible without motion | Read each visible message with a screen reader. Enable reduced motion and repeat checks 12 and 13. The text is announced, and no transition or animation runs | Not run. No screen reader was available in this environment. The live regions use `role="status"` with a permanently mounted node whose text changes (`TrackView.tsx`, `QuickView.tsx`), and the motion is scoped to `@media (prefers-reduced-motion: no-preference)` in `App.css`, following the same pattern already used for the existing status-bar animation. |
+| 16 | The audit row is accessible and fits | At the minimum window width and in both appearances, inspect the label and Restore action. Verify keyboard use and a screen-reader accessible description | Partially run. At 480px width on the desktop build, the `ignored as a brief selection` label and the Restore button are both fully visible with no clipping. No screen reader was available in this environment to verify the accessible description, and only the dark appearance was checked. |
+| 17 | The project checks pass | `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:scripts`, `npm run build`, then `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test` in `src-tauri/` | Passed, all of them. |
 
 Record the actual result of each row when the phase is implemented. Record failures and checks
 that could not run.

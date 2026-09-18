@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { EventRecord } from "./events";
 import {
+  BRIEF_TOPIC_SELECTION,
+  DIRECT_SELECTION,
   entryRetimed,
   entryRevoked,
   focusPaused,
@@ -147,5 +149,104 @@ describe("readEvent", () => {
       return known !== null && isTrackingEvent(known);
     });
     expect(kinds).toEqual([false, true, true, false]);
+  });
+});
+
+describe("direct-selection origin and brief-selection correction reason", () => {
+  it("builds a focus.started with the origin only when it is given", () => {
+    expect(focusStarted("t1", "2026-09-06T09:00:00Z")).toEqual({
+      kind: "focus.started",
+      payload: { topicId: "t1", effectiveAt: "2026-09-06T09:00:00Z" },
+    });
+    expect(
+      focusStarted("t1", "2026-09-06T09:00:00Z", DIRECT_SELECTION),
+    ).toEqual({
+      kind: "focus.started",
+      payload: {
+        topicId: "t1",
+        effectiveAt: "2026-09-06T09:00:00Z",
+        origin: "direct-selection",
+      },
+    });
+  });
+
+  it("builds an entry.revoked with the reason only when it is given", () => {
+    expect(entryRevoked("e1")).toEqual({
+      kind: "entry.revoked",
+      payload: { targetId: "e1" },
+    });
+    expect(entryRevoked("e1", BRIEF_TOPIC_SELECTION)).toEqual({
+      kind: "entry.revoked",
+      payload: { targetId: "e1", reason: "brief-topic-selection" },
+    });
+  });
+
+  it("reads a focus.started with no origin, exactly as an older log wrote it", () => {
+    const known = readEvent(
+      stored("focus.started", {
+        topicId: "t1",
+        effectiveAt: "2026-09-06T09:00:00Z",
+      }),
+    );
+    expect(known).toMatchObject({
+      payload: { topicId: "t1", effectiveAt: "2026-09-06T09:00:00Z" },
+    });
+    expect(known?.payload).not.toHaveProperty("origin");
+  });
+
+  it("reads the direct-selection origin and the brief-selection reason", () => {
+    const started = readEvent(
+      stored("focus.started", {
+        topicId: "t1",
+        effectiveAt: "2026-09-06T09:00:00Z",
+        origin: "direct-selection",
+      }),
+    );
+    expect(started).toMatchObject({ payload: { origin: "direct-selection" } });
+    const revoked = readEvent(
+      stored("entry.revoked", {
+        targetId: "e1",
+        reason: "brief-topic-selection",
+      }),
+    );
+    expect(revoked).toMatchObject({
+      payload: { reason: "brief-topic-selection" },
+    });
+  });
+
+  it("drops an unrecognized origin or reason instead of invalidating the event", () => {
+    const started = readEvent(
+      stored("focus.started", {
+        topicId: "t1",
+        effectiveAt: "2026-09-06T09:00:00Z",
+        origin: "some-future-origin",
+      }),
+    );
+    expect(started).not.toBeNull();
+    expect(started?.payload).not.toHaveProperty("origin");
+
+    const revoked = readEvent(
+      stored("entry.revoked", { targetId: "e1", reason: "some-future-reason" }),
+    );
+    expect(revoked).not.toBeNull();
+    expect(revoked?.payload).not.toHaveProperty("reason");
+  });
+
+  it("ignores an extra field the way an older-compatible shape would", () => {
+    const started = readEvent(
+      stored("focus.started", {
+        topicId: "t1",
+        effectiveAt: "2026-09-06T09:00:00Z",
+        origin: "direct-selection",
+        somethingNewer: true,
+      }),
+    );
+    expect(started).toMatchObject({
+      payload: {
+        topicId: "t1",
+        effectiveAt: "2026-09-06T09:00:00Z",
+        origin: "direct-selection",
+      },
+    });
   });
 });

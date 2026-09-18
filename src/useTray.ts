@@ -2,7 +2,7 @@ import { defaultWindowIcon } from "@tauri-apps/api/app";
 import { Image } from "@tauri-apps/api/image";
 import { Menu } from "@tauri-apps/api/menu";
 import { TrayIcon } from "@tauri-apps/api/tray";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   type Actions,
   nameOf,
@@ -16,6 +16,16 @@ import type { TrackingState } from "./core/fold";
 import { quit, showMain } from "./desktop";
 import { formatStamp } from "./time";
 import type { Tracking } from "./useTracking";
+
+/** How long the tray keeps showing a brief-selection correction. */
+const TRAY_CORRECTION_MS = 3000;
+
+function trayCorrectionText(
+  topics: TrackingState["topics"],
+  topicId: string,
+): string {
+  return `Konzendi — brief switch to ${nameOf(topics, topicId)} ignored`;
+}
 
 /**
  * The tray: the second entry point, offering the same three actions as the quick
@@ -33,8 +43,10 @@ const TRAY_ID = "konzendi";
 async function buildMenu(
   state: TrackingState,
   actions: Actions,
+  onSwitch: (topicId: string) => void,
   now: number,
   storageAvailable: boolean,
+  correction: string | null,
 ): Promise<Menu> {
   const current = state.current;
   const stopped = current !== null && current.subject.type === "pause";
@@ -49,6 +61,14 @@ async function buildMenu(
 
   return Menu.new({
     items: [
+      // Shown, disabled, whenever the menu opens during the short correction window;
+      // the tray has no event for "menu is opening" to gate this more precisely.
+      ...(correction !== null
+        ? [
+            { id: "correction", text: correction, enabled: false },
+            { item: "Separator" as const },
+          ]
+        : []),
       {
         id: "state",
         text:
@@ -62,7 +82,7 @@ async function buildMenu(
         id: `switch:${topic.id}`,
         text: topic.name,
         enabled: storageAvailable,
-        action: () => void actions.switchTo(topic.id),
+        action: () => onSwitch(topic.id),
       })),
       { item: "Separator" },
       resumeTopicId !== null
@@ -70,7 +90,7 @@ async function buildMenu(
             id: "resume",
             text: `${TOPIC_MARK} Resume ${nameOf(state.topics, resumeTopicId)}`,
             enabled: storageAvailable,
-            action: () => void actions.switchTo(resumeTopicId),
+            action: () => onSwitch(resumeTopicId),
           }
         : {
             id: "stop",
@@ -127,6 +147,34 @@ const shown: { menu: Menu | null } = { menu: null };
 
 export function useTray(tracking: Tracking, actions: Actions): void {
   const [tray, setTray] = useState<TrayIcon | null>(null);
+  const [correction, setCorrection] = useState<string | null>(null);
+  const correctionTimer = useRef<number | null>(null);
+  const { state } = tracking;
+
+  const onSwitch = useCallback(
+    (topicId: string) => {
+      void actions.switchTo(topicId, state).then((result) => {
+        if (result.status !== "corrected") return;
+        setCorrection(trayCorrectionText(state.topics, result.topicId));
+        if (correctionTimer.current !== null) {
+          window.clearTimeout(correctionTimer.current);
+        }
+        correctionTimer.current = window.setTimeout(() => {
+          setCorrection(null);
+        }, TRAY_CORRECTION_MS);
+      });
+    },
+    [actions, state],
+  );
+
+  useEffect(
+    () => () => {
+      if (correctionTimer.current !== null) {
+        window.clearTimeout(correctionTimer.current);
+      }
+    },
+    [],
+  );
 
   // One icon for the life of the application; a reload reuses the one already there.
   useEffect(() => {
@@ -153,13 +201,20 @@ export function useTray(tracking: Tracking, actions: Actions): void {
     };
   }, []);
 
-  const { state, error } = tracking;
+  const { error } = tracking;
   useEffect(() => {
     if (tray === null) return;
     let live = true;
     void (async () => {
       // The start time is read once per rebuild; a menu holds no ticking clock.
-      const menu = await buildMenu(state, actions, Date.now(), error === null);
+      const menu = await buildMenu(
+        state,
+        actions,
+        onSwitch,
+        Date.now(),
+        error === null,
+        correction,
+      );
       if (!live) {
         await menu.close();
         return;
@@ -167,11 +222,12 @@ export function useTray(tracking: Tracking, actions: Actions): void {
       const replaced = shown.menu;
       shown.menu = menu;
       await tray.setMenu(menu);
+      await tray.setTooltip(correction ?? "Konzendi");
       // The replaced menu is released only once the tray holds the new one.
       if (replaced !== null) await replaced.close().catch(() => undefined);
     })();
     return () => {
       live = false;
     };
-  }, [tray, state, actions, error]);
+  }, [tray, state, actions, onSwitch, error, correction]);
 }

@@ -513,6 +513,41 @@ input {
   font-size: 0.8125rem;
 }
 
+/* ---- Brief-selection correction feedback: confirms without moving the card ---- */
+
+.correction-status {
+  min-height: 1.25rem;
+  margin: 0.5rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .correction-text {
+    display: inline-block;
+    animation:
+      correction-enter 180ms ease-out,
+      correction-exit 180ms ease-in 2820ms forwards;
+  }
+}
+@keyframes correction-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes correction-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 /* ---- Switch band: every row is the number key that fires it ---- */
 
 .picks {
@@ -702,6 +737,13 @@ input.color-hex {
   min-width: 6.5em;
   color: var(--ink-soft);
 }
+.duration {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
 .entry .subject {
   flex: 1;
   overflow-wrap: anywhere;
@@ -876,6 +918,13 @@ input.color-hex {
   padding: 0.375rem 0.25rem;
   margin: 0;
   color: var(--ink-soft);
+  font-size: 0.8125rem;
+}
+/* The brief confirmation that replaces the rows for a moment before the surface closes. */
+.quick-correction {
+  padding: 0.375rem 0.25rem;
+  margin: 0;
+  color: var(--ink);
   font-size: 0.8125rem;
 }
 .quick [role="alert"] {
