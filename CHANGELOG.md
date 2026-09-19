@@ -25,6 +25,9 @@ while it was being built, and a pushed tag is never moved. The first release is 
   Monday-to-Sunday week in a chart and a list, with the recorded time, the longest session,
   and the number of sessions of four hours or longer for each topic. A session keeps a stop
   of up to 15 minutes when the same topic continues.
+- A new **…** menu in the tracking window's bar shows where Konzendi keeps your data, with
+  **Open folder** to show that folder in your file manager and **Copy path** to copy it. The
+  menu also holds an About item with the version and the license note.
 
 ### Changed
 
@@ -36,6 +39,8 @@ while it was being built, and a pushed tag is never moved. The first release is 
   the topic names line up in every list.
 - The Day view no longer repeats the same arrow on each topic row. The row shows the topic
   color and the name.
+- The appearance and window frame settings moved out of the bar and into the new **…** menu.
+  Your saved choices are unchanged.
 
 ### Fixed
 

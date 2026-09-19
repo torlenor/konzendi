@@ -218,6 +218,15 @@ expected to be on that list.
 
 Other window managers, desktop environments, Wayland, and scaled displays were not verified.
 
+### Change after this phase — 19 September 2026
+
+[Phase 17](phase-17-storage-location-menu.md) moved the appearance select and the frame select
+out of the bar and into an overflow menu. The bar now carries the identity or `‹ Back` control,
+the Analytics, Entries, and Topics navigation, one `…` button, and the window controls. Neither
+select is placed in the bar directly any more. The bar keeps its drag region, its wrapping rule,
+and its window controls as this phase built them; the panel of the `…` button declares
+`data-tauri-drag-region="false"` so that it is read and not dragged.
+
 ## Rollout and rollback
 
 Local delivery; nothing is published. Rollback is restoring `decorations` for the tracking

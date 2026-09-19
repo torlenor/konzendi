@@ -1,6 +1,6 @@
-import { useId } from "react";
 import { closeWindowToTray, minimizeWindow } from "./desktop";
 import type { FramePreference } from "./frame";
+import { MoreMenu } from "./MoreMenu";
 import type { Appearance } from "./theme";
 
 type View = "track" | "analytics" | "entries" | "topics";
@@ -68,9 +68,6 @@ export function TitleBar({
   maximized: boolean;
   toggleMaximized: () => Promise<void>;
 }) {
-  const appearanceId = useId();
-  const frameId = useId();
-
   return (
     <header
       className="title-bar"
@@ -111,37 +108,12 @@ export function TitleBar({
         >
           Topics
         </button>
-        <label className="hidden" htmlFor={appearanceId}>
-          Appearance
-        </label>
-        <span className="preference">
-          <select
-            id={appearanceId}
-            value={appearance}
-            onChange={(event) =>
-              setAppearance(event.target.value as Appearance)
-            }
-          >
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </span>
-        <label className="hidden" htmlFor={frameId}>
-          Window frame
-        </label>
-        <span className="preference frame-preference">
-          <select
-            id={frameId}
-            value={frame}
-            onChange={(event) =>
-              void setFrame(event.target.value as FramePreference)
-            }
-          >
-            <option value="custom">App frame</option>
-            <option value="native">Desktop frame</option>
-          </select>
-        </span>
+        <MoreMenu
+          appearance={appearance}
+          setAppearance={setAppearance}
+          frame={frame}
+          setFrame={setFrame}
+        />
       </nav>
       {frame === "custom" && (
         <WindowControls

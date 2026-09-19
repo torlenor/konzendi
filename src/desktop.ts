@@ -47,6 +47,22 @@ export async function showMain(): Promise<void> {
   await invoke("show_main");
 }
 
+/**
+ * The directory the running store opened. The interface never calculates this itself: a
+ * second answer can differ from the one the store holds, and the user is told this path.
+ */
+export function storageLocation(): Promise<string> {
+  return invoke<string>("storage_location");
+}
+
+/**
+ * Ask the desktop to show the data directory in its file manager. The promise is rejected
+ * with a message for the user when no launcher opened the folder.
+ */
+export function openStorageLocation(): Promise<void> {
+  return invoke("open_storage_location");
+}
+
 /** End the application. Only the tray offers this; the close button hides the window. */
 export async function quit(): Promise<void> {
   await invoke("quit");

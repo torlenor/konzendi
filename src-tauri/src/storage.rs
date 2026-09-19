@@ -88,6 +88,12 @@ impl Store {
         Ok(Self { root, device })
     }
 
+    /// The directory this store opened. The interface shows this path to the user, so it
+    /// must come from the store and not from a second calculation of the same location.
+    pub fn root(&self) -> &Path {
+        &self.root
+    }
+
     pub fn append(&self, kind: String, payload: Value) -> io::Result<Event> {
         let _lock = Self::lock(&self.root)?;
         let event = Event {

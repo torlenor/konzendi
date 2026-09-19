@@ -70,6 +70,10 @@ Konzendi stores its data on the local computer:
 log. Close Konzendi and copy the complete data directory to make a manual backup. Never attach a
 real log to an issue or commit it to the repository.
 
+In the tracking window, the **…** button in the bar shows the directory that is in use and offers
+**Open folder** and **Copy path**. The same menu holds the appearance and window frame settings
+and an About item.
+
 ## Checks
 
 Run the frontend and script checks from the repository root:

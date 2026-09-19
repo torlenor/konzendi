@@ -1,9 +1,13 @@
+mod folder;
 mod storage;
 #[cfg(target_os = "linux")]
 mod x11;
 
 use serde_json::Value;
-use std::{path::Path, sync::OnceLock};
+use std::{
+    path::{Path, PathBuf},
+    sync::OnceLock,
+};
 use storage::{Event, Store};
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -75,6 +79,28 @@ fn read_events(app: AppHandle, store: State<'_, StoreState>) -> Result<Vec<Event
         .for_app(&app)?
         .read()
         .map_err(|error| error.to_string())
+}
+
+/// Where the store keeps the event log.
+///
+/// The interface shows this path and copies it, so it comes from the store that is open.
+/// A second calculation of the same location can give a different answer, for example
+/// after a changed `XDG_DATA_HOME`, and the user must be told the truth.
+#[tauri::command]
+fn storage_location(app: AppHandle, store: State<'_, StoreState>) -> Result<String, String> {
+    Ok(store.for_app(&app)?.root().display().to_string())
+}
+
+/// Show the data directory in the file manager of the desktop.
+///
+/// The launcher is given up to two seconds to report a failure, so the work is done away
+/// from the main thread and the window keeps drawing while it runs.
+#[tauri::command]
+async fn open_storage_location(app: AppHandle, store: State<'_, StoreState>) -> Result<(), String> {
+    let root = PathBuf::from(store.for_app(&app)?.root());
+    tauri::async_runtime::spawn_blocking(move || folder::open_directory(&root))
+        .await
+        .map_err(|error| format!("could not start the file manager: {error}"))?
 }
 
 /// The desktop integration in use, which decides whether a global shortcut can work.
@@ -223,6 +249,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             append_event,
             read_events,
+            storage_location,
+            open_storage_location,
             window_system,
             show_quick,
             hide_quick,
@@ -261,6 +289,21 @@ mod tests {
         assert_eq!(
             state.open_at(dir.path()).unwrap().read().unwrap(),
             vec![event]
+        );
+    }
+
+    /// `storage_location` reports what the store holds open, not a second calculation of
+    /// the platform data path. This test covers the reader that the command returns.
+    #[test]
+    fn the_reported_location_is_the_directory_the_store_opened() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = StoreState::default();
+        let store = state.open_at(dir.path()).unwrap();
+
+        assert_eq!(store.root(), dir.path());
+        assert_eq!(
+            store.root().display().to_string(),
+            dir.path().display().to_string()
         );
     }
 }
