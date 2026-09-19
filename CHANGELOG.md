@@ -14,6 +14,8 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-19
+
 ### Added
 
 - Adjustment panels now offer five- and ten-minute quick corrections.
@@ -53,6 +55,16 @@ while it was being built, and a pushed tag is never moved. The first release is 
 - `focus.started` has a new optional `origin` field, and `entry.revoked` has a new optional
   `reason` field. No existing records are changed. An older build ignores both fields, so it
   reads a direct selection as a normal switch and an automatic correction as a normal undo.
+
+### Known limitations
+
+- Windows and macOS packages are unsigned. Windows can show a SmartScreen warning. macOS needs
+  approval in Privacy & Security before the application can open.
+- Windows and macOS shortcut, tray, focus, and persistence behavior still needs native
+  installed-application verification before those packages are supported trial downloads.
+- On Linux, the global shortcut and quick access remain X11-only.
+- The tray menu and the topic list in **Add a missed switch** do not show topic colors.
+- There is no synchronization, import, or export. Copy the data directory for a backup.
 
 ## [0.2.0] - 2026-09-18
 
