@@ -290,7 +290,7 @@ name, and a stretch of 9 hours; then 25 more topics before the restart.
 | 10. Weak colors | Pass. `#16222a` showed the note for the dark theme (1.0:1). `#3584e4` showed the note for the light theme (2.8:1). `#eef2f3` saved without a block. The swatches kept their outline in both themes. No CSS rule applies `--topic-color` to `color`, and no text is drawn on a swatch or a segment. The theme tokens did not change, so the Phase 6 text pairs did not change. |
 | 12. Phase 9 `K` | Pass. With the tracking window closed to the tray, `k` in quick access showed it. |
 
-Observations:
+Observations, accepted on 19 September 2026 with no follow-up work:
 
 - A topic color that is almost the same as `--band` shows in the analytics only through
   its 1px `--rule` outline. That outline looks like the three-hour gridlines. The editor
@@ -299,14 +299,27 @@ Observations:
   dark after the tracking window changed to light. This behavior existed before this
   phase.
 
-Not verified:
+### Tray verification — 19 September 2026
 
-- The tray menu. Xvfb has no tray host. `src/useTray.ts` did not change, and it lists every
-  active topic except the running one, in creation order.
-- The return of keyboard focus to the interrupted window, which needs a window manager.
-- Input method composition in a real input method. The guard has a unit test only.
+The user tested the tray menu in a usual desktop session. The menu shows all topics,
+including the topics that have no quick key. This agrees with the scope of this phase:
+the tray keeps its pointer-based selection and shows text items only, without quick keys
+and without color swatches. The behavior is accepted.
+
+### Desktop checks by the user — 19 September 2026
+
+The user did these checks in a usual desktop session with a window manager:
+
+- Check 2, the remaining part. Stop, resume, rename, and a new topic keep the quick keys.
+- The return of keyboard focus to the interrupted window after a selection in quick access.
+
+Not verified, accepted on 19 September 2026:
+
+- Input method composition with a real input method. The guard has a unit test only.
 - The changed-owner confirmation in the running application. It needs a second writer
-  between the selection and the confirmation.
+  between the selection and the confirmation. No second writer of key assignments exists
+  yet, so this path is unreachable until sync is added
+  ([Phase 10](phase-10-encrypted-sync.md)).
 
 ## Rollout and rollback
 
