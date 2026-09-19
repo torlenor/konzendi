@@ -42,7 +42,7 @@ Their checkboxes track individual work items only.
 | **23** | [Statistics v2](phases/phase-23-statistics-v2.md) | Follow-up discovery for gaps, weekly-target comparisons, and possible week-to-week comparisons | 14 | Not started |
 | **24** | [Entry durations](phases/phase-24-entry-durations.md) | The duration of each entry in the entry list, next to its start, with the time so far for the running entry | 2, 4 | Done |
 | **25** | [Brief topic selection correction](phases/phase-25-brief-topic-selection-correction.md) | Automatic correction of a topic selection that another topic selection replaces in less than three seconds, with visible confirmation and a restorable audit entry | 2, 3 | Done |
-| **26** | [Fine-grained time correction](phases/phase-26-fine-grained-time-correction.md) | Five-minute and ten-minute quick adjustments for correcting typical late recordings | 2, 18 | Not started |
+| **26** | [Fine-grained time correction](phases/phase-26-fine-grained-time-correction.md) | Five-minute and ten-minute quick adjustments for correcting typical late recordings | 2, 18 | Done |
 | **27** | [Always-visible tracking reminder](phases/phase-27-always-visible-tracking-reminder.md) | Discovery of a persistent reminder that can make forgotten tracking less likely without becoming distracting | 2, 6, 8 | Not started |
 
 Phase 16 can proceed independently of Phases 5 and 14. Navigation order does not imply a dependency.

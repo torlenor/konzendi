@@ -1,10 +1,32 @@
 import { useId, useState } from "react";
 import { formatLocalInput, parseLocalInput, shiftMinutes } from "./time";
 
-const steps: [string, number][] = [
-  ["−15m", -15],
-  ["−30m", -30],
-  ["−1h", -60],
+const steps = [
+  {
+    label: "−5m",
+    minutes: -5,
+    accessibleName: "Move start 5 minutes earlier",
+  },
+  {
+    label: "−10m",
+    minutes: -10,
+    accessibleName: "Move start 10 minutes earlier",
+  },
+  {
+    label: "−15m",
+    minutes: -15,
+    accessibleName: "Move start 15 minutes earlier",
+  },
+  {
+    label: "−30m",
+    minutes: -30,
+    accessibleName: "Move start 30 minutes earlier",
+  },
+  {
+    label: "−1h",
+    minutes: -60,
+    accessibleName: "Move start 1 hour earlier",
+  },
 ];
 
 /** Back-dating an entry, offered wherever an entry is shown. */
@@ -26,11 +48,12 @@ export function AdjustPanel({
   return (
     <div className="panel">
       <div className="row">
-        {steps.map(([label, minutes]) => (
+        {steps.map(({ label, minutes, accessibleName }) => (
           <button
             key={label}
             type="button"
             className="quiet"
+            aria-label={accessibleName}
             disabled={disabled}
             onClick={() => onRetime(shiftMinutes(effectiveAt, minutes))}
           >

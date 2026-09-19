@@ -65,26 +65,26 @@ No event-schema, Rust, Tauri, or migration change is required.
 
 ## Work packages
 
-- [ ] **Add the quick actions** (`src/AdjustPanel.tsx`). Add `−5m` and `−10m` before the existing
+- [x] **Add the quick actions** (`src/AdjustPanel.tsx`). Add `−5m` and `−10m` before the existing
   actions. Keep one ordered action definition and use it for the visible labels, minute offsets,
   and accessible names. Complete when both adjustment surfaces expose all five actions and each
   action calls `onRetime` with the selected entry's effective time shifted by the exact interval.
 
-- [ ] **Keep correction behavior safe** (`src/AdjustPanel.tsx`). Reuse the existing busy and
+- [x] **Keep correction behavior safe** (`src/AdjustPanel.tsx`). Reuse the existing busy and
   failure paths. Do not add a second event type or update stored records in place. Complete when
   a successful action appends one `entry.retimed`, a failed append leaves the effective time
   unchanged and shows the persistent warning, and manual entry still works.
 
-- [ ] **Verify layout and access** (`src/App.css` only if the existing wrap is insufficient).
+- [x] **Verify layout and access** (`src/App.css` only if the existing wrap is insufficient).
   Check the current-entry panel and an Entries-row panel at the default size and at 480×320, in
   both appearance modes. Use the keyboard to reach and activate each action. Complete when the
   controls do not cause horizontal document scrolling, no control is cut off, and every action
   has the accepted accessible name.
 
-- [ ] **Record the change** (`CHANGELOG.md`). Add one brief entry under `Unreleased`. Do not
+- [x] **Record the change** (`CHANGELOG.md`). Add one brief entry under `Unreleased`. Do not
   describe the full phase.
 
-- [ ] **Run the checks.** Run `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`,
+- [x] **Run the checks.** Run `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`,
   the desktop checks below, and `git diff --check`. Record actual results and any unverified
   checks in this document.
 
@@ -92,16 +92,16 @@ No event-schema, Rust, Tauri, or migration change is required.
 
 Use a separate `XDG_DATA_HOME` for desktop checks. Do not use the owner's tracking data.
 
-| # | Criterion | How it is checked | Actual result |
+| # | Criterion | How it is checked | Actual result — 19 September 2026 |
 | --- | --- | --- | --- |
-| 1 | The current entry offers five- and ten-minute corrections | Open its adjustment panel; activate `−5m`, then repeat with `−10m`; inspect the resulting effective starts and appended events | Not run |
-| 2 | Entries offers the same actions | Open an Entries-row adjustment panel and repeat check 1 | Not run |
-| 3 | Existing correction choices remain | Verify `−15m`, `−30m`, `−1h`, and manual `Set to` correction | Not run |
-| 4 | Each quick action is exact and append-only | From a controlled timestamp, verify each offset and confirm that one `entry.retimed` line is appended without changing preceding bytes | Not run |
-| 5 | Storage failure is explicit | Force a retime append failure; the persistent warning appears and the interface does not claim that the new time was stored | Not run |
-| 6 | The expanded panel fits | Inspect both adjustment surfaces at the default size and 480×320, in light and dark appearance; confirm no horizontal document scroll and no unreachable control | Not run |
-| 7 | The actions are keyboard and screen-reader identifiable | Tab to every quick action, activate one with the keyboard, and inspect the accessible names | Not run |
-| 8 | Project checks pass | Run the commands in the final work package | Not run |
+| 1 | The current entry offers five- and ten-minute corrections | Open its adjustment panel; activate `−5m`, then repeat with `−10m`; inspect the resulting effective starts and appended events | Passed. Keyboard activation changed the controlled effective start from `13:36:16.585Z` to `13:31:16.585Z`, then to `13:21:16.585Z`. Each action appended one `entry.retimed` event. |
+| 2 | Entries offers the same actions | Open an Entries-row adjustment panel and repeat check 1 | Passed. The Entries row showed the same five ordered actions. Keyboard activation changed its effective start from `08:55:00.000Z` to `08:50:00.000Z`, then to `08:40:00.000Z`, with one append for each action. |
+| 3 | Existing correction choices remain | Verify `−15m`, `−30m`, `−1h`, and manual `Set to` correction | Passed. Keyboard activation moved the effective start by exactly 15, 30, and 60 minutes. Manual `Set to` accepted `2026-09-19 11:00` local time and stored `2026-09-19T09:00:00.000Z`. |
+| 4 | Each quick action is exact and append-only | From a controlled timestamp, verify each offset and confirm that one `entry.retimed` line is appended without changing preceding bytes | Passed. The five actions produced exact 5, 10, 15, 30, and 60-minute shifts. A byte comparison after a later five-minute action confirmed that all 3,384 preceding bytes were unchanged and one 266-byte `entry.retimed` line was appended. |
+| 5 | Storage failure is explicit | Force a retime append failure; the persistent warning appears and the interface does not claim that the new time was stored | Passed. A read-only isolated event file caused `Permission denied (os error 13)`. The persistent storage warning appeared, the folded time stayed unchanged, and the file SHA-256 stayed `c986787462030c8a35f587bf9f8af78d7b3d4404c6241510573cd476fa042ee7`. |
+| 6 | The expanded panel fits | Inspect both adjustment surfaces at the default size and 480×320, in light and dark appearance; confirm no horizontal document scroll and no unreachable control | Passed. Both surfaces were inspected at 800×600 and 480×320 in light and dark appearance. All five actions fit without horizontal document scrolling. The manual controls stayed reachable through the existing vertical content scroll. No CSS change was necessary. |
+| 7 | The actions are keyboard and screen-reader identifiable | Tab to every quick action, activate one with the keyboard, and inspect the accessible names | Passed. Each action was reached and activated with the keyboard. A rendering test confirms the five accepted accessible names in the accepted order and confirms that all five actions are disabled while storage is busy. |
+| 8 | Project checks pass | Run the commands in the final work package | Passed. TypeScript and Biome gave no diagnostics. All 140 Vitest tests, all 64 script tests, and all 10 Rust tests passed. The frontend build, Rust formatting, and Clippy with warnings denied passed. `git diff --check` passed. The script tests needed a run outside the sandbox because their temporary repositories could not run `git init` in the sandbox. |
 
 Do not mark this phase `Done` until the table contains actual results and all acceptance criteria
 pass or record an explicit accepted exception.

@@ -16,6 +16,7 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ### Added
 
+- Adjustment panels now offer five- and ten-minute quick corrections.
 - Recent entries now shows how long each entry lasted, and how long the running entry has
   gone so far.
 - Konzendi now ignores a topic selection that another topic selection replaces less than
