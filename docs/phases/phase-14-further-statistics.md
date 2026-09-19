@@ -384,9 +384,16 @@ assignment and counts the session one time.
 
 **A short session keeps a minimum height.** A block is at least six pixels high, so that a
 short session stays visible and selectable. Sessions never overlap, because a switch to
-another topic ends a session. If two minimum-height blocks touch, the chart moves the later
-block down by the necessary pixels and keeps a gap of one pixel. This is a correction of
-the drawing only. The exact times stay in the session row and in the description.
+another topic ends a session. A block that is high enough for its own duration always keeps
+its true place. Only a block that the minimum height makes higher than its duration can move
+down, and only far enough to clear the block before it, with a gap of one pixel. Such a block
+is drawn above its neighbors, because its added height can reach into the block that follows
+it. This is a correction of the drawing only. The exact times stay in the session row and in
+the description.
+
+The first rule moved each subsequent block down. Two short sessions at the start of a day
+thus moved a long session approximately 20 minutes away from its true time, which made the
+chart disagree with the session rows and with the mark for the current time.
 
 **The topic color fills the block, and no text sits on it.** A block uses the topic color
 with the theme rule outline, as the day view does. A topic that has no color uses the state
@@ -396,10 +403,11 @@ chip. The legend, the session row, the selection details, and the accessible des
 always give the full topic name. Two topics can hold the same color, therefore the color
 never identifies a topic alone.
 
-In the rest of the application, a topic without a color has no swatch beside its name. The
-chart legend is different: its mark shows the fill that the chart uses, because the legend
-connects a fill to a topic. The words "no color" say that the user did not choose that
-fill.
+In the rest of the application, a topic without a color gets an empty ring in the place of
+the swatch, so that all topic names start at the same position. A row that shows no topic,
+such as a stop or a command of quick access, keeps the same space without the ring. The chart legend is
+different: its mark shows the fill that the chart uses, because the legend connects a fill
+to a topic. The words "no color" say that the user did not choose that fill.
 
 **A qualifying session carries a filled edge.** A session of four hours or longer carries a
 solid edge, three pixels wide, on the left side of its block. The edge uses the ink token.
@@ -465,13 +473,13 @@ rules at supported window sizes, and the wording for missing records. The log me
 answers the shape of a week of real logging. The layout rules still need a check in the
 running application when implementation starts.
 
-The measurement opened two small decisions, which the owner must answer before the work
-packages are written:
+The measurement opened two small decisions. The owner answered both on 19 September 2026,
+and the [Accepted integration design](#accepted-integration-design--19-september-2026) holds
+them:
 
-- Does the head of each topic also show the longest session of the week? The four-hour count
-  is zero for each topic in the measured week.
-- Does the limit that joins two stretches stay at 15 minutes? No stop of the measured week
-  is 15 minutes or shorter.
+- The head of each topic also shows the longest session of the week, because the four-hour
+  count is zero for each topic in the measured week.
+- The limit that joins two stretches stays at 15 minutes.
 
 The owner assigned gap statistics and comparisons against the two-session weekly target
 to [Phase 23](phase-23-statistics-v2.md). Their definitions remain open there and do not
@@ -491,7 +499,7 @@ Two constraints are inherited rather than open:
 
 ## Work packages
 
-- [ ] **Weekly sessions in the core.** Add `src/core/week.ts`. It takes the folded state, the
+- [x] **Weekly sessions in the core.** Add `src/core/week.ts`. It takes the folded state, the
   two instants of the local week, and the clock. It gives the sessions of each topic, the
   elapsed length of each session, the recorded topic time of each topic, the longest session,
   the number of sessions of four hours or longer, and the marks for a running session, a
@@ -503,23 +511,23 @@ Two constraints are inherited rather than open:
   reaches four hours, a pending stop that cannot make a session reach four hours, a correction
   that changes the count of an earlier week, and an interval longer than 12 hours.
 
-- [ ] **The week view.** Add the `Day` and `Week` controls to Analytics, and add the week view
+- [x] **The week view.** Add the `Day` and `Week` controls to Analytics, and add the week view
   with its navigation, topic filter, legend, chart, session list, selection details, and the
   `Correct entries` action. Analytics opens on the day view. The two views share the anchor
   day.
 
-- [ ] **The chart.** Draw the seven columns, the cropped axis and its labels, the blocks with
+- [x] **The chart.** Draw the seven columns, the cropped axis and its labels, the blocks with
   their minimum height and the correction that keeps them apart, the clip at midnight with the
   broken lower edge, the filled edge of a qualifying session, the hatch of a possibly forgotten
   session, the topic colors, the neutral label chips, and the mark for the current time. Keep
   the height of the chart at 26rem or more, as the mock has it, because a usual day holds
   approximately 13 sessions.
 
-- [ ] **Words and accessibility.** Use the accepted wording. Give each block, row, and control
+- [x] **Words and accessibility.** Use the accepted wording. Give each block, row, and control
   a name that a screen reader reads correctly. Keep the contrast at WCAG 2.2 AA in both
   appearance modes. Do not use a state color for the qualifying edge.
 
-- [ ] **Verification and release note.** Run the checks below, record the evidence, and add a
+- [x] **Verification and release note.** Run the checks below, record the evidence, and add a
   short entry to `CHANGELOG.md`.
 
 ## Acceptance and verification
@@ -541,6 +549,107 @@ The phase becomes `Done` only when this evidence is recorded:
   reason. A figure that cannot be checked against the chart above it needs a reason to exist.
 - No figure is presented as a measurement of attention, productivity, or health, and the view
   holds none of the words that the accepted design excludes.
+
+## Implementation record — 19 September 2026
+
+The week view is implemented. What follows is the evidence the acceptance asks for.
+
+**What was built.** `src/core/week.ts` groups the folded timeline into sessions and reads the
+week. It is pure and total, and it imports neither React nor Tauri. `src/WeekView.tsx` draws
+the view, and `src/AnalyticsView.tsx` holds the `Day` and `Week` pair and the anchor day that
+both views share. `src/time.ts` gets `localWeek`, `isSameLocalWeek`, `formatWeek`, and
+`formatWeekday`. The week styles are added to `src/App.css`.
+
+**Automated checks.** `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, and
+`npm run test:scripts` pass. `src/core/week.test.ts` holds 14 tests with hand-computed values.
+They cover a stop of exactly 15 minutes that joins two stretches, a stop of 15 minutes and one
+millisecond that separates them, a switch that ends a session, a short stop between two
+different topics, a session that continues past midnight, a session that starts on Sunday and
+ends on Monday, a running session that reaches four hours, an open stop that freezes a session
+and cannot make it reach four hours, an interval of exactly 12 hours and an interval longer
+than 12 hours, the three readings of each topic, topic order, an empty week, and a correction
+that changes the count of an earlier week. The Rust code is not changed, so the `src-tauri`
+checks were not run.
+
+**Agreement with the day view.** A test sums the recorded time of the seven days of the day
+view and compares it with the sum of the topics of the week. The two agree. There is one
+recorded difference: a session that starts on Sunday keeps its full length in the earlier
+week, therefore the part after midnight is in the day view of Monday but in the week readings
+of the earlier week. This is the accepted start-week rule.
+
+**Checks in the running application.** The
+[desktop-testing skill](../../.claude/skills/desktop-testing) was used with a synthetic log on
+a private X server. The log stays outside the repository. The screenshots show:
+
+- Analytics opens on the day view, and the `Day` and `Week` pair selects the view.
+- Week navigation: `‹ Previous` to the earlier week, `This week` back to the current week, and
+  `Next ›` and `This week` not available on the current week.
+- The heading `Week so far · Sep 14–20` with the line `Through Saturday, 13:19.`, and a month
+  boundary as `Aug 31 – Sep 6`.
+- The axis `06:00–24:00` with a label each three hours, and `08:00–14:00` after a filter on one
+  topic, which shows that the filter changes the span.
+- A session that continues past midnight, drawn to midnight with a broken lower edge, and the
+  words `continues into the next day` in the row and in the details.
+- A session that starts on Sunday at 22:00. It is in the readings of the earlier week with its
+  full length of 4:00, and it is not repeated in the later week.
+- A filter on one topic, and the empty result `No sessions are recorded for this topic in this
+  week.`
+- An empty week with `No sessions are recorded for this week.` and the second line about what
+  Konzendi records.
+- A running session with `In progress`, and the same session with `On a break` after a stop.
+  The length freezes at the stop time.
+- A session of 13:15 with the hatch, the words `possibly forgotten`, the note below the list,
+  and `includes a possibly forgotten session` below the count. A session of exactly 12 hours
+  has no mark and stays in the count.
+- The filled edge on each session of four hours or longer, a topic with no color drawn in the
+  state color, and two topics that share one color separated by the legend and the names.
+- A day name in the chart opens the day view on that day, and `Correct entries` opens Entries.
+
+**Appearance and size.** The view was seen in the light and the dark appearance at 1100 pixels
+and at 480 pixels, which is the minimum width of [Phase 18](phase-18-window-content-fit.md). At
+480 pixels the chart band scrolls sideways and the rest of the view fits the width. The
+contrast of the new marks was computed against the theme tokens: the ink edge has 14.7:1
+(light) and 12.7:1 (dark) against the column surface, and the label chip uses the same pair. A
+hairline of the surface was added on the right of the ink edge, because the edge alone has
+1.8:1 against the state color that a topic without a color uses. The text and the topic colors
+use the tokens that earlier phases checked. A readability check on a physical display was not
+made.
+
+**Wording.** The view uses `recorded` for each quantity. The words `focus`, `attention`,
+`concentration`, `productivity`, and `deep work` are not in the view, and the count is named
+`4 hours or longer`.
+
+### Corrections after the first walkthrough — 19 September 2026
+
+The owner looked at the running application and found four defects. All four are corrected
+and were seen again in the window.
+
+1. **The topic filter used the desktop control chrome.** The `select` now sits in the
+   `select-field` wrapper that Entries and Topics already use, and it is as quiet as the
+   week buttons beside it.
+2. **A scroll to the end of a long view moved the whole window.** The screen-reader text
+   (`.hidden`) is positioned absolutely with no offsets, so it kept its static position. Its
+   containing block is the page, not the band that scrolls, and the page thus became
+   scrollable. The text now has `top` and `left` of zero, and the body cannot scroll. This
+   defect is older than this phase: it was present in 0.2.0 in each view that is longer than
+   the window.
+3. **The day view lanes carried a `▶` mark.** A day lane is always a topic, because
+   `sliceDay` removes a stop, so the mark was the same on each lane and carried nothing. The
+   lane label now holds the swatch and the name.
+4. **The chart moved long blocks away from their times.** See the minimum-height decision
+   above.
+
+The owner then looked at the tracking card and found two more items.
+
+5. **The `▶` mark of the card was too low.** The mark is smaller than the topic name, and a
+   shared baseline thus put it below the swatch beside it. It is now centered on the row, as
+   the swatch is: the mark, the ring, and the name have the same center. The card keeps its
+   mark, because it shows `▶` for a running interval and `■` for a stop, which the day view
+   lanes could not do.
+6. **A row that shows no topic got an empty ring.** The ring of item 2 above went to the
+   "Stopped" rows of Entries, to a stop in the card, and to the commands of quick access. A
+   row that is not a topic now keeps the space without the ring, so the labels stay in one
+   column and no row says "a topic without a color".
 
 ## Rollout and rollback
 

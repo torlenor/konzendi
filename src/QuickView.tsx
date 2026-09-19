@@ -50,6 +50,7 @@ function Row({
   hint,
   label,
   color = null,
+  blank = false,
   mark,
   trailing,
   disabled,
@@ -59,6 +60,8 @@ function Row({
   hint: string | null;
   label: string;
   color?: string | null;
+  /** True for a row that shows no topic, such as a command. */
+  blank?: boolean;
   mark?: string;
   trailing?: string;
   disabled: boolean;
@@ -77,7 +80,7 @@ function Row({
         ) : (
           <span className="key">{hint}</span>
         )}
-        <Swatch color={color} />
+        <Swatch color={color} blank={blank} />
         <span className="label">{label}</span>
         <span className="mark">{mark ?? ""}</span>
         <span className="trailing">{trailing ?? ""}</span>
@@ -384,6 +387,7 @@ function QuickSurface({
               <Row
                 hint={STOP_KEY}
                 label={`${STOP_MARK} Stop`}
+                blank
                 disabled={busy || current === null}
                 onPick={stop}
               />
@@ -395,12 +399,14 @@ function QuickSurface({
                   ? "Nothing to undo yet"
                   : `Undo last entry (${subjectLabel(state.topics, current.subject)})`
               }
+              blank
               disabled={busy || current === null}
               onPick={undo}
             />
             <Row
               hint={OPEN_MAIN_KEY.toUpperCase()}
               label="Open Konzendi"
+              blank
               disabled={busy}
               onPick={() => void openMain()}
             />

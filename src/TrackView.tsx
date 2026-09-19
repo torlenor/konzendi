@@ -188,7 +188,10 @@ export function TrackView({
         <section className="card" key={current.eventId}>
           <p className="active">
             <span className="mark">{subjectMark(current.subject)}</span>
-            <Swatch color={colorOf(state.topics, current.subject)} />
+            <Swatch
+              color={colorOf(state.topics, current.subject)}
+              blank={current.subject.type !== "topic"}
+            />
             <span className="subject">
               {subjectLabel(state.topics, current.subject)}
             </span>

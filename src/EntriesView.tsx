@@ -140,7 +140,10 @@ export function EntriesView({
                   {formatStamp(entry.effectiveAt, now)}
                 </span>
                 <span className="mark">{subjectMark(entry.subject)}</span>
-                <Swatch color={colorOf(state.topics, entry.subject)} />
+                <Swatch
+                  color={colorOf(state.topics, entry.subject)}
+                  blank={entry.subject.type !== "topic"}
+                />
                 <span className="subject">
                   {subjectLabel(state.topics, entry.subject)}
                 </span>

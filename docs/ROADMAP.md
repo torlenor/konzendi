@@ -30,7 +30,7 @@ Their checkboxes track individual work items only.
 | **11** | [Windows and macOS trial support](phases/phase-11-windows-macos.md) | Public experimental Windows 11 x64 and macOS 15 Apple-silicon builds, without weakening Linux support | 7 | In progress |
 | **12** | [Logo design](phases/phase-12-logo-design.md) | A documented, accessible Konzendi logo system for the tray, application icons, favicon, and README | 6 | Done |
 | **13** | [Stop replaces pause](phases/phase-13-stop-replaces-pause.md) | One state for not working, named Stop on every surface, and analytics that measure topics only | 2, 4 | Done |
-| **14** | [Further statistics](phases/phase-14-further-statistics.md) | Session statistics and weekly readings, chosen against real logged data | 4, 5 | In progress |
+| **14** | [Further statistics](phases/phase-14-further-statistics.md) | Session statistics and weekly readings, chosen against real logged data | 4, 5 | Done |
 | **15** | [Stable topic numbering](phases/phase-15-stable-topic-numbering.md) | One numbering in both surfaces: the window lists every topic, marking the running one | 2, 3 | Done |
 | **16** | [Stable topic quick keys and topic colors](phases/phase-16-topic-quick-keys.md) | Optional topic keys 1–9 shared by both views, compact sparse assignments, access to unassigned topics, and an optional topic color shown on every topic surface | 2, 3 | Done |
 | **17** | [Storage location in an overflow menu](phases/phase-17-storage-location-menu.md) | A `…` menu in the bar that opens the data directory in the file manager, and holds the appearance override and About | 0, 6 | Not started |

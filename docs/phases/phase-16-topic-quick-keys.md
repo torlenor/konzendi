@@ -101,11 +101,11 @@ already consume stored-event broadcasts, so they can fold the same mapping after
 | Assignment | Each topic has zero or one color. Colors are not exclusive: two topics can hold the same color. Topics has a labeled `Color` control with a color picker, a hexadecimal field, eight suggested swatches, `None`, and Save. |
 | Stored value | A `#rrggbb` string, written in lower case. There is no shorthand form, color name, functional notation, or alpha. `null` means no color. |
 | Clear | Saving `None` removes only that topic's color. Saving the current value writes nothing. |
-| Initial state | Existing logs and new topics start without a color. No automatic allocation and no log migration. A topic without a color keeps today's appearance: no swatch, and the state color in its lane. |
+| Initial state | Existing logs and new topics start without a color. No automatic allocation and no log migration. A topic without a color keeps today's appearance: no swatch, and the state color in its lane. (Changed on 19 September 2026 in [Phase 14](phase-14-further-statistics.md): a topic without a color now gets an empty ring in the place of the swatch, so that all topic names start at the same position. A row that shows no topic, such as a stop or a command, keeps the space without the ring.) |
 | Archive and restore | Archiving keeps the color, because a color is not a limited resource. Restoring shows it again. The color control is offered for active topics only. |
 | Where shown | A round swatch before the topic name in the tracking window switch list and running state, the quick switcher numbered rows and Other topics, Topics, the entry list rows, and the analytics lane labels. The analytics lane segments use the color as their fill. |
 | Where not shown | The tray menu holds text items only, and the entry list's topic `select` holds plain options. Both show names without a swatch. Record these two limits in README. |
-| Never color alone | Keys, marks, names, and wording keep their current job. A color adds a signal and replaces none. The running lane keeps `▶` and the word "running". |
+| Never color alone | Keys, marks, names, and wording keep their current job. A color adds a signal and replaces none. The running row of the tracking window keeps `▶` and the word "running". (The day view lanes lost their `▶` on 19 September 2026: a lane is always a topic, thus the mark was the same on each lane. The topic name tells the lanes apart.) |
 | Visibility | Every swatch and every colored segment carries a 1px `--rule` outline, so a color close to the surface stays visible in light and dark. Never paint a topic name or any other text in the topic color, and never paint text on top of a topic color. |
 | Weak contrast | The editor measures the chosen color against the light and the dark surface. Below 3:1 against either surface, it shows which mode is affected. This is a note, not a block: the user can save the color. |
 | Forgotten stretch | The hatch that marks a stretch nothing ended stays above the topic color and keeps its meaning. Its contrast is checked against the chosen color, not against the state color. |
@@ -202,7 +202,8 @@ Use synthetic topics and a temporary data directory; do not record personal logs
 8. Give A a color with the picker. Its swatch appears in Topics, the tracking window, the
    quick switcher, the entry list, and the analytics label, and the lane segments take the
    color. Restart the application; the color is the same. Clear it; A returns to the
-   state color and shows no swatch, and other topics keep theirs.
+   state color and shows an empty ring in the place of the swatch, and other topics keep
+   theirs.
 9. Give B the same color as A. Both keep it, and the keys and names still tell them apart.
    Archive B and restore it; its color survives. A forgotten stretch stays readable above
    a topic color.

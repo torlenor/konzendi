@@ -21,6 +21,10 @@ while it was being built, and a pushed tag is never moved. The first release is 
 - Konzendi now ignores a topic selection that another topic selection replaces less than
   three seconds later, treating it as a misclick. The tracking window, quick access, and the
   tray each briefly confirm the correction, and Entries keeps a restorable audit row for it.
+- Analytics has a new Week view beside the Day timeline. It shows the sessions of a
+  Monday-to-Sunday week in a chart and a list, with the recorded time, the longest session,
+  and the number of sessions of four hours or longer for each topic. A session keeps a stop
+  of up to 15 minutes when the same topic continues.
 
 ### Changed
 
@@ -28,6 +32,15 @@ while it was being built, and a pushed tag is never moved. The first release is 
   separate rights notice.
 - GitHub releases are public prototype prereleases. Windows and macOS packages remain unsigned
   experimental artifacts until their native walkthroughs pass.
+- A topic without a color now shows an empty ring where a colored topic shows its swatch, so
+  the topic names line up in every list.
+- The Day view no longer repeats the same arrow on each topic row. The row shows the topic
+  color and the name.
+
+### Fixed
+
+- Scrolling to the end of a long view no longer moves the whole window, which could push the
+  title bar out of sight and leave an empty area below the content.
 
 ### Compatibility
 

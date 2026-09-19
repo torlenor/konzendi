@@ -80,7 +80,10 @@ function App() {
           {tracking.loading ? (
             <p>Reading the stored log…</p>
           ) : view === "analytics" ? (
-            <AnalyticsView tracking={tracking} />
+            <AnalyticsView
+              tracking={tracking}
+              openEntries={() => setView("entries")}
+            />
           ) : view === "entries" ? (
             <EntriesView tracking={tracking} actions={actions} />
           ) : view === "topics" ? (

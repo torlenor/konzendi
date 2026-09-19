@@ -88,6 +88,9 @@ body {
   font-size: 0.9375rem;
   height: 100vh;
   box-sizing: border-box;
+  /* Only the content band scrolls. The page must not scroll the window away. */
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 #root {
   height: 100%;
@@ -443,9 +446,17 @@ input {
   background: var(--ground);
   box-sizing: border-box;
 }
-/* Text for a screen reader only: a form label, or a description too long to draw. */
+/*
+ * Text for a screen reader only: a form label, or a description too long to draw.
+ * The offsets are necessary. Without them the box keeps its static position, and in a
+ * long view that position is below the window. Its containing block is the page, not the
+ * band that scrolls, so the page itself became scrollable and a scroll to the end of a
+ * view moved the whole window, title bar included.
+ */
 .hidden {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
@@ -504,8 +515,11 @@ input {
 .mark {
   color: var(--ink-soft);
 }
+/* The mark is smaller than the topic name. A shared baseline thus puts it too low, so it
+   is centered on the row, as the swatch beside it is. */
 .active .mark {
   color: var(--state);
+  align-self: center;
 }
 .since {
   margin: 0.125rem 0 0;
@@ -656,6 +670,17 @@ button.disclosure:hover:enabled {
 .swatch-preview {
   width: 1.5rem;
   height: 1.5rem;
+}
+/* No color: an empty ring, which holds the place of a swatch and keeps the names in
+   one column. The ring is solid, because dashes are not legible at this size. */
+.swatch.empty {
+  background: transparent;
+  border-color: var(--edge);
+}
+/* A row that shows no topic keeps the space only, because a ring would say "no color". */
+.swatch.blank {
+  background: transparent;
+  border-color: transparent;
 }
 .swatch-preview.empty {
   background: transparent;
@@ -948,8 +973,8 @@ input.color-hex {
 /* ---- Analytics view: one lane per subject, so position carries identity ----
  *
  * A lane is a row first. A topic with a color fills its segments with that color;
- * a topic without one keeps the state color, live. The label keeps the mark and the
- * name, so the color is never the only way to tell lanes apart. A stretch that nothing
+ * a topic without one keeps the state color, live. The label keeps the topic name, so
+ * the color is never the only way to tell lanes apart. A stretch that nothing
  * ended is hatched above either fill, never trimmed. A stop is drawn as absence.
  */
 
@@ -987,10 +1012,6 @@ input.color-hex {
   align-items: baseline;
   overflow-wrap: anywhere;
   font-size: 0.875rem;
-}
-.lane .mark {
-  color: var(--state);
-  font-size: 0.75rem;
 }
 .lane-total {
   font-family: var(--mono);
@@ -1085,5 +1106,279 @@ input.color-hex {
   display: block;
   font-family: var(--sans);
   font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+/* ---- Week band: the day view's track, turned on its side ---- */
+
+/*
+ * One column for each day of the week, and one block for each session. A block carries
+ * the topic color in a rule outline, and never text on the color: a name or a duration
+ * sits on a neutral chip. A block that is four hours or longer carries a filled ink edge,
+ * and a block that continues past midnight has a broken lower edge. Both are said in
+ * words as well, because a mark is never the only signal.
+ */
+
+fieldset.views {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+/* The filter stands beside the quiet week buttons, so its control stays as quiet. */
+.filter .select-field select {
+  padding: 0.3125rem 1.75rem 0.3125rem 0.75rem;
+  font-size: 0.8125rem;
+  background: transparent;
+  color: var(--ink-soft);
+}
+.filter .select-field select:hover {
+  color: var(--ink);
+}
+.filter .select-field::after {
+  right: 0.75rem;
+}
+.figure {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.legend {
+  display: flex;
+  gap: 0.25rem 1.25rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+/* A topic with no color has no swatch elsewhere. The legend shows the fill the chart
+   uses, because it connects a fill to a topic, and the words say there is no color. */
+.legend .swatch:not([data-colored="true"]) {
+  background: var(--state);
+}
+.sample {
+  display: inline-block;
+  width: 1rem;
+  height: 0.75rem;
+  flex: none;
+  background: var(--band);
+  outline: 1px solid var(--rule);
+}
+.sample.long {
+  border-left: 3px solid var(--ink);
+}
+.sample.crosses {
+  border-bottom: 2px dashed var(--ink);
+}
+
+/* At a narrow width the chart keeps its columns and the band scrolls sideways. */
+.chart-scroll {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+.chart {
+  min-width: 34rem;
+  display: grid;
+  grid-template-columns: 2.75rem repeat(7, minmax(0, 1fr));
+}
+button.day-name {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 0;
+  border-radius: 0;
+  padding: 0 0 0.375rem;
+  font-weight: 400;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+button.day-name:hover:enabled {
+  color: var(--ink);
+  text-decoration: underline;
+}
+button.day-name[data-today="true"] {
+  color: var(--ink);
+  font-weight: 500;
+}
+.hours,
+.day-column {
+  height: 26rem;
+  position: relative;
+}
+.hours span {
+  position: absolute;
+  right: 0.5rem;
+  translate: 0 -50%;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.6875rem;
+  color: var(--ink-faint);
+}
+/* The hour lines are drawn in the column rather than over it, as the day view does. */
+.day-column {
+  background-color: var(--band);
+  background-image: linear-gradient(
+    to bottom,
+    var(--rule) 0 1px,
+    transparent 1px 100%
+  );
+  background-repeat: repeat-y;
+  border: 1px solid var(--rule);
+  border-left-width: 0;
+}
+.day-column[data-first="true"] {
+  border-left-width: 1px;
+}
+.day-column[data-future="true"] {
+  background-color: var(--ground);
+}
+button.session {
+  position: absolute;
+  left: 6%;
+  width: 88%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: 1px solid var(--rule);
+  background: var(--state);
+  color: var(--ink);
+  font: 0.6875rem / 1.2 var(--sans);
+  overflow: hidden;
+  text-align: left;
+}
+.analytics {
+  --state: var(--live);
+}
+button.session[data-colored="true"] {
+  background: var(--topic-color);
+}
+/* A session too short to draw is the only block that can cover another one, so it is
+   drawn above it. Without this it could be hidden by the session that follows it. */
+button.session[data-short="true"] {
+  z-index: 1;
+}
+/* Four hours or longer. The ink token keeps the mark out of the state set. */
+button.session[data-long="true"] {
+  border-left: 3px solid var(--ink);
+}
+/* A hairline of the surface keeps the edge visible on a dark fill as well. */
+button.session[data-long="true"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: var(--band);
+}
+button.session[data-crosses="true"] {
+  border-bottom: 2px dashed var(--ink);
+}
+button.session[data-forgotten="true"] {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 3px,
+    var(--band) 3px 6px
+  );
+}
+button.session[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 2px var(--band),
+    0 0 0 4px var(--ink);
+}
+/* No text sits on a topic color, so a label takes a neutral chip of its own. */
+.session .chip {
+  display: inline-block;
+  max-width: 94%;
+  margin: 2px 0 0 2px;
+  padding: 0 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--band);
+  color: var(--ink);
+}
+.session .chip.figure {
+  display: block;
+  width: fit-content;
+}
+.mark-now-row {
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  border-top: 1px solid var(--ink);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ---- One topic of the week: the readings of the day view, then its sessions ---- */
+
+.topic-week {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+  margin-top: 1.25rem;
+}
+.topic-week h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.topic-week .readings {
+  margin: 0 0 0.5rem;
+  padding-top: 0;
+  border-top: 0;
+  gap: 0.25rem 1.75rem;
+}
+.topic-week .readings div {
+  min-width: 6rem;
+}
+.sessions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sessions .pick {
+  align-items: baseline;
+  padding: 0.375rem 0.25rem;
+}
+.sessions .stamp {
+  min-width: 11em;
+}
+.sessions .subject {
+  flex: 1;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+.sessions .duration {
+  text-align: right;
+}
+.sessions .pick[aria-pressed="true"] {
+  background: var(--band);
+  box-shadow: inset 3px 0 0 var(--ink);
+}
+.no-sessions {
+  display: grid;
+  gap: 0.375rem;
+  padding: 2.5rem 0;
+  text-align: center;
   color: var(--ink-soft);
 }

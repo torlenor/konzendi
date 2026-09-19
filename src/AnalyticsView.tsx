@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { colorOf, subjectLabel, subjectMark } from "./actions";
+import { colorOf, subjectLabel } from "./actions";
 import { type DaySegment, sliceDay } from "./core/day";
 import { Swatch } from "./Swatch";
 import {
@@ -13,6 +13,7 @@ import {
 } from "./time";
 import { topicColorStyle } from "./topicColor";
 import { type Tracking, useNow } from "./useTracking";
+import { WeekView } from "./WeekView";
 
 /** Every third hour is labeled; the axis runs the whole day so two days compare. */
 const TICKS = [0, 3, 6, 9, 12, 15, 18, 21, 24];
@@ -34,9 +35,17 @@ function describe(segment: DaySegment, name: string): string {
   return `${parts.join(", ")}.`;
 }
 
-export function AnalyticsView({ tracking }: { tracking: Tracking }) {
-  const now = useNow();
-  const [anchor, setAnchor] = useState(nowIso);
+function DayTimeline({
+  tracking,
+  anchor,
+  setAnchor,
+  now,
+}: {
+  tracking: Tracking;
+  anchor: string;
+  setAnchor: (iso: string) => void;
+  now: number;
+}) {
   const { start, end } = useMemo(() => localDay(anchor), [anchor]);
   const day = useMemo(
     () => sliceDay(tracking.state, start, end, now),
@@ -51,8 +60,8 @@ export function AnalyticsView({ tracking }: { tracking: Tracking }) {
   const { readings } = day;
 
   return (
-    <section className="analytics">
-      <div className="analytics-nav">
+    <>
+      <nav className="analytics-nav" aria-label="Day">
         <button
           type="button"
           className="quiet"
@@ -77,7 +86,7 @@ export function AnalyticsView({ tracking }: { tracking: Tracking }) {
         >
           Today
         </button>
-      </div>
+      </nav>
 
       {day.lanes.length === 0 ? (
         <p className="note">No topic is recorded on this day.</p>
@@ -100,9 +109,6 @@ export function AnalyticsView({ tracking }: { tracking: Tracking }) {
                   style={topicColorStyle(color)}
                 >
                   <span className="lane-label">
-                    <span className="mark" aria-hidden="true">
-                      {subjectMark(lane.subject)}
-                    </span>
                     <Swatch color={color} />
                     {name}
                   </span>
@@ -192,6 +198,68 @@ export function AnalyticsView({ tracking }: { tracking: Tracking }) {
             </p>
           )}
         </>
+      )}
+    </>
+  );
+}
+
+/**
+ * Analytics holds two views of the same log. It opens on the day timeline, and the two
+ * views share one anchor day, so a change of view never loses the period on screen.
+ * Which view was open last is not stored.
+ */
+export function AnalyticsView({
+  tracking,
+  openEntries,
+}: {
+  tracking: Tracking;
+  openEntries: () => void;
+}) {
+  const now = useNow();
+  const [anchor, setAnchor] = useState(nowIso);
+  const [view, setView] = useState<"day" | "week">("day");
+
+  return (
+    <section className="analytics">
+      <fieldset className="views">
+        <legend className="hidden">Period</legend>
+        <button
+          type="button"
+          className="quiet"
+          aria-pressed={view === "day"}
+          onClick={() => setView("day")}
+        >
+          Day
+        </button>
+        <button
+          type="button"
+          className="quiet"
+          aria-pressed={view === "week"}
+          onClick={() => setView("week")}
+        >
+          Week
+        </button>
+      </fieldset>
+
+      {view === "day" ? (
+        <DayTimeline
+          tracking={tracking}
+          anchor={anchor}
+          setAnchor={setAnchor}
+          now={now}
+        />
+      ) : (
+        <WeekView
+          tracking={tracking}
+          anchor={anchor}
+          setAnchor={setAnchor}
+          now={now}
+          openDay={(iso) => {
+            setAnchor(iso);
+            setView("day");
+          }}
+          openEntries={openEntries}
+        />
       )}
     </section>
   );

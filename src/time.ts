@@ -111,3 +111,50 @@ export function formatDuration(ms: number): string {
   const minutes = Math.round(seconds / 60);
   return `${Math.floor(minutes / 60)}:${pad(minutes % 60)}`;
 }
+
+/** The instants the local Monday-to-Sunday week holding `iso` begins and ends. */
+export function localWeek(iso: string): { start: string; end: string } {
+  const time = new Date(iso);
+  // getDay() counts from Sunday, so Monday becomes the first day of the week here.
+  const weekday = (time.getDay() + 6) % 7;
+  const start = new Date(
+    time.getFullYear(),
+    time.getMonth(),
+    time.getDate() - weekday,
+  );
+  // Built from calendar parts, so a week that gains or loses an hour keeps its length.
+  const end = new Date(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate() + 7,
+  );
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
+export function isSameLocalWeek(iso: string, other: number | string): boolean {
+  return (
+    localWeek(iso).start === localWeek(new Date(other).toISOString()).start
+  );
+}
+
+/** The days a week heading names, for example `Sep 14–20` or `Sep 28 – Oct 4`. */
+export function formatWeek(startIso: string): string {
+  const start = new Date(startIso);
+  const end = new Date(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate() + 6,
+  );
+  const month = (date: Date) =>
+    date.toLocaleDateString(undefined, { month: "short" });
+  return month(start) === month(end)
+    ? `${month(start)} ${start.getDate()}–${end.getDate()}`
+    : `${month(start)} ${start.getDate()} – ${month(end)} ${end.getDate()}`;
+}
+
+/** The short name of a weekday, for example `Mon`. */
+export function formatWeekday(iso: string, long = false): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    weekday: long ? "long" : "short",
+  });
+}
