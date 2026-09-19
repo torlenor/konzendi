@@ -60,6 +60,14 @@ week, would help. Session duration and the gaps between sessions therefore guide
 Four hours and twice per week are personal targets to investigate, not validated thresholds
 for concentration or productivity. The log cannot measure the effort needed to resume thought.
 
+On 19 September 2026, the owner reported a qualitative finding from the Phase 5 use period: the
+past-day timeline graphs showed no continuous recorded stretch longer than two hours on
+important projects. Seeing this pattern motivated the owner to change how work time is
+organized. The owner reviewed Analytics approximately three times during the week and identified
+the graph, not the totals or switch count, as the useful part. The Phase 5 report did not include
+the full daily counts and ratings from its accepted protocol, so this finding supports the
+choice of reading but does not establish the typical shape or completeness of the log.
+
 Accepted session rule:
 
 - A stop of at most 15 minutes followed by the same topic remains part of one session.
@@ -89,10 +97,11 @@ Accepted session rule:
 
 ### Accepted weekly overview
 
-The owner accepted a weekly overview that shows each topic's sessions, their lengths,
-and how many reached four hours. Show short sessions as well as qualifying sessions so
-the owner can see how recorded time is split. Session length uses the elapsed window
-defined above, including qualifying short stops.
+The owner accepted a weekly overview that shows each topic's total recorded time, sessions,
+session lengths, and how many sessions reached four hours. Show short sessions as well as
+qualifying sessions so the owner can see how recorded time is split. Session length uses the
+elapsed window defined above, including qualifying short stops. Topic totals use recorded topic
+time and exclude stops, consistent with the existing day view.
 
 While the topic is running, show the current session length with "In progress". Include
 the session in the weekly qualifying count as soon as its elapsed length reaches four
@@ -119,6 +128,11 @@ counting logic simple. Corrections update the warnings and readings from the cor
 Label the current week "Week so far". The owner accepted the session list and four-hour
 count as the first version, without gap statistics or a comparison against the two-session
 weekly target. This keeps the first view focused on the recorded sessions.
+
+The first version lets the owner navigate between individual weeks. This is sufficient for the
+initial question of whether the distribution of recorded time and extended sessions changes.
+It does not show a direct comparison, a delta, or two weeks side by side. Those presentations
+are later candidates in [Phase 23](phase-23-statistics-v2.md).
 
 The exact layout and the handling of missing records remain open.
 
@@ -186,7 +200,9 @@ Open decisions:
   short blocks at supported window sizes. Confirm the qualifying-session symbol.
 - Decide the wording for missing records. The view must not imply that an empty period
   proves no work occurred.
-- What evidence from Phase 5 supports the selected readings?
+- What additional Phase 5 evidence describes the typical shape and completeness of the log?
+  The qualitative 19 September finding supports showing sessions in a weekly overview, but it
+  does not answer this quantitative question.
 
 The owner assigned gap statistics and comparisons against the two-session weekly target
 to [Phase 23](phase-23-statistics-v2.md). Their definitions remain open there and do not

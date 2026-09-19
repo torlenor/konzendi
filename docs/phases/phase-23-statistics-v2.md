@@ -20,6 +20,9 @@ write production code until the owner accepts the definitions and the implementa
   sessions per Monday-to-Sunday week? Decide the wording for the current week, an empty
   week, and a past week with incomplete logging. A missing record cannot establish that
   no session occurred.
+- Does a direct week-to-week comparison help after the owner uses the Phase 14 week
+  navigation? Investigate a side-by-side view and deltas between weeks. Do not add either
+  presentation only because it is technically possible.
 - Which readings earn space in the view? Review synthetic examples and redacted owner
   observations from use of Phase 14. Record whether each reading answers a useful question.
 - How do corrections, running sessions, short stops, week boundaries, and possibly
@@ -30,9 +33,10 @@ including a decision to defer or remove a candidate if it adds no useful informa
 
 ## Outcome and scope
 
-Follow-up statistics for gaps between sessions and comparisons against a weekly session
-target. Phase 14 provides the weekly session list, elapsed lengths, and four-hour count.
-This phase investigates additions to that view; it does not redefine its session rules.
+Follow-up statistics for gaps between sessions, comparisons against a weekly session target,
+and possible direct comparisons between weeks. Phase 14 provides topic totals, the weekly
+session list, elapsed lengths, and the four-hour count. This phase investigates additions to
+that view; it does not redefine its session rules.
 
 Achievements and streaks belong to [Phase 22](phase-22-achievements.md). Scores, effort
 levels, comparisons between users, exports, and new tracking data are outside this phase.
@@ -49,6 +53,10 @@ topic would help. The sessions do not need to be spread out. There is no gap tar
 The owner reports that long gaps make it difficult to resume thought, but the log does
 not measure that effort. Gap statistics and target comparisons remain design candidates;
 the phase assignment does not establish their usefulness or accept a particular display.
+
+On 19 September 2026, the owner decided that navigating between individual weeks is sufficient
+for the first overview. A later side-by-side view or deltas between weeks could be useful, but
+neither presentation is accepted. Review actual use of the first overview before deciding.
 
 No evidence from use of the Phase 14 overview is recorded yet.
 

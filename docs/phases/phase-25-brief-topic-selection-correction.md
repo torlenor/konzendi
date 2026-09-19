@@ -1,6 +1,6 @@
 # Phase 25 — Brief topic selection correction
 
-[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 24](phase-24-entry-durations.md) · next: none
+[Roadmap](../ROADMAP.md#delivery-phases) · prev: [Phase 24](phase-24-entry-durations.md) · next: [Phase 26](phase-26-fine-grained-time-correction.md)
 
 **Depends on:** [Phase 2](phase-2-tracking-implementation.md), [Phase 3](phase-3-quick-access.md)  
 **Effort:** M  

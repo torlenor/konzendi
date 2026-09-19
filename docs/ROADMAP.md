@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last updated:** 18 September 2026
+**Last updated:** 19 September 2026
 
 ## Vision
 
@@ -21,7 +21,7 @@ Their checkboxes track individual work items only.
 | **2** | [Topic tracking implementation](phases/phase-2-tracking-implementation.md) | The tracking loop: topics, switching, pauses, undo, and correction, persisted as events | 0, 1 | Done |
 | **3** | [Quick access](phases/phase-3-quick-access.md) | Global shortcut and tray entry points for logging without leaving the current application | 2 | Done |
 | **4** | [Timeline and first analytics](phases/phase-4-timeline-analytics.md) | A day timeline of topics, plus the smallest useful readings | 2 | Done |
-| **5** | [Validation trial](phases/phase-5-validation-trial.md) | A recorded answer to whether switches get logged and whether the result is useful | 3, 4 | In progress |
+| **5** | [Validation trial](phases/phase-5-validation-trial.md) | A recorded answer to whether switches get logged and whether the result is useful | 3, 4 | Done |
 | **6** | [Application theme](phases/phase-6-application-theme.md) | A deliberate visual theme for the application, expressed as a documented token set | 2 | Done |
 | **7** | [Releases and CI/CD](phases/phase-7-releases-ci-cd.md) | Local version/changelog helpers and tag-triggered public prototype releases, with checksums, manual draft publication, and recovery | 2 | Done |
 | **8** | [Application window frame](phases/phase-8-window-frame.md) | The application's own title bar and window edge, absorbing the header and carrying the window commands, with a fallback to the desktop's decorations | 3, 6 | Done |
@@ -39,16 +39,22 @@ Their checkboxes track individual work items only.
 | **20** | [Add topics in Topics](phases/phase-20-add-topics-in-topics.md) | A form in Topics that adds a topic without starting to track it | 2, 16 | Done |
 | **21** | [Game detection on Windows](phases/phase-21-game-detection.md) | An experimental, opt-in game tracker on Windows that detects the game the user plays, similar to Discord, and tracks it as a topic | 2, 11 | Not started |
 | **22** | [Achievements](phases/phase-22-achievements.md) | Achievement and streak recognition, subject to discovery of rules and presentation | 14 | Not started |
-| **23** | [Statistics v2](phases/phase-23-statistics-v2.md) | Follow-up discovery for gaps between sessions and comparisons against the weekly session target | 14 | Not started |
+| **23** | [Statistics v2](phases/phase-23-statistics-v2.md) | Follow-up discovery for gaps, weekly-target comparisons, and possible week-to-week comparisons | 14 | Not started |
 | **24** | [Entry durations](phases/phase-24-entry-durations.md) | The duration of each entry in the entry list, next to its start, with the time so far for the running entry | 2, 4 | Done |
 | **25** | [Brief topic selection correction](phases/phase-25-brief-topic-selection-correction.md) | Automatic correction of a topic selection that another topic selection replaces in less than three seconds, with visible confirmation and a restorable audit entry | 2, 3 | Done |
+| **26** | [Fine-grained time correction](phases/phase-26-fine-grained-time-correction.md) | Five-minute and ten-minute quick adjustments for correcting typical late recordings | 2, 18 | Not started |
+| **27** | [Always-visible tracking reminder](phases/phase-27-always-visible-tracking-reminder.md) | Discovery of a persistent reminder that can make forgotten tracking less likely without becoming distracting | 2, 6, 8 | Not started |
 
 Phase 16 can proceed independently of Phases 5 and 14. Navigation order does not imply a dependency.
 
 Phases 22 and 23 each depend on Phase 14, but not on each other. Phase 14 delivers the weekly
-session list and four-hour count; recognition and additional comparisons are separate work.
+topic totals, session list, and four-hour count; recognition and additional comparisons are
+separate work.
 
 Phase 21 discovery can use disposable Windows spikes before Phase 11 is done. Its implementation
 needs the Windows build from Phase 11.
+
+Phase 26 can proceed independently of Phases 14 and 27. Phase 27 starts with discovery; its
+navigation position does not make Phase 26 an implementation dependency.
 
 A phase becomes `Done` only when its acceptance criteria are verified.

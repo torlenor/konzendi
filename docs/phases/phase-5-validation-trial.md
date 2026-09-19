@@ -7,8 +7,9 @@
 **Complexity:** L  
 **Readiness:** Implementation-ready
 
-> **Owner pilot scheduled.** The accepted protocol starts with normal work on the morning of
-> 14 September 2026. Do not interpret an incomplete pilot as validation evidence.
+> **Owner pilot complete with an accepted protocol exception.** The five-day use period produced
+> a useful qualitative result. It did not establish the planned numeric reliability and friction
+> gates and does not authorize a small-group trial.
 
 ## Investigation gate
 
@@ -166,34 +167,94 @@ thresholds.
 Report all underlying counts and daily ratings with the decision. Do not report only the 80%
 comparison or the median.
 
+### Owner use outcome — 19 September 2026
+
+The owner did normal computer work and used Konzendi for the whole day on each of the five
+planned workdays, from 14 through 18 September 2026. The owner used v0.1.1 from Monday through
+Thursday and changed to the latest available development build on Friday. The exact Friday
+revision is not recorded. The build change and the incomplete daily records are deviations from
+the accepted protocol.
+
+The owner reconstructed this aggregate evidence on 19 September:
+
+| Observation | Recorded outcome |
+| --- | --- |
+| Available days | Five of five; normal computer work and whole-day Konzendi use on each day |
+| Late recordings | Approximately one or two each day, or approximately 5–10 for the week |
+| Correction | The owner noticed the delay when switching the topic, then immediately changed the new entry's start time |
+| Known absent work | No topic period longer than approximately 10 minutes is known to be absent; shorter periods and unremembered switches cannot be counted reliably |
+| Logging friction | Overall rating 2; daily ratings are not available |
+| Entry points | Approximately 70% main window, 30% quick access, and no tray use |
+| Data safety | No known installation, persistence, integrity, crash, or privacy problem |
+| Analytics review | Approximately three reviews; the graph of past-day timelines was the useful part |
+| Continued use | Yes; the owner chose to continue during the next workdays |
+
+The main window was easiest to use when it remained visible on a third screen. Quick access was
+not needed while that window was visible. The tray did not come to mind. Late recordings most
+often followed a small urgent request in Microsoft Teams. They occurred less often when the
+owner remembered another small task. In some of those cases, the visible tracking state prompted
+the owner to defer the task and remain on the current topic. This prevented a switch that the
+owner otherwise might have made.
+
+The owner had to enter corrected start times manually. The existing 15-minute, 30-minute, and
+one-hour quick adjustments were too large for delays that were usually five or ten minutes. The
+owner chose five-minute and ten-minute quick adjustments as the first bounded change. [Phase 26](phase-26-fine-grained-time-correction.md)
+owns that implementation. The owner will use the new actions before deciding whether a different
+correction interaction is necessary.
+
+Tracking still required active thought and was easy to forget when work changed. A small,
+always-visible Konzendi mark or dashboard is a candidate reminder, not an accepted solution.
+[Phase 27](phase-27-always-visible-tracking-reminder.md) investigates whether such a reminder
+helps without becoming distracting before it defines an implementation.
+
+Reviewing the timeline showed no continuous recorded stretch longer than two hours on important
+projects. This motivated the owner to check Microsoft Teams less often, group small tasks for one
+topic, and preserve more time for complex work. The owner already tries to group meetings to
+reduce 30-minute and one-hour gaps, but meeting placement is not always under the owner's
+control. These are personal actions prompted by the recorded view. They do not show that session
+length measures productivity or concentration.
+
+The owner wants a weekly view of time per topic and extended sessions. [Phase 14](phase-14-further-statistics.md)
+owns the first weekly overview and uses this finding as discovery evidence.
+
+The available report does not contain known-switch counts or daily friction ratings. It cannot
+establish the logging percentage or calculate the protocol's median friction. The report is
+evidence that the application prompted useful questions and that the owner chose to continue.
+
+On 19 September 2026, the owner accepted an explicit exception to the original protocol and
+closed the phase on this qualitative result. Repeating the owner pilot only to reconstruct the
+numeric gates is not required. This decision does not treat the missing evidence as successful
+evidence and does not authorize a small-group trial. A later decision to invite other
+participants requires a new protocol and sufficient reliability and friction evidence first.
+
 ## Work packages
 
 - [x] **Accept the pilot protocol.** The owner accepted the period, daily record, and decision
   rules on 13 September 2026. This document records the choices and is
   `Implementation-ready`.
 
-- [ ] **Prepare the private trial installation.** Verify the v0.1.1 assets and checksum, back up
-  the existing application data, install the package, and run the four startup checks. Complete
-  when the installed release is ready for normal work and no synthetic event exists inside the
-  recorded pilot period.
+- [x] **Resolve the private trial setup.** The owner used v0.1.1 from Monday through Thursday and
+  the latest available development build on Friday. The original checksum, backup, and startup
+  checks were not recorded. The owner reported no installation, persistence, integrity, crash,
+  or privacy problem. The accepted closure exception records these limits instead of claiming
+  that the planned preparation was verified.
 
-- [ ] **Run the owner pilot.** Use the release during normal computer work and complete one
-  bounded review for each available workday. Complete when five normal workdays are recorded or
-  the participant stops early and records why.
+- [x] **Run the owner pilot.** The owner used Konzendi for five full normal workdays. The owner
+  did not complete the daily record. The aggregate interview records what can be reconstructed
+  and identifies what remains unknown.
 
-- [ ] **Review the evidence.** Aggregate only the counts and findings defined by the protocol.
-  Apply the decision rules in order. Complete when the phase records the period, available days,
-  daily observations, aggregate counts, limitations, and the continue, redirect, or stop
-  decision.
+- [x] **Review the evidence.** The phase records the period, available days, aggregate estimates,
+  useful observations, continued-use choice, and limitations. The numeric decision rules could
+  not be applied. The owner accepted this as a limited qualitative result, not as evidence that
+  the numeric gates passed.
 
-- [ ] **Plan the next action.** If the decision is continue, add the accepted small-group
-  protocol to this phase before inviting anyone. If it is redirect, assign each change to its
-  owning phase and define the repeat condition. If it is stop, record which product assumption
-  failed. Complete when no finding is presented as an implemented change.
+- [x] **Plan the next action.** The owner continues personal use. Phase 14 owns the accepted
+  weekly-overview work. Phase 26 owns five-minute and ten-minute quick corrections. Phase 27
+  owns discovery of an always-visible reminder. A small-group trial is not authorized.
 
 ## Acceptance and verification
 
-The owner pilot is complete only when:
+The original owner-pilot acceptance criteria were:
 
 - the package version, target machine, actual start and end times, and available workdays are
   recorded;
@@ -208,13 +269,32 @@ The owner pilot is complete only when:
   cognition, health, or population claim.
 
 Do not prefill successful results. Record actual evidence after each trial day. Completing this
-plan does not complete the pilot and does not make Phase 5 `Done`.
+plan alone does not complete the pilot.
+
+### Accepted closure exception
+
+The owner accepted the following closure result on 19 September 2026:
+
+| Original criterion | Result |
+| --- | --- |
+| Package, machine, period, and available days | Partial. The machine and five-day period are recorded. v0.1.1 was used for four days, but the exact Friday development revision and daily start and end times are not recorded. |
+| Complete daily records | Not met. The later interview provides aggregate estimates only. |
+| Aggregate counts and median friction | Not met. Late recordings are estimated at 5–10, but there is no known-switch denominator and no daily friction series. |
+| Useful observation and continued-use choice | Met. The timeline prompted concrete questions and actions, and the owner chose to continue. |
+| Decision under the accepted rules | Replaced by this explicit exception. The numeric gates are unknown, not passed. |
+| Privacy and bounded claims | Met. The repository contains only redacted owner observations and makes no population, productivity, cognition, or health claim. |
+
+This accepted exception satisfies the phase outcome by recording an honest answer to the product
+question: the owner logged work for five days, found the result useful, and continued using the
+application, but the trial did not measure reliability or daily friction well enough to support
+expansion. Phase 5 is complete on that limited basis.
 
 ## Rollout and rollback
 
-The pilot uses the private v0.1.1 GitHub release. No new build or distribution path is needed.
-The package writes to the existing `com.konzendi.app` data location and reads compatible
-development logs unchanged.
+The planned pilot used the private v0.1.1 GitHub release. The owner changed to a development
+build on Friday, as recorded above. The trial created no new build or distribution path. Both
+builds used the existing `com.konzendi.app` data location and read compatible development logs
+unchanged.
 
 To stop the pilot, quit Konzendi and record the stop reason. Removing the package does not remove
 the event log. To return to the pre-pilot data state, first copy the current trial data to a
