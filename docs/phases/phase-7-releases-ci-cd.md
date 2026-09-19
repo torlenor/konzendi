@@ -220,11 +220,12 @@ choices within the accepted contract:
   has every runtime library from the build dependencies, so a host installation would hide a
   missing package dependency; the container resolves only what the package declares, and
   removes the need for user namespaces on the runner. The same script runs locally with Docker.
-- **Smoke flow.** First run, back-dating by 15 minutes, stop, restart with unchanged identity
-  and log, resume (only possible if the restored fold is correct), and a prototype-format log
-  from a second device (`scripts/fixtures/prototype-device.jsonl`) that must be read unchanged
-  and folded, including a rename and a retime. Clicks use fixed coordinates in the 800×600
-  window; the embedded fonts keep the layout stable, and every step asserts the appended event.
+- **Smoke flow.** The initial implementation used fixed-coordinate clicks to exercise tracking,
+  restart persistence, and a prototype-format log. On 19 September 2026, the owner chose a
+  smaller package smoke test after repeated coordinate failures blocked valid packages. The CI
+  smoke test now checks package metadata and installed files, starts the application offline on
+  Xvfb, confirms a visible window and local identity creation, and saves launch evidence. Unit
+  tests and supported-platform walkthroughs own tracking and persistence behavior.
 - **CI-side logic in `scripts/release-ci.mjs`.** Asset collection, tag validation, and draft
   creation live in a tested Node script against the GitHub REST API rather than in workflow
   shell. It is tested against an in-memory API, including denied actors, moved tags, partial

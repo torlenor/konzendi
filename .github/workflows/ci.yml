@@ -260,7 +260,7 @@ jobs:
           if [ -n "$TAG" ]; then arguments+=(--tag "$TAG"); fi
           node scripts/release-ci.mjs "${arguments[@]}"
 
-      - name: Install and exercise the package offline
+      - name: Install and launch the package offline
         run: EXPECTED_VERSION="$VERSION" scripts/package-smoke.sh "platform-output/konzendi_${VERSION}_amd64.deb" smoke-output
 
       - name: Keep smoke evidence

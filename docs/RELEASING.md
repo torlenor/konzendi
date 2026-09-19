@@ -35,9 +35,8 @@ The Windows and macOS extension is in
 - **package-smoke:** third-party notice check, `npm run tauri build -- --ci --bundles deb --
   --locked`, and [`scripts/package-smoke.sh`](../scripts/package-smoke.sh).
   The smoke test installs the package in a clean Ubuntu 24.04 container, then runs it with no
-  network on a private X server with synthetic data: first run, back-dating, stop, restart
-  persistence, and a log in the prototype format. Screenshots and logs are kept as the
-  `smoke-evidence` artifact.
+  network on a private X server. It checks package metadata, installed files, a visible window,
+  and local identity creation. A screenshot and logs are kept as the `smoke-evidence` artifact.
 - **windows-package:** native x64 NSIS build on `windows-2025`, then a current-user install,
   start, restart, identity check, removal, and data-preservation check with isolated data.
 - **macos-package:** native Apple-silicon DMG build on `macos-15`, then a copied-app start,
@@ -210,7 +209,7 @@ commit or tag.
 | `validate` fails: already published, or not higher than a published version | The version was released before | Release a higher version. The published release was not touched. |
 | `validate` or `draft release` fails: the tag now points to another commit | Someone moved the tag during the run | Stop. Restore the tag to the checked commit if it was an accident, or release a new version. |
 | A job fails for a runner or network reason | Transient | **Re-run failed jobs**. |
-| `package-smoke` fails | The package does not work | Download `smoke-evidence` (screenshots, logs, synthetic events) and fix the problem on `main`. Release a new version. |
+| `package-smoke` fails | The package does not install or launch offline | Download `smoke-evidence` (screenshot and logs) and fix the problem on `main`. Release a new version. |
 | `windows-package` or `macos-package` fails | A native build, install, restart, removal, or persistence probe failed | Download that platform's smoke evidence. Fix the problem on `main` and release a new version. |
 | `release-assets` fails | A native package is missing or the combined checksums do not match | Re-run the failed native job for a transient artifact failure. Fix source defects on `main` and use a new version. |
 | `draft release` fails after some uploads | Upload interrupted | **Re-run failed jobs**. Matching assets are kept, missing ones uploaded, and the draft is verified again. The draft title says *incomplete* until then. |
@@ -287,13 +286,13 @@ Use the cargo-about version pinned in `ci.yml`
 ([releases](https://github.com/EmbarkStudios/cargo-about/releases)). A crate with a licence
 that is not listed in `src-tauri/about.toml` stops generation until the licence is reviewed.
 
-The smoke test clicks fixed window positions in the 800×600 tracking window. When the tracking
-screen layout changes, run it locally and update the coordinates:
+Run the package smoke test locally after a packaging or startup change:
 
 ```bash
 npm run tauri build -- --bundles deb
 scripts/package-smoke.sh src-tauri/target/release/bundle/deb/Konzendi_*_amd64.deb /tmp/konzendi-smoke
 ```
 
-It needs Docker, uses only synthetic data inside the container, and never touches the local
-display or the real log.
+It needs Docker. It uses isolated data inside the container and never touches the local display
+or the real log. The smoke test does not exercise tracking behavior. Use the automated tests and
+the supported-platform walkthroughs for that behavior.
