@@ -14,6 +14,12 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ## [Unreleased]
 
+### Fixed
+
+- The macOS package now carries an ad-hoc signature. Without it, macOS reported 0.3.0 as
+  damaged and refused to open it. The package still has no developer certificate and is not
+  notarized, so macOS continues to ask for approval in Privacy & Security.
+
 ## [0.3.0] - 2026-09-19
 
 ### Added
