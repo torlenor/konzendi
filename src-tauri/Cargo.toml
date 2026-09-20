@@ -44,4 +44,4 @@ tempfile = "3"
 # application the user has not touched recently. Same version as Tauri's own GTK.
 [target.'cfg(target_os = "linux")'.dependencies]
 gtk = "0.18"
-x11rb = "0.13"
+x11rb = "0.14"
