@@ -27,6 +27,19 @@ hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mount" -quiet
 cp -R "$mount/Konzendi.app" "$application"
 hdiutil detach "$mount" -quiet
 
+# macOS examines the signature of a bundle that has the quarantine flag. If the signature is
+# not valid, it does not warn about an unknown developer: it tells the user that the
+# application is damaged and cannot open it. A bundle that only the linker signed has no
+# sealed resources and fails this examination. The runner has no desktop for the Gatekeeper
+# message, but it can do the same signature examination on a quarantined copy.
+xattr -w -r com.apple.quarantine "0081;00000000;package-smoke;$(uuidgen)" "$application"
+if ! codesign --verify --deep --strict --verbose=2 "$application" >"$output/codesign.log" 2>&1; then
+  echo "The bundle signature is not valid. macOS shows this package as damaged." >&2
+  cat "$output/codesign.log" >&2
+  exit 1
+fi
+xattr -d -r com.apple.quarantine "$application"
+
 export HOME="$home"
 data="$HOME/Library/Application Support/com.konzendi.app"
 device="$data/device.json"
@@ -58,6 +71,7 @@ cat >"$output/macos-smoke.json" <<EOF
 {
   "package": "$(basename "$dmg")",
   "data": "$data",
+  "bundleSignatureValid": true,
   "identityPreservedAfterRestart": true,
   "dataPreservedAfterRemoval": true
 }

@@ -26,7 +26,18 @@ Apple states that an unsigned application needs a manual **Open Anyway** action 
 Security**. Windows can run an unsigned application, but a browser download can show a
 SmartScreen warning. These warnings are an accepted trial limitation, not a support defect.
 Signing and notarization need separate owner decisions and credentials before wider
-distribution. See [Apple's Gatekeeper instructions](https://support.apple.com/en-euro/guide/mac-help/mh40616/mac)
+distribution.
+
+The **Open Anyway** action is only available if the bundle has a valid signature. The 0.3.0
+DMG had no bundle signature: it had only the ad-hoc signature that the linker puts on the
+executable, and thus no sealed resources. macOS did not offer **Open Anyway** for it. It told
+the user that Konzendi is damaged and must go to the Trash. The macOS bundle therefore gets an
+ad-hoc signature (`bundle.macOS.signingIdentity` is `-`). An ad-hoc signature needs no
+certificate and identifies no developer. It only makes the bundle valid, which keeps the
+manual approval available. The macOS package smoke test sets the quarantine flag on the
+installed copy and refuses a bundle that fails `codesign --verify --deep --strict`.
+
+See [Apple's Gatekeeper instructions](https://support.apple.com/en-euro/guide/mac-help/mh40616/mac)
 and [Tauri's Windows signing guide](https://v2.tauri.app/distribute/sign/windows/).
 
 ## Outcome and scope
@@ -182,7 +193,8 @@ the roadmap status to `Done`.
   `21812e39e3dcd99f946a1018b487793e0be1d20dacb9cd40ab0696bcf9c7706c`, and
   `45e6fbb1b62a6ffd2ccb447c9b0013a35ac8561356bb14772c2c256f088e8122`. This is hosted
   lifecycle evidence, not a native interactive walkthrough.
-- Windows 11 x64 installed-application walkthrough: not run yet.
+- Windows 11 x64 installed-application walkthrough: the numbered steps are not recorded yet.
+  See the owner report of 20 September 2026.
 - 15 September 2026, owner Windows trial: the installed application reported that `Store` was
   not managed when `read_events` ran. The screen was empty after each restart. The cause was a
   startup race between the webview command and setup-time state registration. The fix registers
@@ -190,10 +202,23 @@ the roadmap status to `Done`.
 - 15 September 2026, local Linux regression check: the standalone debug application used an
   isolated data directory on Xvfb. It created two synthetic events and read them after restart.
   This check does not replace the Windows native retest.
-- macOS 15 Apple-silicon installed-application walkthrough: not run yet.
+- macOS 15 Apple-silicon installed-application walkthrough: the numbered steps are not
+  recorded yet. See the owner report of 20 September 2026.
 - 18 September 2026, the combined `v0.2.0` draft was created by the successful release run and
   published after review. The fault-injection and selective-withdrawal rehearsal is still
   pending, so the combined-draft work package remains open.
+- 20 September 2026, owner report: all features operate correctly in the installed Windows and
+  macOS builds. The report does not give the operating-system versions, the hardware, the
+  package hashes, or the result of each numbered walkthrough step. The two walkthroughs
+  therefore remain open, although no feature defect is known.
+- 20 September 2026, macOS 15 Apple silicon: the published 0.3.0 DMG did not start. macOS
+  reported that Konzendi is damaged and must go to the Trash, because the bundle had only the
+  ad-hoc signature that the linker puts on the executable and thus no sealed resources.
+  `codesign --verify --deep --strict` refused that bundle. The application started after a
+  manual `codesign --force --deep --sign -` and removal of the quarantine flag. The macOS
+  bundle now gets an ad-hoc signature during the build, and the macOS package smoke test
+  refuses a bundle that fails the same examination. A package that is built with this
+  configuration still needs native verification.
 
 ## Rollout and rollback
 
