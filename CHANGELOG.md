@@ -14,11 +14,28 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-20
+
 ### Fixed
 
 - The macOS package now carries an ad-hoc signature. Without it, macOS reported 0.3.0 as
   damaged and refused to open it. The package still has no developer certificate and is not
   notarized, so macOS continues to ask for approval in Privacy & Security.
+
+### Compatibility
+
+- There is no change to the recorded data. The event kinds and their fields are the same as in
+  0.3.0, so you can move between the two versions.
+
+### Known limitations
+
+- Windows and macOS packages have no developer certificate. Windows can show a SmartScreen
+  warning. macOS needs approval in Privacy & Security before the application can open.
+- Windows and macOS shortcut, tray, focus, and persistence behavior still needs native
+  installed-application verification before those packages are supported trial downloads.
+- On Linux, the global shortcut and quick access remain X11-only.
+- The tray menu and the topic list in **Add a missed switch** do not show topic colors.
+- There is no synchronization, import, or export. Copy the data directory for a backup.
 
 ## [0.3.0] - 2026-09-19
 

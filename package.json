@@ -1,7 +1,7 @@
 {
   "name": "konzendi",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "license": "MIT",
   "repository": "github:torlenor/konzendi",
   "type": "module",
