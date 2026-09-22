@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import {
+  availableMonitors,
   currentMonitor,
   getCurrentWindow,
   LogicalSize,
@@ -9,6 +10,7 @@ import {
   primaryMonitor,
   Window,
 } from "@tauri-apps/api/window";
+import { anchoredPosition, contains, type Rect } from "./chipGeometry";
 
 /**
  * Desktop integration: which window this script runs in, and how the quick switcher
@@ -105,6 +107,54 @@ export async function toggleQuick(): Promise<void> {
   await showFocused(quick);
 }
 
+/** Open the surface from its own window, with the keyboard, for the tracking chip. */
+export async function showQuick(): Promise<void> {
+  await showFocused(await quickWindow());
+}
+
+/**
+ * The tracking chip that quick access opens from, in physical pixels. While it is set,
+ * the surface is placed on the chip's corner instead of in the center.
+ */
+export type QuickAnchor = Rect;
+let anchor: QuickAnchor | null = null;
+export const setQuickAnchor = (next: QuickAnchor | null): void => {
+  anchor = next;
+};
+export const quickAnchor = (): QuickAnchor | null => anchor;
+
+/** Where the surface was placed, in physical pixels, and the monitor scale. */
+export interface QuickPlacement {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  scale: number;
+}
+
+/** Put the surface on the chip's corner, on the monitor that shows the chip. */
+async function placeAtAnchor(
+  chip: QuickAnchor,
+  height: number,
+): Promise<QuickPlacement | null> {
+  const monitors = await availableMonitors();
+  const area = (m: Monitor): Rect => ({
+    ...m.workArea.position,
+    ...m.workArea.size,
+  });
+  const cx = chip.x + chip.width / 2;
+  const cy = chip.y + chip.height / 2;
+  const monitor =
+    monitors.find((m) => contains(area(m), cx, cy)) ?? (await primaryMonitor());
+  if (monitor === null) return null;
+  const scale = monitor.scaleFactor;
+  const width = Math.round(QUICK_WIDTH * scale);
+  const tall = Math.round(height * scale);
+  const { x, y } = anchoredPosition(chip, area(monitor), width, tall);
+  await getCurrentWindow().setPosition(new PhysicalPosition(x, y));
+  return { x, y, width, height: tall, scale };
+}
+
 /**
  * Showing a window and being given the keyboard are separate steps, and the second is
  * refused while the window is still being mapped. `show_quick` asks for both and is
@@ -132,17 +182,20 @@ export async function hideQuick(): Promise<void> {
  * itself again afterward. Showing it then needs no resize the user could watch. It
  * also resizes while open, when Other topics opens or closes.
  */
-export async function fitQuick(contentHeight: number): Promise<void> {
+export async function fitQuick(
+  contentHeight: number,
+): Promise<QuickPlacement | null> {
   const self = getCurrentWindow();
   const height = Math.round(contentHeight + QUICK_EDGE);
   await self.setSize(new LogicalSize(QUICK_WIDTH, height));
+  if (anchor !== null) return placeAtAnchor(anchor, height);
   // X11 applies a size later than the call returns, and `center` reads the size that
   // was applied. When the surface resizes while it is open, or just after it closed,
   // `center` uses the old height. So the position is calculated from the new size.
   const monitor = await quickMonitor();
   if (monitor === null) {
     await self.center();
-    return;
+    return null;
   }
   const scale = monitor.scaleFactor;
   await self.setPosition(
@@ -155,6 +208,7 @@ export async function fitQuick(contentHeight: number): Promise<void> {
       ),
     ),
   );
+  return null;
 }
 
 /** A hidden window can have no current monitor, so the primary one is used then. */

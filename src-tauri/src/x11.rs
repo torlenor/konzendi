@@ -18,6 +18,7 @@ pub struct Desktop {
     connection: RustConnection,
     root: Window,
     active_window: u32,
+    wm_pid: u32,
     /// The window that had the keyboard when the surface last opened.
     interrupted: Mutex<Option<Window>>,
 }
@@ -34,10 +35,17 @@ impl Desktop {
             .reply()
             .map_err(|error| error.to_string())?
             .atom;
+        let wm_pid = connection
+            .intern_atom(false, b"_NET_WM_PID")
+            .map_err(|error| error.to_string())?
+            .reply()
+            .map_err(|error| error.to_string())?
+            .atom;
         Ok(Self {
             connection,
             root,
             active_window,
+            wm_pid,
             interrupted: Mutex::new(None),
         })
     }
@@ -81,10 +89,42 @@ impl Desktop {
     }
 
     /// Hand the keyboard back to the remembered window, if it is still there.
+    ///
+    /// When the surface closed because the user clicked another application's window,
+    /// that window has the keyboard now, and the remembered one must not take it back:
+    /// activating it would also raise it over the window the user chose.
     pub fn restore_interrupted(&self) {
-        if let Some(window) = self.take_interrupted() {
-            self.activate(window);
+        let Some(window) = self.take_interrupted() else {
+            return;
+        };
+        if let Some(active) = self.focused() {
+            if active != window && !self.is_own(active) {
+                return;
+            }
         }
+        self.activate(window);
+    }
+
+    /// Whether a window belongs to this process. GTK sets `_NET_WM_PID` on every window.
+    fn is_own(&self, window: Window) -> bool {
+        let pid = self
+            .connection
+            .get_property(false, window, self.wm_pid, AtomEnum::CARDINAL, 0, 1)
+            .ok()
+            .and_then(|cookie| cookie.reply().ok())
+            .and_then(|reply| reply.value32().and_then(|mut values| values.next()));
+        pid == Some(std::process::id())
+    }
+
+    /// The pointer position on the root window, in physical pixels.
+    pub fn pointer(&self) -> Option<(i32, i32)> {
+        let reply = self
+            .connection
+            .query_pointer(self.root)
+            .ok()?
+            .reply()
+            .ok()?;
+        Some((i32::from(reply.root_x), i32::from(reply.root_y)))
     }
 
     fn activate(&self, window: Window) {

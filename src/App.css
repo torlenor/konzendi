@@ -1478,3 +1478,146 @@ button.session[aria-pressed="true"] {
   text-align: center;
   color: var(--ink-soft);
 }
+
+/* ---- Tracking chip, and quick access expanding from it ---- */
+:root.see-through,
+:root.see-through body {
+  background: transparent;
+}
+:root.see-through body {
+  height: auto;
+  overflow: hidden;
+}
+.chip-host {
+  display: inline-block;
+}
+.chip {
+  --state: var(--rule);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  height: 32px;
+  max-width: 300px;
+  padding: 0 0.625rem 0 0.625rem;
+  background: var(--band);
+  color: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  font-size: 0.84rem;
+  white-space: nowrap;
+  user-select: none;
+  cursor: default;
+}
+.chip[data-state="running"] {
+  --state: var(--live);
+}
+.chip[data-state="stopped"] {
+  --state: var(--rest);
+}
+.chip-mark {
+  color: var(--state);
+  font-size: 0.7rem;
+}
+.chip .swatch {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+.chip-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip-trail {
+  min-width: 2.25rem;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+.chip-hide {
+  color: var(--ink);
+}
+.chip-logo {
+  width: 18px;
+  height: 18px;
+}
+.chip-logo.on-dark {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .chip-logo.on-light {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .chip-logo.on-dark {
+    display: inline;
+  }
+}
+:root[data-theme="dark"] .chip-logo.on-light {
+  display: none;
+}
+:root[data-theme="dark"] .chip-logo.on-dark {
+  display: inline;
+}
+
+/* Quick access is transparent only while it grows out of the chip or shrinks back. */
+:root:has(.quick[data-expand]),
+:root:has(.quick[data-expand]) body {
+  background: transparent;
+}
+.quick {
+  position: relative;
+}
+.quick[data-expand] {
+  /* Separate layers, so the clip and the fade do not repaint the rows each frame. */
+  will-change: clip-path;
+  --expand-open: 200ms;
+  --expand-close: 135ms;
+}
+.quick[data-expand="from"],
+.quick[data-expand="closing"] {
+  clip-path: var(--expand-from);
+}
+.quick[data-expand="open"] {
+  clip-path: inset(0 round 3px);
+  /*
+   * Even steps: at 60 frames a second no frame grows more than 13%. A fast start jumps a
+   * third of the way in the first frame; a slow start waits, then jumps.
+   */
+  transition: clip-path var(--expand-open) cubic-bezier(0, 0, 0.58, 1);
+}
+.quick[data-expand="closing"] {
+  transition: clip-path var(--expand-close) cubic-bezier(0.4, 0, 0.8, 0.4);
+}
+/* The rows appear once the clip is wider than the chip, so the two never overlap. */
+.quick[data-expand] > :not(.chip-ghost) {
+  will-change: opacity;
+  transition: opacity 110ms ease-out 80ms;
+}
+.quick[data-expand="from"] > :not(.chip-ghost),
+.quick[data-expand="closing"] > :not(.chip-ghost) {
+  opacity: 0;
+}
+.quick[data-expand="closing"] > :not(.chip-ghost) {
+  transition-delay: 0s;
+  transition-duration: 50ms;
+}
+.chip-ghost {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 60ms ease-out 20ms;
+}
+.quick[data-expand="open"] .chip-ghost {
+  opacity: 0;
+}
+.quick[data-expand="closing"] .chip-ghost {
+  transition-delay: 50ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .quick[data-expand],
+  .quick[data-expand] > *,
+  .chip-ghost {
+    transition: none;
+  }
+}

@@ -14,6 +14,19 @@ while it was being built, and a pushed tag is never moved. The first release is 
 
 ## [Unreleased]
 
+### Added
+
+- Linux (X11): an optional tracking chip that stays on top of other windows and shows the
+  current topic and the time since the switch. Show it from the tray. Click it to open quick
+  access from the chip. Drag it to move it. Right-click it to hide the topic name. It is off
+  by default.
+
+### Fixed
+
+- Quick access no longer shows a keyboard focus ring on a row when it opens.
+- Closing quick access by clicking another window no longer brings the previous window back
+  to the front.
+
 ## [0.3.1] - 2026-09-20
 
 ### Fixed

@@ -17,6 +17,8 @@ const APPENDED: &str = "event-appended";
 /// The window labels declared in `tauri.conf.json`.
 const MAIN: &str = "main";
 const QUICK: &str = "quick";
+/// The tracking chip, declared only in `tauri.linux.conf.json`.
+const CHIP: &str = "chip";
 
 /// The event store, created on the first command that needs it.
 ///
@@ -204,6 +206,92 @@ fn show_main(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// Show the tracking chip without taking the keyboard: the window is not focusable, and
+/// `show` does not ask for focus.
+#[tauri::command]
+fn show_chip(app: AppHandle) -> Result<(), String> {
+    window_of(&app, CHIP)?
+        .show()
+        .map_err(|error| error.to_string())
+}
+
+/// Hide the tracking chip.
+#[tauri::command]
+fn hide_chip(app: AppHandle) -> Result<(), String> {
+    window_of(&app, CHIP)?
+        .hide()
+        .map_err(|error| error.to_string())
+}
+
+/// The pointer offset inside the chip while the user drags it.
+#[derive(Default)]
+struct ChipDrag(std::sync::Mutex<Option<(i32, i32)>>);
+
+/// Move the chip with the pointer. The window manager's own move takes the button release
+/// from WebKit, and the next press is then lost, so the chip moves itself: the pointer is
+/// read from X on each step.
+#[tauri::command]
+fn chip_drag(app: AppHandle, drag: State<'_, ChipDrag>, phase: String) -> Result<(), String> {
+    let window = window_of(&app, CHIP)?;
+    #[cfg(target_os = "linux")]
+    let pointer = app
+        .try_state::<x11::Desktop>()
+        .and_then(|desktop| desktop.pointer());
+    #[cfg(not(target_os = "linux"))]
+    let pointer: Option<(i32, i32)> = None;
+    let Some((px, py)) = pointer else {
+        return Err("the pointer position is not available".to_string());
+    };
+    let mut offset = drag.0.lock().map_err(|error| error.to_string())?;
+    match phase.as_str() {
+        "begin" => {
+            let position = window.outer_position().map_err(|error| error.to_string())?;
+            *offset = Some((px - position.x, py - position.y));
+        }
+        "move" => {
+            if let Some((dx, dy)) = *offset {
+                window
+                    .set_position(tauri::PhysicalPosition::new(px - dx, py - dy))
+                    .map_err(|error| error.to_string())?;
+            }
+        }
+        _ => *offset = None,
+    }
+    Ok(())
+}
+
+/// Let the pointer through the chip's transparent margin, so that tao's resize band at the
+/// window edges never sees it. Sizes are logical pixels.
+#[tauri::command]
+fn chip_input_shape(app: AppHandle, width: f64, height: f64, margin: f64) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    {
+        let window = window_of(&app, CHIP)?;
+        app.run_on_main_thread(move || {
+            use gtk::prelude::WidgetExt;
+            let Ok(gtk_window) = window.gtk_window() else {
+                return;
+            };
+            let Some(surface) = gtk_window.window() else {
+                return;
+            };
+            let m = margin.round() as i32;
+            let inner = gtk::cairo::RectangleInt::new(
+                m,
+                m,
+                (width.round() as i32 - 2 * m).max(1),
+                (height.round() as i32 - 2 * m).max(1),
+            );
+            let region = gtk::cairo::Region::create_rectangle(&inner);
+            surface.input_shape_combine_region(&region, 0, 0);
+        })
+        .map_err(|error| error.to_string())?;
+    }
+    #[cfg(not(target_os = "linux"))]
+    let _ = (app, width, height, margin);
+    Ok(())
+}
+
 /// Leave for good. The tray is the only control that ends the application, because the
 /// window's close button now only hides it.
 #[tauri::command]
@@ -233,6 +321,7 @@ pub fn run() {
         // Register the holder before Tauri creates a webview. Store creation itself stays
         // lazy because the platform data path is available through the command AppHandle.
         .manage(StoreState::default())
+        .manage(ChipDrag::default())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
             // Without a display the quick switcher is unavailable anyway, and the
@@ -243,6 +332,18 @@ pub fn run() {
                     app.manage(desktop);
                 }
                 Err(reason) => eprintln!("no X11 display for quick access: {reason}"),
+            }
+            // Cinnamon animates only normal windows and dialogs when they map and unmap.
+            // That animation would run on top of the chip expansion, so both surfaces are
+            // utility windows. The hint must be set before mapping.
+            #[cfg(target_os = "linux")]
+            for label in [QUICK, CHIP] {
+                if let Some(window) = app.get_webview_window(label) {
+                    use gtk::prelude::GtkWindowExt;
+                    if let Ok(gtk_window) = window.gtk_window() {
+                        gtk_window.set_type_hint(gtk::gdk::WindowTypeHint::Utility);
+                    }
+                }
             }
             Ok(())
         })
@@ -255,6 +356,10 @@ pub fn run() {
             show_quick,
             hide_quick,
             show_main,
+            show_chip,
+            hide_chip,
+            chip_drag,
+            chip_input_shape,
             quit
         ])
         .on_window_event(|window, event| {

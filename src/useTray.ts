@@ -12,8 +12,16 @@ import {
   TOPIC_MARK,
 } from "./actions";
 import trayIconUrl from "./assets/konzendi-tray-32.png";
+import {
+  chipPrivate,
+  chipVisible,
+  onChipPreferences,
+  setChipPrivate,
+  setChipVisible,
+} from "./chip";
 import type { TrackingState } from "./core/fold";
-import { quit, showMain } from "./desktop";
+import { quit, showMain, windowSystem } from "./desktop";
+import { supportsChip } from "./platform";
 import { formatStamp } from "./time";
 import type { Tracking } from "./useTracking";
 
@@ -47,7 +55,29 @@ async function buildMenu(
   now: number,
   storageAvailable: boolean,
   correction: string | null,
+  chipSupported: boolean,
+  refresh: () => void,
 ): Promise<Menu> {
+  const chipShown = chipVisible();
+  const chipHidden = chipPrivate();
+  const chipItems = chipSupported
+    ? [
+        {
+          id: "chip",
+          text: chipShown ? "Hide tracking chip" : "Show tracking chip",
+          action: () => void setChipVisible(!chipShown).then(refresh),
+        },
+        {
+          id: "chip-private",
+          text: chipHidden ? "Show topic on chip" : "Hide topic on chip",
+          enabled: chipShown,
+          action: () => {
+            setChipPrivate(!chipHidden);
+            refresh();
+          },
+        },
+      ]
+    : [];
   const current = state.current;
   const stopped = current !== null && current.subject.type === "pause";
   const activeTopicId =
@@ -111,6 +141,7 @@ async function buildMenu(
       },
       { item: "Separator" },
       { id: "open", text: "Open Konzendi", action: () => void showMain() },
+      ...chipItems,
       // Tauri's predefined Quit item is ignored on Linux, so this one is explicit.
       { id: "quit", text: "Quit Konzendi", action: () => void quit() },
     ],
@@ -150,6 +181,20 @@ export function useTray(tracking: Tracking, actions: Actions): void {
   const [correction, setCorrection] = useState<string | null>(null);
   const correctionTimer = useRef<number | null>(null);
   const { state } = tracking;
+  // The tracking chip is offered only on X11. Its preferences can change in the chip
+  // window too, so a change there rebuilds the menu here. A chip that was shown when the
+  // application ended is shown again at startup.
+  const [chipSupported, setChipSupported] = useState(false);
+  const [chipVersion, setChipVersion] = useState(0);
+  const refreshChip = useCallback(() => setChipVersion((n) => n + 1), []);
+  useEffect(() => onChipPreferences(refreshChip), [refreshChip]);
+  useEffect(() => {
+    void windowSystem().then((system) => {
+      const supported = supportsChip(system);
+      setChipSupported(supported);
+      if (supported && chipVisible()) void setChipVisible(true);
+    });
+  }, []);
 
   const onSwitch = useCallback(
     (topicId: string) => {
@@ -202,6 +247,7 @@ export function useTray(tracking: Tracking, actions: Actions): void {
   }, []);
 
   const { error } = tracking;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: chipVersion asks for a rebuild.
   useEffect(() => {
     if (tray === null) return;
     let live = true;
@@ -214,6 +260,8 @@ export function useTray(tracking: Tracking, actions: Actions): void {
         Date.now(),
         error === null,
         correction,
+        chipSupported,
+        refreshChip,
       );
       if (!live) {
         await menu.close();
@@ -229,5 +277,16 @@ export function useTray(tracking: Tracking, actions: Actions): void {
     return () => {
       live = false;
     };
-  }, [tray, state, actions, onSwitch, error, correction]);
+    // chipVersion only asks for a rebuild; buildMenu reads the preferences itself.
+  }, [
+    tray,
+    state,
+    actions,
+    onSwitch,
+    error,
+    correction,
+    chipSupported,
+    refreshChip,
+    chipVersion,
+  ]);
 }

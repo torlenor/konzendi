@@ -56,6 +56,12 @@ Press **Ctrl+Alt+K** to open the switcher. Use a topic's number to switch, `s` t
 undo, `K` to open the Konzendi window, or Escape to close quick access. You can change the global
 shortcut in the tracking window. The tray menu provides the same main actions.
 
+On Linux with X11, the tray item **Show tracking chip** shows a small line above your other
+windows with the current topic and the time since the switch. Click the chip to open quick access
+from it, and drag it to move it. Screen sharing and screenshots include the chip. To hide the
+topic name, right-click the chip or select **Hide topic on chip** in the tray. The chip is off by
+default.
+
 ## Local data and privacy
 
 Konzendi stores its data on the local computer:

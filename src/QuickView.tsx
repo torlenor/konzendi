@@ -1,4 +1,6 @@
+import { listen } from "@tauri-apps/api/event";
 import {
+  type CSSProperties,
   useCallback,
   useEffect,
   useId,
@@ -16,14 +18,21 @@ import {
   TOPIC_MARK,
   trackingActions,
 } from "./actions";
+import { ChipFace } from "./ChipView";
+import { CHIP_EXPAND, chipPrivate } from "./chip";
+import { chipInset, type Inset } from "./chipGeometry";
 import { topicChoices, topicForKey } from "./core/topics";
 import {
   fitQuick,
   hideQuick,
   isQuickFocused,
   onQuickFocusChanged,
+  type QuickAnchor,
+  quickAnchor,
   quickMaxHeight,
+  setQuickAnchor,
   showMain,
+  showQuick,
 } from "./desktop";
 import { quickKeyPressed, watchSuperKey } from "./quickKeys";
 import { Swatch } from "./Swatch";
@@ -31,6 +40,25 @@ import { formatElapsedParts } from "./time";
 import { useCorrectionFeedback } from "./useCorrectionFeedback";
 import { type Tracking, useNow, useTracking } from "./useTracking";
 import "./App.css";
+
+/** How long the surface takes to shrink back into the tracking chip. */
+const COLLAPSE_MS = 135;
+
+type Expansion = {
+  phase: "from" | "open" | "closing";
+  /** The chip rectangle as an inset of the surface, in logical pixels. */
+  inset: Inset;
+};
+
+const afterFrames = (count: number): Promise<void> =>
+  new Promise((resume) => {
+    const next = (left: number) =>
+      left === 0 ? resume() : requestAnimationFrame(() => next(left - 1));
+    next(count);
+  });
+
+const reducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** How long a correction keeps its rows in place before the surface dismisses. */
 const CORRECTION_VISIBLE_MS = 800;
@@ -132,6 +160,7 @@ function QuickSurface({
   const othersId = useId();
   const [maxHeight, setMaxHeight] = useState<number | null>(null);
   const blocked = busy || tracking.loading;
+  const [expansion, setExpansion] = useState<Expansion | null>(null);
 
   // The surface is exactly as tall as its rows, so it is measured after every render
   // and resized only when the measurement moved: the window must not chase its own
@@ -155,7 +184,48 @@ function QuickSurface({
     flushSync(() => setOthersOpen(false));
     const height = surface.current?.scrollHeight ?? 0;
     if (height > 0 && height !== before) await fitQuick(height);
+    // A row that keeps focus gets it back when the surface opens again, and WebKit then
+    // draws the keyboard focus ring on it. The next opening starts with no row focused.
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    // A surface that opened from the tracking chip shrinks back into it.
+    if (quickAnchor() !== null) {
+      if (!reducedMotion()) {
+        setExpansion((open) => (open ? { ...open, phase: "closing" } : null));
+        await new Promise((resume) => setTimeout(resume, COLLAPSE_MS));
+      }
+      await hideQuick();
+      setQuickAnchor(null);
+      setExpansion(null);
+      return;
+    }
     await hideQuick();
+  }, []);
+
+  // The tracking chip asks the surface to open from its corner.
+  useEffect(() => {
+    const subscription = listen<QuickAnchor>(
+      CHIP_EXPAND,
+      async ({ payload }) => {
+        if (quickAnchor() !== null) return;
+        setQuickAnchor(payload);
+        const height = surface.current?.scrollHeight ?? applied.current;
+        const placed = await fitQuick(height);
+        if (placed !== null && !reducedMotion()) {
+          const inset = chipInset(payload, placed, placed.scale);
+          flushSync(() => setExpansion({ phase: "from", inset }));
+        }
+        await showQuick();
+        // A window that was just mapped drops a frame while it starts to draw. The start
+        // state looks exactly like the chip, so the expansion waits a few frames for it.
+        await afterFrames(4);
+        setExpansion((from) => (from ? { ...from, phase: "open" } : null));
+      },
+    );
+    return () => {
+      void subscription.then((unlisten) => unlisten());
+    };
   }, []);
 
   // Nothing counts as recorded until the store confirms it, so the surface closes on the
@@ -291,8 +361,28 @@ function QuickSurface({
     <div
       className="quick"
       ref={surface}
-      style={maxHeight === null ? undefined : { maxHeight: `${maxHeight}px` }}
+      data-expand={expansion?.phase}
+      style={{
+        ...(maxHeight === null ? {} : { maxHeight: `${maxHeight}px` }),
+        ...(expansion === null
+          ? {}
+          : ({
+              "--expand-from": `inset(${expansion.inset.top}px ${expansion.inset.right}px ${expansion.inset.bottom}px ${expansion.inset.left}px round 16px)`,
+            } as CSSProperties)),
+      }}
     >
+      {expansion !== null && (
+        <ChipFace
+          className="chip-ghost"
+          state={state}
+          now={now}
+          privateView={chipPrivate()}
+          style={{
+            left: `${expansion.inset.left - 1}px`,
+            top: `${expansion.inset.top - 1}px`,
+          }}
+        />
+      )}
       {rowsCorrection !== null ? (
         <p className="quick-correction">{rowsCorrection}</p>
       ) : (

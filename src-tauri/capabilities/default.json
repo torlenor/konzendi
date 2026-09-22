@@ -1,8 +1,8 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the tracking window and the quick switcher",
-  "windows": ["main", "quick"],
+  "description": "Capability for the tracking window, the quick switcher, and the tracking chip",
+  "windows": ["main", "quick", "chip"],
   "permissions": [
     "core:default",
     "core:window:allow-set-size",
@@ -18,6 +18,8 @@
     "core:app:allow-version",
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
-    "global-shortcut:allow-is-registered"
+    "global-shortcut:allow-is-registered",
+    "core:window:allow-set-min-size",
+    "core:window:allow-set-max-size"
   ]
 }
