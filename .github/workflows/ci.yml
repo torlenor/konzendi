@@ -265,7 +265,7 @@ jobs:
 
       - name: Keep smoke evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: smoke-evidence
           path: smoke-output
@@ -274,7 +274,7 @@ jobs:
           overwrite: true
 
       - name: Upload checked Linux package
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ format('{0}-linux', inputs.artifact-name || 'package') }}
           path: platform-output
@@ -344,7 +344,7 @@ jobs:
 
       - name: Keep Windows smoke evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-smoke-evidence
           path: smoke-output
@@ -353,7 +353,7 @@ jobs:
           overwrite: true
 
       - name: Upload checked Windows package
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ format('{0}-windows', inputs.artifact-name || 'package') }}
           path: platform-output
@@ -409,7 +409,7 @@ jobs:
 
       - name: Keep macOS smoke evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: macos-smoke-evidence
           path: smoke-output
@@ -418,7 +418,7 @@ jobs:
           overwrite: true
 
       - name: Upload checked macOS package
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ format('{0}-macos', inputs.artifact-name || 'package') }}
           path: platform-output
@@ -475,7 +475,7 @@ jobs:
           (cd release-assets && sha256sum --check SHA256SUMS)
 
       - name: Upload combined package set
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ inputs.artifact-name || 'package' }}
           path: release-assets
